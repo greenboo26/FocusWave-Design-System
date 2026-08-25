@@ -33,12 +33,28 @@ function ensureLayoutStyles() {
   }
 }
 
+function appendRuntime(src, datasetKey) {
+  if (document.querySelector(`script[data-focuswave-${datasetKey}]`)) return Promise.resolve();
+  return new Promise(resolve => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.dataset[`focuswave${datasetKey.replace(/(^|-)(\w)/g, (_, __, c) => c.toUpperCase())}`] = 'true';
+    script.setAttribute(`data-focuswave-${datasetKey}`, 'true');
+    script.onload = resolve;
+    script.onerror = resolve;
+    document.body.appendChild(script);
+  });
+}
+
 function ensurePracticeSignatureRuntime() {
-  if (document.querySelector('script[data-focuswave-practice-signatures]')) return;
-  const script = document.createElement('script');
-  script.src = './practice-signatures.js';
-  script.dataset.focuswavePracticeSignatures = 'true';
-  document.body.appendChild(script);
+  return appendRuntime('./practice-signatures.js', 'practice-signatures');
+}
+
+async function ensureLiveEngines() {
+  await appendRuntime('./generative-visual-engine.js', 'generative-visual-engine');
+  await appendRuntime('./content-engine.js', 'content-engine');
+  if (window.FocusWaveContentEngine?.refresh) window.FocusWaveContentEngine.refresh();
+  if (typeof renderStatic === 'function') requestAnimationFrame(renderStatic);
 }
 
 function validMode(value) {
@@ -148,12 +164,14 @@ function bindPrototypeStateReview() {
   if (!begin || typeof states === 'undefined' || typeof showPage !== 'function') return;
 
   begin.onclick = () => {
+    window.FocusWaveVisualEngine?.reseed?.();
     showPage('live');
     liveStarted = Date.now();
 
     let bag = shuffledStateBag(-1);
     stateIndex = bag.shift();
     applyState();
+    window.FocusWaveContentEngine?.refresh?.();
 
     clearInterval(timerId);
     timerId = setInterval(updateTimer, 1000);
@@ -164,6 +182,7 @@ function bindPrototypeStateReview() {
       if (!bag.length) bag = shuffledStateBag(previous);
       stateIndex = bag.shift();
       applyState();
+      window.FocusWaveContentEngine?.refresh?.();
     }, DEMO_STATE_INTERVAL_MS);
 
     updateTimer();
@@ -171,13 +190,14 @@ function bindPrototypeStateReview() {
   };
 }
 
-function init() {
+async function init() {
   ensureLayoutStyles();
   renderSettingsPanel();
   bindSessionEntry();
   bindExport();
+  await ensureLiveEngines();
   bindPrototypeStateReview();
-  ensurePracticeSignatureRuntime();
+  await ensurePracticeSignatureRuntime();
 }
 
 if (document.readyState === 'loading') {

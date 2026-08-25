@@ -74,5 +74,6 @@ window.FocusWaveIdiomGrammar = (() => {
   return { grammars, offset };
 })();
 
-// Product preference logic is kept in its own module.
+// Product preference and page-transition logic live in separate modules.
 import('./settings-controller.js');
+import('./navigation-controller.js');

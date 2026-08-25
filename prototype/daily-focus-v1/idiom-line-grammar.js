@@ -73,3 +73,6 @@ window.FocusWaveIdiomGrammar = (() => {
 
   return { grammars, offset };
 })();
+
+// Product preference logic is kept in its own module.
+import('./settings-controller.js');

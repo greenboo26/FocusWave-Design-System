@@ -1,6 +1,7 @@
-/* FocusWave practice signature visuals v2.2
+/* FocusWave practice signature visuals v2.3
  * Practice page contains attention-training exercises only.
  * Real focus-session entry lives in Today / Session Setup.
+ * Approved line fields stay intact; redundant center/solo marks are removed.
  */
 (() => {
   const signatures = {
@@ -28,7 +29,7 @@
   function stroke(ctx,color,a,width=1){ctx.strokeStyle=`rgba(${color[0]},${color[1]},${color[2]},${a})`;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()}
 
   function drawArrival(ctx,w,h,c,t){
-    const cx=w*.53,cy=h*.5;
+    const cy=h*.5;
     for(let j=0;j<9;j++){
       const fromLeft=j%2===0, y0=h*(.14+j*.09), spread=(j-4)*h*.018;
       ctx.beginPath();
@@ -40,15 +41,6 @@
         i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
       stroke(ctx,c,.12+j*.018,.65+(j%4===0?.8:0)+rnd(j)*.5);
-    }
-    for(let r=0;r<3;r++){
-      ctx.beginPath();
-      const rr=(18+r*16)*(1+.03*Math.sin(t*.15+r));
-      for(let i=0;i<=80;i++){
-        const a=i/80*Math.PI*2,x=cx+Math.cos(a)*rr*1.45,y=cy+Math.sin(a)*rr*.55;
-        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-      }
-      stroke(ctx,c,.10+r*.035,.7+r*.25);
     }
   }
 
@@ -108,14 +100,6 @@
       }
       stroke(ctx,c,.16+j*.022,.7+rnd(30+j)*1.25);
     }
-    const phase=(Math.sin(t*.09)+1)/2;
-    ctx.beginPath();
-    for(let i=0;i<=90;i++){
-      const a=Math.PI*.15+i/90*Math.PI*.7;
-      const x=w*(.63+Math.cos(a)*(.16+.05*phase)),y=h*(.52+Math.sin(a)*(.18-.04*phase));
-      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-    }
-    stroke(ctx,c,.20,.95);
   }
 
   function drawSignature(canvas,key,t=0){

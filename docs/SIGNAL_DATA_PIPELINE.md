@@ -1,63 +1,67 @@
 # FocusWave Signal & Data Pipeline
 
-## Goal
+## Runtime goal
 
-Build one reproducible data path that supports both live measurement and offline replay.
+The daily FocusWave product runs a deterministic inference pipeline built from a released `ModelBundle`. The browser receives state outputs from ordinary study/work sessions while the scientific preprocessing and model execution remain reproducible and versioned.
 
-## Live chain
+## Daily product chain
 
 ```text
 RS6240
   ↓ SDK/API
 Frame Collector
   ↓ canonical RawFrame
-Timestamp & Sync Service ← SART / key response / probe / block events
-  ↓ unified session time
+Session Clock
+  ↓
 Ring Buffer + Raw Store
   ↓
-Target Lock / Range Gate
+Released Preprocessing Runtime
+  ├── target / range support
+  ├── phase extraction / unwrap
+  ├── artifact & movement handling
+  ├── respiration representation
+  ├── cardiac micro-motion representation
+  └── quality / coverage
   ↓
-Phase Extraction & Unwrap
+Released Feature Builder
+  ↓ model-ready FeatureWindow
+Mature Model Inference
   ↓
-Artifact / Motion Handling
+Confidence Calibration + Quality Policy
   ↓
-Physiology Separation
-  ├── respiration waveform → RR / amplitude / irregularity
-  ├── cardiac micro-motion → beat / IBI / HR / HRV
-  └── residual displacement → movement / micro-motion
-  ↓
-Quality Engine
-  ↓
-Window Builder
-  ├── continuous windows
-  ├── trial-aligned windows
-  ├── probe-aligned windows
-  ├── error-preceding windows
-  ├── block windows
-  └── baseline/rest windows
-  ↓
-Feature Store
-  ↓
-State Model + Norm Engine
-  ↓
-Realtime Event Bus / WebSocket
-  ↓
-UI / Report / History / AI interpretation
+AttentionState Stream
+  ↓ WebSocket / local event bus
+Experience Layer
+  ├── live artistic line field
+  ├── state text / AI content
+  ├── regulation
+  ├── session summary
+  └── history / portrait
 ```
 
-## Offline chain
+## ModelBundle contract
 
-```text
-NPZ / archived raw session
-  ↓ Import Adapter
-canonical RawFrame + Event records
-  ↓
-SAME Timestamp / Processing / Feature / Model pipeline
+```json
+{
+  "model_version": "attention-1.0.0",
+  "preprocessing_version": "signal-2.1.0",
+  "feature_schema_version": "focus-features-1",
+  "device_profile": "RS6240-100Hz-2T4R",
+  "window_spec": {
+    "length_s": 20,
+    "step_s": 2
+  },
+  "normalization_ref": "scaler-1.0",
+  "confidence_calibration": "cal-1.0",
+  "quality_policy": "quality-1.0",
+  "intended_use": "ordinary seated study/work focus sessions",
+  "validation_ref": "validation-report-..."
+}
 ```
 
-Live and offline modes therefore produce the same schemas and can be compared directly.
+The product loads one compatible bundle and records its version with every session.
 
-## Canonical event schemas
+## Canonical product schemas
 
 ### RawFrame
 
@@ -67,7 +71,6 @@ Live and offline modes therefore produce the same schemas and can be compared di
   "frame_index": 120034,
   "sensor_time_ns": 0,
   "host_time_ns": 0,
-  "sync_epoch": 3,
   "sample_rate_hz": 100,
   "channels": 8,
   "payload_ref": "raw/...",
@@ -75,16 +78,13 @@ Live and offline modes therefore produce the same schemas and can be compared di
 }
 ```
 
-### TaskEvent
+### SessionEvent
 
 ```json
 {
   "session_id": "...",
   "event_time_ns": 0,
-  "trial_index": 388,
-  "block": 2,
-  "condition": "standard",
-  "event_type": "stimulus_onset | response | probe | rest_start | ttl",
+  "event_type": "session_start | pause | resume | break | regulation_start | regulation_end | session_end",
   "value": "..."
 }
 ```
@@ -97,16 +97,13 @@ Live and offline modes therefore produce the same schemas and can be compared di
   "window_id": "...",
   "start_time_ns": 0,
   "end_time_ns": 0,
-  "alignment": "continuous | trial | probe | error_pre | baseline | block",
-  "source_event_id": "...",
   "quality": 0.91,
   "features": {
-    "hr": 72.4,
-    "rr": 14.2,
-    "ibi_mean_ms": 829,
-    "movement_index": 0.12
+    "feature_001": 0.42,
+    "feature_002": 0.18
   },
-  "processing_version": "..."
+  "processing_version": "signal-2.1.0",
+  "feature_schema_version": "focus-features-1"
 }
 ```
 
@@ -118,58 +115,84 @@ Live and offline modes therefore produce the same schemas and can be compared di
   "window_id": "...",
   "state_vector": {
     "maintenance": 0.78,
-    "response_stability": 0.71,
-    "fluctuation": 0.24
+    "stability": 0.73,
+    "drift": 0.19,
+    "arousal": 0.61
   },
-  "state_label": "stable",
+  "state_region": "stable_focus",
   "confidence": 0.82,
-  "model_version": "...",
-  "norm_version": "..."
+  "quality": 0.91,
+  "model_version": "attention-1.0.0",
+  "source_window": "..."
 }
 ```
+
+The exact state dimensions remain tied to the final validated model. The product schema supports continuous values so the interface can show gradual transitions.
+
+## Session summary pipeline
+
+```text
+AttentionState stream + SessionEvents
+              ↓
+       Session Aggregator
+              ↓
+      SessionSummary JSON
+              ├── focused duration
+              ├── stability / fluctuation trajectory
+              ├── recovery episodes
+              ├── quality coverage
+              ├── personal-baseline comparison
+              └── portrait-generation parameters
+```
+
+## Research training chain
+
+The research pipeline is a separate upstream system:
+
+```text
+SART + mind probes + mmWave + RGB/NIR + labels
+                    ↓
+           aligned research dataset
+                    ↓
+    feature research / model training
+                    ↓
+         validation / calibration
+                    ↓
+            release decision
+                    ↓
+             ModelBundle
+                    ↓
+             daily product
+```
+
+Research can replay archived NPZ files and experiment with candidate preprocessing/model versions. Product runtime receives only a released bundle whose preprocessing, feature schema and model artifact are mutually compatible.
 
 ## Transport design
 
-### Measurement path
+- acquisition service collects live RS6240 frames
+- inference runtime processes bounded windows locally or on an approved server deployment
+- compact `AttentionState` messages are delivered to the browser through WebSocket
+- session summaries are persisted for history and portraits
+- raw-data retention follows explicit privacy/storage settings
 
-- acquisition service publishes raw frame metadata and synchronization records
-- processing service consumes frames through a bounded ring buffer
-- feature/state updates are published as compact structured messages
-- browser UI receives live state through WebSocket
-- persistence runs continuously alongside streaming
+## AI path
 
-### AI path
+AI consumes `AttentionState` or `SessionSummary` after mature model inference.
 
-AI receives a compact `InterpretationContext` after the scientific state has been computed. It does not participate in frame acquisition, signal processing or numerical state estimation.
-
-```json
-{
-  "attention_state": "refocusing",
-  "state_vector": {...},
-  "confidence": 0.79,
-  "quality": "good",
-  "imagery_theme": "ocean",
-  "language": "zh-CN",
-  "mode": "original_shortline"
-}
+```text
+AttentionState / SessionSummary
+        ↓
+InterpretationContext
+        ↓
+AI / verified content engine
+        ↓
+human-facing text and imagery selection
 ```
-
-## Latency budget for a usable live prototype
-
-Target engineering budget:
-
-- acquisition + timestamp: < 50 ms
-- signal window update: 0.5–2 s depending on feature
-- lightweight state inference: < 100 ms after feature availability
-- UI transport/render: < 100 ms
-- visual animation smoothing: continuous
-
-Physiological metrics that inherently require longer windows update at their scientifically appropriate cadence while the visual layer interpolates continuously between validated state updates.
 
 ## Provenance
 
-Every displayed state can be traced through:
+Every displayed state records:
 
-`UI state → AttentionState → FeatureWindow → processing version → raw frame interval + task events`.
+`UI state → AttentionState → ModelBundle → FeatureWindow → preprocessing version → raw frame interval`.
 
-This provenance is the basis for debugging, report audit, model comparison and later research validation.
+This provenance supports debugging, algorithm auditing, model upgrades and reproducible session interpretation.

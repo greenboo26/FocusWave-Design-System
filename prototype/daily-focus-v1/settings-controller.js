@@ -1,6 +1,8 @@
-/* FocusWave text preference controller
- * One canonical preference: defaultTextMode.
+/* FocusWave preference + prototype review controller
+ * Product preference: one canonical defaultTextMode.
  * Session Setup inherits the default, then may override it for the current session.
+ * Prototype review: randomised, non-repeating AttentionState cycle so all visual states can be reviewed.
+ * Production runtime replaces this demo driver with ModelBundle output.
  */
 
 const TEXT_MODES = [
@@ -11,6 +13,7 @@ const TEXT_MODES = [
 ];
 
 const STORAGE_KEY = 'focuswave.defaultTextMode';
+const DEMO_STATE_INTERVAL_MS = 10000;
 
 function ensureLayoutStyles() {
   if (document.querySelector('link[data-focuswave-setup-balance]')) return;
@@ -111,11 +114,56 @@ function bindExport() {
   };
 }
 
+function shuffledStateBag(previous = -1) {
+  const bag = Array.from({ length: states.length }, (_, index) => index);
+  for (let i = bag.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  if (bag.length > 1 && bag[0] === previous) {
+    [bag[0], bag[1]] = [bag[1], bag[0]];
+  }
+  return bag;
+}
+
+function bindPrototypeStateReview() {
+  const begin = document.querySelector('#beginLive');
+  if (!begin || typeof states === 'undefined' || typeof showPage !== 'function') return;
+
+  begin.onclick = () => {
+    showPage('live');
+    liveStarted = Date.now();
+
+    let bag = shuffledStateBag(-1);
+    stateIndex = bag.shift();
+    applyState();
+
+    clearInterval(timerId);
+    timerId = setInterval(updateTimer, 1000);
+
+    clearInterval(stateTimer);
+    stateTimer = setInterval(() => {
+      const previous = stateIndex;
+      if (!bag.length) bag = shuffledStateBag(previous);
+      stateIndex = bag.shift();
+      applyState();
+    }, DEMO_STATE_INTERVAL_MS);
+
+    updateTimer();
+    animateLive();
+  };
+}
+
 function init() {
   ensureLayoutStyles();
   renderSettingsPanel();
   bindSessionEntry();
   bindExport();
+  bindPrototypeStateReview();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

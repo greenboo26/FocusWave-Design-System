@@ -8,46 +8,35 @@
 :root{
   --paper:#f7f4ed; --ink:#29332f; --muted:#7e8580; --hair:#dcd8cf;
   --accent:#8aa39a; --accent2:#b7c7c1; --warm:#c59d72;
-  --ui: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --human: "LXGW WenKai Screen", "Kaiti SC", STKaiti, KaiTi, serif;
+  --ui:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --human:"LXGW WenKai Screen","Kaiti SC",STKaiti,KaiTi,serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:var(--ui)}
 body{min-height:100vh;overflow-x:hidden}
-button,input,select{font:inherit}
-button{color:inherit}
+button,input{font:inherit} button{color:inherit}
 .app{min-height:100vh;display:grid;grid-template-columns:84px 1fr}
 .rail{position:fixed;inset:0 auto 0 0;width:84px;border-right:1px solid rgba(41,51,47,.08);display:flex;flex-direction:column;align-items:center;padding:28px 0 24px;background:rgba(247,244,237,.94);backdrop-filter:blur(10px);z-index:20}
 .mark{width:34px;height:34px;border:1.5px solid var(--ink);border-radius:50%;position:relative;margin-bottom:38px;opacity:.9}
 .mark:before,.mark:after{content:"";position:absolute;inset:3px;border:1px solid currentColor;border-radius:44% 56% 48% 52%;transform:rotate(28deg);opacity:.55}.mark:after{inset:6px;transform:rotate(-24deg)}
-.nav{display:flex;flex-direction:column;gap:16px;align-items:center}
-.nav button{width:42px;height:42px;border:0;background:transparent;border-radius:50%;cursor:pointer;font-size:10px;letter-spacing:.08em;color:#737a76;transition:.25s}
-.nav button:hover,.nav button.active{background:rgba(41,51,47,.07);color:var(--ink)}
+.nav{display:flex;flex-direction:column;gap:16px;align-items:center}.nav button{width:42px;height:42px;border:0;background:transparent;border-radius:50%;cursor:pointer;font-size:10px;letter-spacing:.08em;color:#737a76;transition:.25s}.nav button:hover,.nav button.active{background:rgba(41,51,47,.07);color:var(--ink)}
 .rail .model-dot{margin-top:auto;width:8px;height:8px;border-radius:50%;background:#98aa9b;box-shadow:0 0 0 5px rgba(152,170,155,.13)}
-.main{grid-column:2;min-height:100vh}
-.page{display:none;min-height:100vh;padding:36px 54px 48px}.page.active{display:block}
-.topbar{display:flex;align-items:center;justify-content:space-between;height:46px}.brand{font-family:Georgia,serif;font-size:18px;letter-spacing:.02em}.topmeta{font-size:12px;color:var(--muted);letter-spacing:.09em}
-.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
-.human{font-family:var(--human);font-weight:400}
-.hero-today{min-height:calc(100vh - 130px);display:grid;grid-template-columns:minmax(430px,.9fr) minmax(520px,1.1fr);align-items:center;gap:5vw}
-.today-copy{padding-left:4vw}.today-copy h1{font-family:var(--human);font-size:52px;font-weight:400;line-height:1.3;margin:16px 0 20px;letter-spacing:.05em}.today-copy p{color:var(--muted);font-size:14px;line-height:1.9;max-width:480px}
-.primary{border:1px solid rgba(41,51,47,.2);background:var(--ink);color:var(--paper);padding:13px 24px;border-radius:999px;cursor:pointer;margin-top:24px;letter-spacing:.08em}.primary:hover{transform:translateY(-1px)}
-.link-btn{border:0;background:transparent;border-bottom:1px solid rgba(41,51,47,.25);padding:8px 0;cursor:pointer;color:#59615d}
-.today-art{position:relative;height:520px;display:flex;align-items:center}.today-art canvas{width:100%;height:420px}.tiny-stat{position:absolute;right:4%;bottom:18px;font-size:12px;color:var(--muted);letter-spacing:.05em}
-.dayline{display:flex;gap:34px;margin-top:38px;color:var(--muted);font-size:12px}.dayline b{display:block;color:var(--ink);font-family:Georgia,serif;font-size:24px;font-weight:400;margin-top:5px}
+.main{grid-column:2;min-height:100vh}.page{display:none;min-height:100vh;padding:36px 54px 48px}.page.active{display:block}
+.topbar{display:flex;align-items:center;justify-content:space-between;height:46px}.brand{font-family:Georgia,serif;font-size:18px;letter-spacing:.02em}.topmeta{font-size:12px;color:var(--muted);letter-spacing:.09em}.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}.human{font-family:var(--human);font-weight:400}
+.hero-today{min-height:calc(100vh - 130px);display:grid;grid-template-columns:minmax(430px,.9fr) minmax(520px,1.1fr);align-items:center;gap:5vw}.today-copy{padding-left:4vw}.today-copy h1{font-family:var(--human);font-size:52px;font-weight:400;line-height:1.3;margin:16px 0 20px;letter-spacing:.05em}.today-copy p{color:var(--muted);font-size:14px;line-height:1.9;max-width:480px}
+.primary{border:1px solid rgba(41,51,47,.2);background:var(--ink);color:var(--paper);padding:13px 24px;border-radius:999px;cursor:pointer;margin-top:24px;letter-spacing:.08em;transition:.2s}.primary:hover{transform:translateY(-1px)}.link-btn{border:0;background:transparent;border-bottom:1px solid rgba(41,51,47,.25);padding:8px 0;cursor:pointer;color:#59615d}.today-art{position:relative;height:520px;display:flex;align-items:center}.today-art canvas{width:100%;height:420px}.tiny-stat{position:absolute;right:4%;bottom:18px;font-size:12px;color:var(--muted);letter-spacing:.05em}.dayline{display:flex;gap:34px;margin-top:38px;color:var(--muted);font-size:12px}.dayline b{display:block;color:var(--ink);font-family:Georgia,serif;font-size:24px;font-weight:400;margin-top:5px}
 .section-title{font-family:var(--human);font-size:40px;font-weight:400;letter-spacing:.04em;margin:70px 0 10px}.section-sub{color:var(--muted);font-size:13px;line-height:1.8}
-.setup-wrap,.device-wrap{max-width:920px;margin:0 auto;padding-top:50px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 42px;margin-top:45px}.field{border-bottom:1px solid var(--hair);padding-bottom:12px}.field label{display:block;color:var(--muted);font-size:11px;letter-spacing:.1em;margin-bottom:9px}.field input,.field select{width:100%;border:0;background:transparent;color:var(--ink);outline:0;padding:5px 0;font-size:18px}.full{grid-column:1/-1}.actions{display:flex;align-items:center;gap:22px;margin-top:42px}
-.device-stage{margin-top:60px;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.sensor-orbit{height:360px;position:relative;display:grid;place-items:center}.sensor-orbit .ring{position:absolute;border:1px solid rgba(126,133,128,.2);border-radius:50%}.sensor-orbit .r1{width:120px;height:120px}.sensor-orbit .r2{width:210px;height:210px}.sensor-orbit .r3{width:300px;height:300px}.sensor-core{width:16px;height:16px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 11px rgba(138,163,154,.13)}
-.checks{display:flex;flex-direction:column;gap:22px}.check{display:flex;justify-content:space-between;border-bottom:1px solid var(--hair);padding-bottom:14px}.check span{color:var(--muted);font-size:13px}.check strong{font-weight:500}.ready{color:#718a78}.waiting{color:#ad987d}
+.setup-wrap{max-width:1040px;margin:0 auto;padding-top:42px}.device-wrap{max-width:920px;margin:0 auto;padding-top:50px}
+.setup-form{margin-top:44px}.task-field{border-bottom:1px solid var(--hair);padding-bottom:14px}.task-field label,.choice-label{display:block;color:var(--muted);font-size:11px;letter-spacing:.1em;margin-bottom:12px}.task-field input{width:100%;border:0;background:transparent;color:var(--ink);outline:0;padding:4px 0;font-size:21px}
+.setup-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:38px 52px;margin-top:30px}.choice-panel{padding-top:4px}.choice-panel.full{grid-column:1/-1}.segmented{display:flex;gap:8px;flex-wrap:wrap}.choice-btn{border:1px solid rgba(41,51,47,.12);background:rgba(255,255,255,.12);border-radius:999px;padding:10px 16px;cursor:pointer;color:#626a66;font-size:13px;transition:.2s ease}.choice-btn:hover{border-color:rgba(41,51,47,.25);color:var(--ink)}.choice-btn.selected{background:#e6e9e2;border-color:#9aa89f;color:#29332f;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.mode-card{border:1px solid rgba(41,51,47,.12);background:rgba(255,255,255,.1);padding:15px 16px;text-align:left;cursor:pointer;transition:.2s;min-height:82px}.mode-card:hover{border-color:rgba(41,51,47,.24)}.mode-card.selected{border-color:#8fa095;background:rgba(143,160,149,.08);box-shadow:inset 0 0 0 1px rgba(143,160,149,.16)}.mode-card b{display:block;font-family:var(--human);font-size:17px;font-weight:400;margin-bottom:5px}.mode-card span{font-size:11px;line-height:1.55;color:var(--muted)}
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.theme-card{position:relative;height:92px;border:1px solid rgba(41,51,47,.12);background:rgba(255,255,255,.1);padding:14px 14px 12px 102px;text-align:left;cursor:pointer;transition:.22s;overflow:hidden}.theme-card:hover{transform:translateY(-1px)}.theme-card.selected{box-shadow:inset 0 0 0 1px currentColor}.theme-card[data-value="ocean"]{color:#708994}.theme-card[data-value="mountain"]{color:#657d69}.theme-card[data-value="incense"]{color:#a47c55}.theme-card[data-value="dusk"]{color:#b37c69}.theme-card b{display:block;font-family:var(--human);font-size:18px;font-weight:400;color:var(--ink);margin-top:4px}.theme-card span{display:block;font-size:10px;color:var(--muted);margin-top:5px;letter-spacing:.04em}.theme-card.selected:after{content:"✓";position:absolute;right:10px;top:9px;width:18px;height:18px;border-radius:50%;background:currentColor;color:var(--paper);display:grid;place-items:center;font-family:var(--ui);font-size:11px}.theme-mini{position:absolute;left:12px;top:18px;width:76px;height:54px}.theme-mini i{position:absolute;display:block}.ocean-mini i:nth-child(1),.ocean-mini i:nth-child(2),.ocean-mini i:nth-child(3){width:72px;height:16px;border-top:1px solid currentColor;border-radius:50%;left:0}.ocean-mini i:nth-child(1){top:9px;transform:rotate(3deg)}.ocean-mini i:nth-child(2){top:20px;transform:rotate(-4deg)}.ocean-mini i:nth-child(3){top:31px;transform:rotate(2deg)}.mountain-mini i:nth-child(1),.mountain-mini i:nth-child(2){width:38px;height:28px;border-left:1px solid currentColor;border-top:1px solid currentColor;transform:rotate(45deg);bottom:7px}.mountain-mini i:nth-child(1){left:7px}.mountain-mini i:nth-child(2){left:33px;width:27px;height:23px;opacity:.65}.incense-mini i:nth-child(1){width:44px;height:13px;border:1px solid currentColor;border-top:0;border-radius:0 0 50% 50%;bottom:4px;left:14px}.incense-mini i:nth-child(2){width:14px;height:36px;border-left:1px solid currentColor;border-radius:50%;left:37px;top:0;transform:rotate(10deg)}.dusk-mini i:nth-child(1){width:27px;height:14px;border-radius:27px 27px 0 0;background:currentColor;opacity:.26;left:24px;top:3px}.dusk-mini i:nth-child(2){width:72px;height:18px;border-top:1px solid currentColor;border-radius:50%;left:1px;top:29px;transform:rotate(3deg)}
+.text-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.text-choice{border-top:1px solid var(--hair);border-left:0;border-right:0;border-bottom:0;background:transparent;text-align:left;padding:13px 8px 8px 0;cursor:pointer;transition:.2s;color:#626a66}.text-choice b{display:block;font-family:var(--human);font-size:15px;font-weight:400;color:var(--ink)}.text-choice span{font-size:10px;color:var(--muted);line-height:1.5}.text-choice.selected{border-top-color:#70847a}.text-choice.selected b{color:#50655a}.setup-note{font-size:11px;color:var(--muted);margin-top:8px}.actions{display:flex;align-items:center;gap:22px;margin-top:42px}
+.device-stage{margin-top:60px;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.sensor-orbit{height:360px;position:relative;display:grid;place-items:center}.sensor-orbit .ring{position:absolute;border:1px solid rgba(126,133,128,.2);border-radius:50%}.sensor-orbit .r1{width:120px;height:120px}.sensor-orbit .r2{width:210px;height:210px}.sensor-orbit .r3{width:300px;height:300px}.sensor-core{width:16px;height:16px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 11px rgba(138,163,154,.13)}.checks{display:flex;flex-direction:column;gap:22px}.check{display:flex;justify-content:space-between;border-bottom:1px solid var(--hair);padding-bottom:14px}.check span{color:var(--muted);font-size:13px}.check strong{font-weight:500}.ready{color:#718a78}.waiting{color:#ad987d}
 .live-page{padding:0}.live-shell{min-height:100vh;display:grid;grid-template-rows:96px 1fr 90px;position:relative}.live-head{display:flex;align-items:center;justify-content:space-between;padding:0 50px}.live-brand{font-family:Georgia,serif;font-size:18px}.live-session{font-size:12px;letter-spacing:.12em;color:#59615d}.live-controls{display:flex;gap:18px;align-items:center}.ghost{border:1px solid rgba(41,51,47,.16);background:rgba(247,244,237,.5);padding:8px 13px;border-radius:999px;cursor:pointer;font-size:11px}.live-main{display:grid;grid-template-columns:310px 1fr;align-items:center;gap:42px;padding:0 48px}.state-copy{align-self:center}.state-copy h1{font-family:var(--human);font-size:48px;font-weight:400;letter-spacing:.1em;margin:0 0 18px}.state-sub{font-family:var(--human);font-size:18px;color:#8a918d;letter-spacing:.07em}.short-rule{width:28px;height:1px;background:var(--accent);margin:34px 0}.quote{font-family:var(--human);font-size:23px;letter-spacing:.09em;line-height:1.8}.imagery{font-size:12px;color:var(--muted);letter-spacing:.08em;margin-top:18px}.wave-wrap{height:min(64vh,590px);position:relative}.wave-wrap canvas{width:100%;height:100%;display:block}.live-foot{display:flex;align-items:center;justify-content:center;gap:44px;font-family:Georgia,serif;font-size:13px}.metric{padding:0 34px;border-right:1px solid var(--hair)}.metric:last-child{border:0}.metric strong{font-size:28px;font-weight:400;margin-left:9px}.metric small{font-family:var(--ui);color:var(--muted);margin-left:8px}.drawer{position:fixed;top:0;right:-420px;width:400px;height:100vh;background:#f1eee7;border-left:1px solid var(--hair);padding:42px;z-index:50;transition:.32s ease;box-shadow:-20px 0 50px rgba(41,51,47,.05)}.drawer.open{right:0}.drawer h3{font-family:var(--human);font-size:26px;font-weight:400;margin-top:50px}.drawer-row{display:flex;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--hair);font-size:13px}.drawer-row span{color:var(--muted)}.drawer .close{position:absolute;right:28px;top:24px;border:0;background:transparent;cursor:pointer;font-size:20px}
-.summary-layout{display:grid;grid-template-columns:minmax(420px,.95fr) minmax(480px,1.05fr);gap:70px;align-items:center;margin-top:44px}.portrait{height:520px;position:relative}.portrait canvas{width:100%;height:100%}.summary-copy h1{font-family:var(--human);font-weight:400;font-size:44px;letter-spacing:.05em}.summary-copy .lead{font-family:var(--human);font-size:22px;line-height:1.8}.summary-stats{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin:36px 0}.stat{border-top:1px solid var(--hair);padding-top:13px}.stat span{display:block;font-size:11px;color:var(--muted);letter-spacing:.08em}.stat b{font-family:Georgia,serif;font-weight:400;font-size:27px;display:block;margin-top:7px}
-.insight-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:56px;margin-top:46px}.trend{height:380px;border-top:1px solid var(--hair);padding-top:20px}.trend svg{width:100%;height:310px}.notes{padding-top:20px;border-top:1px solid var(--hair)}.note{padding:18px 0;border-bottom:1px solid var(--hair)}.note b{font-family:var(--human);font-size:20px;font-weight:400}.note p{color:var(--muted);font-size:13px;line-height:1.7}
-.portrait-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}.portrait-card{border-top:1px solid var(--hair);padding-top:14px}.portrait-card canvas{width:100%;height:220px}.portrait-card .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px}
-.practice-list{max-width:900px;margin-top:46px}.practice-row{display:grid;grid-template-columns:120px 1fr 120px;align-items:center;border-top:1px solid var(--hair);padding:24px 0}.practice-row h3{font-family:var(--human);font-weight:400;font-size:24px;margin:0}.practice-row p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}.practice-row button{justify-self:end}
-.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:60px;margin-top:50px}.settings-nav{display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--muted)}.settings-panel{max-width:780px}.settings-row{display:grid;grid-template-columns:1fr 1fr;gap:35px;padding:20px 0;border-top:1px solid var(--hair)}.settings-row p{font-size:12px;color:var(--muted);line-height:1.7;margin:5px 0}.pill{display:inline-block;border:1px solid rgba(41,51,47,.16);border-radius:999px;padding:6px 10px;font-size:11px}
-.overlay{position:fixed;inset:0;background:rgba(35,42,39,.2);display:none;align-items:center;justify-content:center;z-index:60;backdrop-filter:blur(4px)}.overlay.open{display:flex}.reg-card{width:min(620px,90vw);background:var(--paper);padding:42px 48px;border:1px solid var(--hair)}.reg-card h2{font-family:var(--human);font-weight:400;font-size:32px}.reg-card p{color:var(--muted);line-height:1.8}.reg-options{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
-@media(max-width:1050px){.app{grid-template-columns:64px 1fr}.rail{width:64px}.page{padding:28px}.hero-today,.summary-layout,.insight-grid{grid-template-columns:1fr}.today-art{height:360px}.live-main{grid-template-columns:260px 1fr;padding:0 24px}.wave-wrap{height:52vh}.portrait-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:760px){.rail{display:none}.app{display:block}.main{grid-column:1}.page{padding:22px}.hero-today{display:block}.today-copy{padding:40px 0}.today-copy h1{font-size:40px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.device-stage{grid-template-columns:1fr}.live-shell{grid-template-rows:80px 1fr 130px}.live-main{display:block;padding:20px}.state-copy h1{font-size:38px}.quote{font-size:19px}.wave-wrap{height:44vh;margin-top:20px}.live-foot{gap:8px;flex-wrap:wrap}.metric{padding:0 12px}.metric strong{font-size:22px}.portrait-grid{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.practice-row{grid-template-columns:1fr;gap:12px}.practice-row button{justify-self:start}}
+.summary-layout{display:grid;grid-template-columns:minmax(420px,.95fr) minmax(480px,1.05fr);gap:70px;align-items:center;margin-top:44px}.portrait{height:520px;position:relative}.portrait canvas{width:100%;height:100%}.summary-copy h1{font-family:var(--human);font-weight:400;font-size:44px;letter-spacing:.05em}.summary-copy .lead{font-family:var(--human);font-size:22px;line-height:1.8}.summary-stats{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin:36px 0}.stat{border-top:1px solid var(--hair);padding-top:13px}.stat span{display:block;font-size:11px;color:var(--muted);letter-spacing:.08em}.stat b{font-family:Georgia,serif;font-weight:400;font-size:27px;display:block;margin-top:7px}.insight-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:56px;margin-top:46px}.trend{height:380px;border-top:1px solid var(--hair);padding-top:20px}.trend svg{width:100%;height:310px}.notes{padding-top:20px;border-top:1px solid var(--hair)}.note{padding:18px 0;border-bottom:1px solid var(--hair)}.note b{font-family:var(--human);font-size:20px;font-weight:400}.note p{color:var(--muted);font-size:13px;line-height:1.7}.portrait-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}.portrait-card{border-top:1px solid var(--hair);padding-top:14px}.portrait-card canvas{width:100%;height:220px}.portrait-card .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px}.practice-list{max-width:900px;margin-top:46px}.practice-row{display:grid;grid-template-columns:120px 1fr 120px;align-items:center;border-top:1px solid var(--hair);padding:24px 0}.practice-row h3{font-family:var(--human);font-weight:400;font-size:24px;margin:0}.practice-row p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}.practice-row button{justify-self:end}.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:60px;margin-top:50px}.settings-nav{display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--muted)}.settings-panel{max-width:780px}.settings-row{display:grid;grid-template-columns:1fr 1fr;gap:35px;padding:20px 0;border-top:1px solid var(--hair)}.settings-row p{font-size:12px;color:var(--muted);line-height:1.7;margin:5px 0}.pill{display:inline-block;border:1px solid rgba(41,51,47,.16);border-radius:999px;padding:6px 10px;font-size:11px}.overlay{position:fixed;inset:0;background:rgba(35,42,39,.2);display:none;align-items:center;justify-content:center;z-index:60;backdrop-filter:blur(4px)}.overlay.open{display:flex}.reg-card{width:min(620px,90vw);background:var(--paper);padding:42px 48px;border:1px solid var(--hair)}.reg-card h2{font-family:var(--human);font-weight:400;font-size:32px}.reg-card p{color:var(--muted);line-height:1.8}.reg-options{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+@media(max-width:1050px){.app{grid-template-columns:64px 1fr}.rail{width:64px}.page{padding:28px}.hero-today,.summary-layout,.insight-grid{grid-template-columns:1fr}.today-art{height:360px}.live-main{grid-template-columns:260px 1fr;padding:0 24px}.wave-wrap{height:52vh}.portrait-grid{grid-template-columns:1fr 1fr}.setup-grid{grid-template-columns:1fr}.choice-panel.full{grid-column:auto}}
+@media(max-width:760px){.rail{display:none}.app{display:block}.main{grid-column:1}.page{padding:22px}.hero-today{display:block}.today-copy{padding:40px 0}.today-copy h1{font-size:40px}.device-stage{grid-template-columns:1fr}.live-shell{grid-template-rows:80px 1fr 130px}.live-main{display:block;padding:20px}.state-copy h1{font-size:38px}.quote{font-size:19px}.wave-wrap{height:44vh;margin-top:20px}.live-foot{gap:8px;flex-wrap:wrap}.metric{padding:0 12px}.metric strong{font-size:22px}.portrait-grid{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.practice-row{grid-template-columns:1fr;gap:12px}.practice-row button{justify-self:start}.theme-grid,.mode-grid{grid-template-columns:1fr}.text-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -55,167 +44,51 @@ button{color:inherit}
   <aside class="rail" id="rail">
     <div class="mark" title="FocusWave"></div>
     <nav class="nav">
-      <button class="active" data-nav="today">今日</button>
-      <button data-nav="insights">洞察</button>
-      <button data-nav="portraits">画像</button>
-      <button data-nav="practice">练习</button>
-      <button data-nav="settings">设置</button>
+      <button class="active" data-nav="today">今日</button><button data-nav="insights">洞察</button><button data-nav="portraits">画像</button><button data-nav="practice">练习</button><button data-nav="settings">设置</button>
     </nav>
     <div class="model-dot" title="ModelBundle ready"></div>
   </aside>
-
   <main class="main">
     <section class="page active" id="page-today">
       <div class="topbar"><div class="brand">FocusWave</div><div class="topmeta" id="dateText"></div></div>
-      <div class="hero-today">
-        <div class="today-copy">
-          <div class="eyebrow">TODAY · FOCUS RHYTHM</div>
-          <h1>今晚，留一段时间<br>给一件事。</h1>
-          <p>设备已就绪。FocusWave 会在你学习或工作时安静地感知状态变化，把注意的流动留成一幅属于这段时间的画像。</p>
-          <button class="primary" id="startFocus">开始一段专注</button>
-          <div class="dayline">
-            <div>今日专注<b>1h 42m</b></div>
-            <div>已完成<b>3</b></div>
-            <div>稳定片段<b>68%</b></div>
-          </div>
-        </div>
-        <div class="today-art">
-          <canvas id="todayCanvas"></canvas>
-          <div class="tiny-stat">最近一段 · 阅读 · 42 min</div>
-        </div>
-      </div>
+      <div class="hero-today"><div class="today-copy"><div class="eyebrow">TODAY · FOCUS RHYTHM</div><h1>今晚，留一段时间<br>给一件事。</h1><p>设备已就绪。FocusWave 会在你学习或工作时安静地感知状态变化，把注意的流动留成一幅属于这段时间的画像。</p><button class="primary" id="startFocus">开始一段专注</button><div class="dayline"><div>今日专注<b>1h 42m</b></div><div>已完成<b>3</b></div><div>稳定片段<b>68%</b></div></div></div><div class="today-art"><canvas id="todayCanvas"></canvas><div class="tiny-stat">最近一段 · 阅读 · 42 min</div></div></div>
     </section>
 
     <section class="page" id="page-setup">
       <div class="topbar"><button class="link-btn" data-go="today">← 返回</button><div class="topmeta">NEW FOCUS SESSION</div></div>
       <div class="setup-wrap">
-        <div class="eyebrow">SESSION SETUP</div>
-        <h1 class="section-title">这一段，你想做什么？</h1>
-        <div class="section-sub">给任务一个名字，其他选项保持轻量。你可以随时结束，也可以让 FocusWave 只安静记录。</div>
-        <div class="form-grid">
-          <div class="field full"><label>任务</label><input id="taskInput" value="阅读论文" placeholder="例如：写论文、复习、编程" /></div>
-          <div class="field"><label>计划时长</label><select id="durationSelect"><option value="25">25 分钟</option><option value="45" selected>45 分钟</option><option value="60">60 分钟</option><option value="0">自由专注</option></select></div>
-          <div class="field"><label>意象主题</label><select id="themeSelect"><option value="ocean">海 · 雾蓝</option><option value="mountain">山 · 苔绿</option><option value="incense">线香 · 浅赭</option><option value="dusk">夕照 · 淡杏</option></select></div>
-          <div class="field"><label>调节方式</label><select><option>安静模式 · 只记录</option><option selected>温和模式 · 持续游移时提示</option><option>主动模式 · 更早提供调节入口</option></select></div>
-          <div class="field"><label>文字模式</label><select><option>极简 · 状态词</option><option selected>FocusWave 原创短句</option><option>世界文学 · 原文与翻译</option><option>中文古典</option></select></div>
+        <div class="eyebrow">SESSION SETUP</div><h1 class="section-title">这一段，你想做什么？</h1><div class="section-sub">给任务一个名字，其他选项保持轻量。你可以随时结束，也可以让 FocusWave 只安静记录。</div>
+        <div class="setup-form">
+          <div class="task-field"><label>任务</label><input id="taskInput" value="阅读论文" placeholder="例如：写论文、复习、编程" /></div>
+          <div class="setup-grid">
+            <div class="choice-panel"><div class="choice-label">计划时长</div><div class="segmented" id="durationGroup"><button class="choice-btn" data-value="25">25 分钟</button><button class="choice-btn selected" data-value="45">45 分钟</button><button class="choice-btn" data-value="60">60 分钟</button><button class="choice-btn" data-value="0">自由专注</button></div><div class="setup-note">计划只提供节奏感，session 可以随时结束。</div></div>
+            <div class="choice-panel"><div class="choice-label">意象主题</div><div class="theme-grid" id="themeGroup">
+              <button class="theme-card selected" data-value="ocean"><span class="theme-mini ocean-mini"><i></i><i></i><i></i></span><b>海 · 雾蓝</b><span>流动 · 清透</span></button>
+              <button class="theme-card" data-value="mountain"><span class="theme-mini mountain-mini"><i></i><i></i></span><b>山 · 苔绿</b><span>稳定 · 承托</span></button>
+              <button class="theme-card" data-value="incense"><span class="theme-mini incense-mini"><i></i><i></i></span><b>线香 · 浅赭</b><span>内收 · 持续</span></button>
+              <button class="theme-card" data-value="dusk"><span class="theme-mini dusk-mini"><i></i><i></i></span><b>夕照 · 淡杏</b><span>温暖 · 回收</span></button>
+            </div></div>
+            <div class="choice-panel full"><div class="choice-label">调节方式</div><div class="mode-grid" id="regulationGroup"><button class="mode-card" data-value="quiet"><b>安静</b><span>只记录状态，让页面保持最低存在感。</span></button><button class="mode-card selected" data-value="gentle"><b>温和</b><span>持续游移时给出轻量入口，由你决定是否调节。</span></button><button class="mode-card" data-value="active"><b>主动</b><span>更早提供恢复提示，适合希望获得更多支持的 session。</span></button></div></div>
+            <div class="choice-panel full"><div class="choice-label">文字模式</div><div class="text-grid" id="textGroup"><button class="text-choice" data-value="minimal"><b>极简</b><span>仅状态与必要信息</span></button><button class="text-choice selected" data-value="original"><b>FocusWave 原创</b><span>短句随状态变化</span></button><button class="text-choice" data-value="global"><b>世界文学</b><span>核验原文 + 中文译文</span></button><button class="text-choice" data-value="classical"><b>中文古典</b><span>经过出处核验的短句</span></button></div></div>
+          </div>
         </div>
         <div class="actions"><button class="primary" id="toDevice">检查设备并继续</button><button class="link-btn" data-go="today">稍后再说</button></div>
       </div>
     </section>
 
-    <section class="page" id="page-device">
-      <div class="topbar"><button class="link-btn" data-go="setup">← 返回</button><div class="topmeta">DEVICE READY</div></div>
-      <div class="device-wrap">
-        <div class="eyebrow">RS6240 · LOCAL RUNTIME</div>
-        <h1 class="section-title">保持平常的坐姿。</h1>
-        <div class="section-sub">FocusWave 正在确认设备、目标和信号质量。达到当前 ModelBundle 的输入要求后即可进入专注。</div>
-        <div class="device-stage">
-          <div class="sensor-orbit"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="sensor-core"></div></div>
-          <div>
-            <div class="checks">
-              <div class="check"><span>RS6240</span><strong class="ready">已连接</strong></div>
-              <div class="check"><span>目标</span><strong class="ready">胸前目标稳定</strong></div>
-              <div class="check"><span>距离支持</span><strong>0.82 m</strong></div>
-              <div class="check"><span>信号质量</span><strong id="qualityReady" class="waiting">正在确认</strong></div>
-              <div class="check"><span>模型</span><strong>FocusWave v1.0</strong></div>
-            </div>
-            <button class="primary" id="beginLive" disabled>开始专注</button>
-          </div>
-        </div>
-      </div>
-    </section>
+    <section class="page" id="page-device"><div class="topbar"><button class="link-btn" data-go="setup">← 返回</button><div class="topmeta">DEVICE READY</div></div><div class="device-wrap"><div class="eyebrow">RS6240 · LOCAL RUNTIME</div><h1 class="section-title">保持平常的坐姿。</h1><div class="section-sub">FocusWave 正在确认设备、目标和信号质量。达到当前 ModelBundle 的输入要求后即可进入专注。</div><div class="device-stage"><div class="sensor-orbit"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="sensor-core"></div></div><div><div class="checks"><div class="check"><span>RS6240</span><strong class="ready">已连接</strong></div><div class="check"><span>目标</span><strong class="ready">胸前目标稳定</strong></div><div class="check"><span>距离支持</span><strong>0.82 m</strong></div><div class="check"><span>信号质量</span><strong id="qualityReady" class="waiting">正在确认</strong></div><div class="check"><span>模型</span><strong>FocusWave v1.0</strong></div></div><button class="primary" id="beginLive" disabled>开始专注</button></div></div></div></section>
 
-    <section class="page live-page" id="page-live">
-      <div class="live-shell">
-        <header class="live-head">
-          <div class="live-brand">FocusWave</div>
-          <div class="live-session"><span id="liveTask">阅读论文</span> &nbsp;&nbsp; <span id="liveTimer">00:00</span> / <span id="plannedTime">45:00</span> &nbsp;&nbsp; LIVE</div>
-          <div class="live-controls"><button class="ghost" id="detailBtn">依据</button><button class="ghost" id="regBtn">调节</button><button class="ghost" id="finishBtn">结束</button></div>
-        </header>
-        <div class="live-main">
-          <div class="state-copy">
-            <h1 id="stateTitle">专注维持</h1>
-            <div class="state-sub" id="stateSub">状态较稳定</div>
-            <div class="short-rule"></div>
-            <div class="quote" id="stateQuote">竹影不摇，心光自定</div>
-            <div class="imagery" id="stateImagery">意象：竹 / 线香 / 静水</div>
-          </div>
-          <div class="wave-wrap"><canvas id="liveCanvas"></canvas></div>
-        </div>
-        <footer class="live-foot">
-          <div class="metric">Focus Index <strong id="focusIndex">78</strong><small>/ 100</small></div>
-          <div class="metric">Confidence <strong id="confidence">0.82</strong></div>
-          <div class="metric">Data Quality <strong id="quality">良好</strong></div>
-        </footer>
-      </div>
-    </section>
+    <section class="page live-page" id="page-live"><div class="live-shell"><header class="live-head"><div class="live-brand">FocusWave</div><div class="live-session"><span id="liveTask">阅读论文</span> &nbsp;&nbsp; <span id="liveTimer">00:00</span> / <span id="plannedTime">45:00</span> &nbsp;&nbsp; LIVE</div><div class="live-controls"><button class="ghost" id="detailBtn">依据</button><button class="ghost" id="regBtn">调节</button><button class="ghost" id="finishBtn">结束</button></div></header><div class="live-main"><div class="state-copy"><h1 id="stateTitle">专注维持</h1><div class="state-sub" id="stateSub">状态较稳定</div><div class="short-rule"></div><div class="quote" id="stateQuote">竹影不摇，心光自定</div><div class="imagery" id="stateImagery">意象：竹 / 线香 / 静水</div></div><div class="wave-wrap"><canvas id="liveCanvas"></canvas></div></div><footer class="live-foot"><div class="metric">Focus Index <strong id="focusIndex">78</strong><small>/ 100</small></div><div class="metric">Confidence <strong id="confidence">0.82</strong></div><div class="metric">Data Quality <strong id="quality">良好</strong></div></footer></div></section>
 
-    <section class="page" id="page-summary">
-      <div class="topbar"><div class="brand">FocusWave</div><button class="link-btn" data-go="today">回到今日</button></div>
-      <div class="summary-layout">
-        <div class="portrait"><canvas id="summaryCanvas"></canvas></div>
-        <div class="summary-copy">
-          <div class="eyebrow">SESSION SUMMARY</div>
-          <h1>这一段，完成了。</h1>
-          <div class="lead">潮有起伏，岸一直在。你在几次轻微游移之后都重新回到了任务。</div>
-          <div class="summary-stats">
-            <div class="stat"><span>专注时长</span><b id="summaryDuration">45 min</b></div>
-            <div class="stat"><span>稳定片段</span><b>71%</b></div>
-            <div class="stat"><span>恢复次数</span><b>3</b></div>
-            <div class="stat"><span>有效信号覆盖</span><b>94%</b></div>
-          </div>
-          <p class="section-sub">与最近 5 次同类任务相比，这一段的中后段更稳定。当前比较仅使用个人历史基线。</p>
-          <div class="actions"><button class="primary" data-go="insights">查看长期趋势</button><button class="link-btn" data-go="portraits">保存为专注画像</button></div>
-        </div>
-      </div>
-    </section>
+    <section class="page" id="page-summary"><div class="topbar"><div class="brand">FocusWave</div><button class="link-btn" data-go="today">回到今日</button></div><div class="summary-layout"><div class="portrait"><canvas id="summaryCanvas"></canvas></div><div class="summary-copy"><div class="eyebrow">SESSION SUMMARY</div><h1>这一段，完成了。</h1><div class="lead">潮有起伏，岸一直在。你在几次轻微游移之后都重新回到了任务。</div><div class="summary-stats"><div class="stat"><span>专注时长</span><b id="summaryDuration">45 min</b></div><div class="stat"><span>稳定片段</span><b>71%</b></div><div class="stat"><span>恢复次数</span><b>3</b></div><div class="stat"><span>有效信号覆盖</span><b>94%</b></div></div><p class="section-sub">与最近 5 次同类任务相比，这一段的中后段更稳定。当前比较仅使用个人历史基线。</p><div class="actions"><button class="primary" data-go="insights">查看长期趋势</button><button class="link-btn" data-go="portraits">保存为专注画像</button></div></div></div></section>
 
-    <section class="page" id="page-insights">
-      <div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">PERSONAL BASELINE</div></div>
-      <h1 class="section-title">你的专注，有自己的时刻。</h1><div class="section-sub">先理解自己，再谈参照。这里以可比的个人历史为主要基线。</div>
-      <div class="insight-grid">
-        <div class="trend"><div class="eyebrow">LAST 14 SESSIONS</div><svg viewBox="0 0 760 280" preserveAspectRatio="none"><path d="M10 208 C80 180,105 198,150 164 S230 128,270 158 S355 206,410 144 S500 110,548 122 S640 72,750 92" fill="none" stroke="#8ea79e" stroke-width="2"/><path d="M10 235 H750" stroke="#d7d3ca"/><path d="M10 185 H750 M10 135 H750 M10 85 H750" stroke="#e5e1d9" stroke-width="1"/></svg></div>
-        <div class="notes"><div class="eyebrow">RECENT PATTERNS</div><div class="note"><b>傍晚更容易进入稳定段</b><p>过去两周，18:00–21:00 的可比阅读/写作 session 稳定段比例较高。</p></div><div class="note"><b>45–60 分钟更适合你</b><p>在当前历史数据中，这个时长区间的后半程恢复表现更稳定。</p></div><div class="note"><b>轻度游移之后通常能自己回来</b><p>最近 8 次 session 中，大部分轻度游移在短时间内自然回收。</p></div></div>
-      </div>
-    </section>
+    <section class="page" id="page-insights"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">PERSONAL BASELINE</div></div><h1 class="section-title">你的专注，有自己的时刻。</h1><div class="section-sub">先理解自己，再谈参照。这里以可比的个人历史为主要基线。</div><div class="insight-grid"><div class="trend"><div class="eyebrow">LAST 14 SESSIONS</div><svg viewBox="0 0 760 280" preserveAspectRatio="none"><path d="M10 208 C80 180,105 198,150 164 S230 128,270 158 S355 206,410 144 S500 110,548 122 S640 72,750 92" fill="none" stroke="#8ea79e" stroke-width="2"/><path d="M10 235 H750" stroke="#d7d3ca"/><path d="M10 185 H750 M10 135 H750 M10 85 H750" stroke="#e5e1d9" stroke-width="1"/></svg></div><div class="notes"><div class="eyebrow">RECENT PATTERNS</div><div class="note"><b>傍晚更容易进入稳定段</b><p>过去两周，18:00–21:00 的可比阅读/写作 session 稳定段比例较高。</p></div><div class="note"><b>45–60 分钟更适合你</b><p>在当前历史数据中，这个时长区间的后半程恢复表现更稳定。</p></div><div class="note"><b>轻度游移之后通常能自己回来</b><p>最近 8 次 session 中，大部分轻度游移在短时间内自然回收。</p></div></div></div></section>
 
-    <section class="page" id="page-portraits">
-      <div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">ATTENTION PORTRAITS</div></div>
-      <h1 class="section-title">每一段时间，都留下不同的纹理。</h1><div class="section-sub">画像由同一套数据映射规则生成，可以回放，也可以比较。</div>
-      <div class="portrait-grid">
-        <div class="portrait-card"><canvas class="portraitMini" data-seed="1" data-theme="ocean"></canvas><div class="meta"><span>阅读 · 42 min</span><span>海</span></div></div>
-        <div class="portrait-card"><canvas class="portraitMini" data-seed="2" data-theme="mountain"></canvas><div class="meta"><span>写作 · 58 min</span><span>山</span></div></div>
-        <div class="portrait-card"><canvas class="portraitMini" data-seed="3" data-theme="incense"></canvas><div class="meta"><span>编程 · 51 min</span><span>线香</span></div></div>
-        <div class="portrait-card"><canvas class="portraitMini" data-seed="4" data-theme="dusk"></canvas><div class="meta"><span>复习 · 35 min</span><span>夕照</span></div></div>
-        <div class="portrait-card"><canvas class="portraitMini" data-seed="5" data-theme="ocean"></canvas><div class="meta"><span>阅读 · 47 min</span><span>海</span></div></div>
-        <div class="portrait-card"><canvas class="portraitMini" data-seed="6" data-theme="mountain"></canvas><div class="meta"><span>写作 · 62 min</span><span>山</span></div></div>
-      </div>
-    </section>
+    <section class="page" id="page-portraits"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">ATTENTION PORTRAITS</div></div><h1 class="section-title">每一段时间，都留下不同的纹理。</h1><div class="section-sub">画像由同一套数据映射规则生成，可以回放，也可以比较。</div><div class="portrait-grid"><div class="portrait-card"><canvas class="portraitMini" data-seed="1" data-theme="ocean"></canvas><div class="meta"><span>阅读 · 42 min</span><span>海</span></div></div><div class="portrait-card"><canvas class="portraitMini" data-seed="2" data-theme="mountain"></canvas><div class="meta"><span>写作 · 58 min</span><span>山</span></div></div><div class="portrait-card"><canvas class="portraitMini" data-seed="3" data-theme="incense"></canvas><div class="meta"><span>编程 · 51 min</span><span>线香</span></div></div><div class="portrait-card"><canvas class="portraitMini" data-seed="4" data-theme="dusk"></canvas><div class="meta"><span>复习 · 35 min</span><span>夕照</span></div></div><div class="portrait-card"><canvas class="portraitMini" data-seed="5" data-theme="ocean"></canvas><div class="meta"><span>阅读 · 47 min</span><span>海</span></div></div><div class="portrait-card"><canvas class="portraitMini" data-seed="6" data-theme="mountain"></canvas><div class="meta"><span>写作 · 62 min</span><span>山</span></div></div></div></section>
 
-    <section class="page" id="page-practice">
-      <div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">FOCUS PRACTICE</div></div>
-      <h1 class="section-title">练习回到手边这件事。</h1><div class="section-sub">练习使用成熟模型做实时反馈，并记录每种方法对你自己的恢复轨迹。</div>
-      <div class="practice-list">
-        <div class="practice-row"><h3>30 秒回收</h3><p>用一段短视觉过渡收束注意，适合轻度游移后快速返回任务。</p><button class="ghost">开始</button></div>
-        <div class="practice-row"><h3>呼吸节律</h3><p>以低刺激节律帮助从高波动状态过渡到稳定任务状态。</p><button class="ghost">开始</button></div>
-        <div class="practice-row"><h3>持续专注</h3><p>20 分钟练习，FocusWave 只在状态明显变化时给出轻量反馈。</p><button class="ghost">开始</button></div>
-      </div>
-    </section>
+    <section class="page" id="page-practice"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">FOCUS PRACTICE</div></div><h1 class="section-title">练习回到手边这件事。</h1><div class="section-sub">练习使用成熟模型做实时反馈，并记录每种方法对你自己的恢复轨迹。</div><div class="practice-list"><div class="practice-row"><h3>30 秒回收</h3><p>用一段短视觉过渡收束注意，适合轻度游移后快速返回任务。</p><button class="ghost">开始</button></div><div class="practice-row"><h3>呼吸节律</h3><p>以低刺激节律帮助从高波动状态过渡到稳定任务状态。</p><button class="ghost">开始</button></div><div class="practice-row"><h3>持续专注</h3><p>20 分钟练习，FocusWave 只在状态明显变化时给出轻量反馈。</p><button class="ghost">开始</button></div></div></section>
 
-    <section class="page" id="page-settings">
-      <div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">SETTINGS & TRUST</div></div>
-      <h1 class="section-title">让设备、数据与解释都可见。</h1>
-      <div class="settings-grid">
-        <div class="settings-nav"><b>设备</b><span>隐私与存储</span><span>视觉与文字</span><span>AI 内容</span><span>模型信息</span></div>
-        <div class="settings-panel">
-          <div class="settings-row"><div><b>RS6240</b><p>当前设备配置用于普通坐姿学习/工作场景。</p></div><div><span class="pill">已连接 · 0.82 m</span></div></div>
-          <div class="settings-row"><div><b>ModelBundle</b><p>注意状态由已发布模型包产生，包含预处理、特征、权重、校准与质量策略。</p></div><div><span class="pill">FocusWave v1.0</span></div></div>
-          <div class="settings-row"><div><b>默认意象</b><p>主题决定基础色域与流线行为，状态决定同一主题内的连续变化。</p></div><div><span class="pill">自动 · 海 / 山</span></div></div>
-          <div class="settings-row"><div><b>文字</b><p>可选择极简、原创短句、中文古典或经审核的多语言文学文本。</p></div><div><span class="pill">FocusWave 原创</span></div></div>
-          <div class="settings-row"><div><b>数据保存</b><p>原型优先采用本地 session 存储，后续由用户明确选择同步方式。</p></div><div><span class="pill">本地</span></div></div>
-        </div>
-      </div>
-    </section>
+    <section class="page" id="page-settings"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">SETTINGS & TRUST</div></div><h1 class="section-title">让设备、数据与解释都可见。</h1><div class="settings-grid"><div class="settings-nav"><b>设备</b><span>隐私与存储</span><span>视觉与文字</span><span>AI 内容</span><span>模型信息</span></div><div class="settings-panel"><div class="settings-row"><div><b>RS6240</b><p>当前设备配置用于普通坐姿学习/工作场景。</p></div><div><span class="pill">已连接 · 0.82 m</span></div></div><div class="settings-row"><div><b>ModelBundle</b><p>注意状态由已发布模型包产生，包含预处理、特征、权重、校准与质量策略。</p></div><div><span class="pill">FocusWave v1.0</span></div></div><div class="settings-row"><div><b>默认意象</b><p>主题决定基础色域与流线行为，状态决定同一主题内的连续变化。</p></div><div><span class="pill">自动 · 海 / 山</span></div></div><div class="settings-row"><div><b>文字</b><p>可选择极简、原创短句、中文古典或经审核的多语言文学文本。</p></div><div><span class="pill">FocusWave 原创</span></div></div><div class="settings-row"><div><b>数据保存</b><p>原型优先采用本地 session 存储，后续由用户明确选择同步方式。</p></div><div><span class="pill">本地</span></div></div></div></div></section>
   </main>
 </div>
 
@@ -235,17 +108,20 @@ let currentPage="today",stateIndex=0,liveStarted=0,timerId=null,stateTimer=null,
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 function showPage(name){pages.forEach(p=>$("#page-"+p)?.classList.toggle("active",p===name));currentPage=name;$("#rail").style.display=name==="live"?"none":"flex";$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));if(name!=="live"&&innerWidth<760)$("#rail").style.display="none";requestAnimationFrame(renderAllCanvases)}
 $$('[data-go]').forEach(b=>b.onclick=()=>showPage(b.dataset.go));$$('[data-nav]').forEach(b=>b.onclick=()=>showPage(b.dataset.nav));
+function bindChoiceGroup(id){const group=$("#"+id);if(!group)return;group.querySelectorAll('[data-value]').forEach(btn=>btn.addEventListener('click',()=>{group.querySelectorAll('[data-value]').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected')}))}
+function choiceValue(id){return $("#"+id)?.querySelector('.selected')?.dataset.value||""}
+["durationGroup","themeGroup","regulationGroup","textGroup"].forEach(bindChoiceGroup);
 $("#startFocus").onclick=()=>showPage("setup");
-$("#toDevice").onclick=()=>{activeTheme=$("#themeSelect").value;$("#liveTask").textContent=$("#taskInput").value||"专注";const d=Number($("#durationSelect").value);$("#plannedTime").textContent=d?String(d).padStart(2,"0")+":00":"∞";showPage("device");$("#qualityReady").textContent="正在确认";$("#qualityReady").className="waiting";$("#beginLive").disabled=true;setTimeout(()=>{$("#qualityReady").textContent="良好 · 94%";$("#qualityReady").className="ready";$("#beginLive").disabled=false},1200)};
+$("#toDevice").onclick=()=>{activeTheme=choiceValue("themeGroup")||"ocean";$("#liveTask").textContent=$("#taskInput").value||"专注";const d=Number(choiceValue("durationGroup"));$("#plannedTime").textContent=d?String(d).padStart(2,"0")+":00":"∞";showPage("device");$("#qualityReady").textContent="正在确认";$("#qualityReady").className="waiting";$("#beginLive").disabled=true;setTimeout(()=>{$("#qualityReady").textContent="良好 · 94%";$("#qualityReady").className="ready";$("#beginLive").disabled=false},1200)};
 $("#beginLive").onclick=()=>startLive();
 function startLive(){showPage("live");liveStarted=Date.now();stateIndex=0;applyState();clearInterval(timerId);timerId=setInterval(updateTimer,1000);clearInterval(stateTimer);stateTimer=setInterval(()=>{stateIndex=(stateIndex+1)%states.length;applyState()},13000);updateTimer();animateLive()}
 function updateTimer(){const s=Math.floor((Date.now()-liveStarted)/1000),m=Math.floor(s/60),r=s%60;$("#liveTimer").textContent=String(m).padStart(2,"0")+":"+String(r).padStart(2,"0")}
-function applyState(){const st=states[stateIndex];$("#stateTitle").textContent=st.title;$("#stateSub").textContent=st.sub;$("#stateQuote").textContent=st.quote;$("#stateImagery").textContent=st.imagery;$("#focusIndex").textContent=st.index;$("#confidence").textContent=st.conf.toFixed(2);}
+function applyState(){const st=states[stateIndex];$("#stateTitle").textContent=st.title;$("#stateSub").textContent=st.sub;$("#stateQuote").textContent=st.quote;$("#stateImagery").textContent=st.imagery;$("#focusIndex").textContent=st.index;$("#confidence").textContent=st.conf.toFixed(2)}
 $("#finishBtn").onclick=()=>{clearInterval(timerId);clearInterval(stateTimer);const mins=Math.max(1,Math.round((Date.now()-liveStarted)/60000));$("#summaryDuration").textContent=mins+" min";showPage("summary")};
 $("#detailBtn").onclick=()=>$("#detailDrawer").classList.add("open");$("#closeDrawer").onclick=()=>$("#detailDrawer").classList.remove("open");$("#regBtn").onclick=()=>$("#regOverlay").classList.add("open");$("#skipReset").onclick=()=>$("#regOverlay").classList.remove("open");$("#doReset").onclick=()=>{$("#regOverlay").classList.remove("open");stateIndex=3;applyState()};
 function sizeCanvas(c){const dpr=Math.min(devicePixelRatio||1,2),r=c.getBoundingClientRect();const w=Math.max(10,Math.floor(r.width*dpr)),h=Math.max(10,Math.floor(r.height*dpr));if(c.width!==w||c.height!==h){c.width=w;c.height=h}return {w,h,dpr}}
-function drawField(c,opt={}){if(!c)return;const {w,h}=sizeCanvas(c),ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);const theme=themeColors[opt.theme||activeTheme]||themeColors.ocean;const lines=opt.lines||72,amp=opt.amp??.7,vort=opt.vort??2,t=opt.t||0,seed=opt.seed||1;ctx.lineWidth=Math.max(0.7,w/1800);for(let j=0;j<lines;j++){const y0=(j+.5)*h/lines;ctx.beginPath();for(let xi=0;xi<=180;xi++){const x=xi/180*w;const xn=x/w;let y=y0;const wave1=Math.sin(xn*6.2+seed*.7+t*.06+j*.028)*h*.018*amp;const wave2=Math.sin(xn*13.5+seed*1.8-j*.02)*h*.009*amp;y+=wave1+wave2;for(let k=0;k<vort;k++){const cx=((k*.287+seed*.173)%1)*.82+.08;const cy=((k*.319+seed*.231)%1)*.74+.13;const dx=xn-cx,dy=(y0/h)-cy;const r2=dx*dx+dy*dy+.004;const pull=Math.exp(-r2*24)*h*.085*amp;const curl=Math.sin(Math.atan2(dy,dx)*2.2+t*.04+k)*pull;y+=curl*(.45+.55*Math.sin(j*.11+k));}if(xi===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}const alpha=.20+(j%7===0?.05:0);ctx.strokeStyle=`rgba(${theme[0]},${theme[1]},${theme[2]},${alpha})`;ctx.stroke()}}
-let raf=0;function animateLive(){cancelAnimationFrame(raf);let t=0;const loop=()=>{if(currentPage!=="live")return;const st=states[stateIndex];drawField($("#liveCanvas"),{theme:activeTheme,amp:st.amp,vort:st.vort,t:t,seed:4});t+=.35;raf=requestAnimationFrame(loop)};loop()}
+function drawField(c,opt={}){if(!c)return;const {w,h}=sizeCanvas(c),ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);const theme=themeColors[opt.theme||activeTheme]||themeColors.ocean;const lines=opt.lines||72,amp=opt.amp??.7,vort=opt.vort??2,t=opt.t||0,seed=opt.seed||1;ctx.lineWidth=Math.max(.7,w/1800);for(let j=0;j<lines;j++){const y0=(j+.5)*h/lines;ctx.beginPath();for(let xi=0;xi<=180;xi++){const x=xi/180*w,xn=x/w;let y=y0;y+=Math.sin(xn*6.2+seed*.7+t*.06+j*.028)*h*.018*amp+Math.sin(xn*13.5+seed*1.8-j*.02)*h*.009*amp;for(let k=0;k<vort;k++){const cx=((k*.287+seed*.173)%1)*.82+.08,cy=((k*.319+seed*.231)%1)*.74+.13,dx=xn-cx,dy=(y0/h)-cy,r2=dx*dx+dy*dy+.004,pull=Math.exp(-r2*24)*h*.085*amp,curl=Math.sin(Math.atan2(dy,dx)*2.2+t*.04+k)*pull;y+=curl*(.45+.55*Math.sin(j*.11+k))}if(xi===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle=`rgba(${theme[0]},${theme[1]},${theme[2]},${.20+(j%7===0?.05:0)})`;ctx.stroke()}}
+let raf=0;function animateLive(){cancelAnimationFrame(raf);let t=0;const loop=()=>{if(currentPage!=="live")return;const st=states[stateIndex];drawField($("#liveCanvas"),{theme:activeTheme,amp:st.amp,vort:st.vort,t,seed:4});t+=.35;raf=requestAnimationFrame(loop)};loop()}
 function renderAllCanvases(){drawField($("#todayCanvas"),{theme:"mountain",amp:.6,vort:2,seed:7,lines:58});drawField($("#summaryCanvas"),{theme:activeTheme,amp:.9,vort:4,seed:11,lines:68});$$('.portraitMini').forEach(c=>drawField(c,{theme:c.dataset.theme,amp:.75+(Number(c.dataset.seed)%3)*.18,vort:1+(Number(c.dataset.seed)%5),seed:Number(c.dataset.seed)*2.3,lines:44}))}
 const now=new Date();$("#dateText").textContent=now.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});addEventListener('resize',renderAllCanvases);renderAllCanvases();
 </script>

@@ -16,12 +16,29 @@ const STORAGE_KEY = 'focuswave.defaultTextMode';
 const DEMO_STATE_INTERVAL_MS = 10000;
 
 function ensureLayoutStyles() {
-  if (document.querySelector('link[data-focuswave-setup-balance]')) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = './setup-balance.css';
-  link.dataset.focuswaveSetupBalance = 'true';
-  document.head.appendChild(link);
+  if (!document.querySelector('link[data-focuswave-setup-balance]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './setup-balance.css';
+    link.dataset.focuswaveSetupBalance = 'true';
+    document.head.appendChild(link);
+  }
+
+  if (!document.querySelector('link[data-focuswave-practice-signatures]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './practice-signatures.css';
+    link.dataset.focuswavePracticeSignatures = 'true';
+    document.head.appendChild(link);
+  }
+}
+
+function ensurePracticeSignatureRuntime() {
+  if (document.querySelector('script[data-focuswave-practice-signatures]')) return;
+  const script = document.createElement('script');
+  script.src = './practice-signatures.js';
+  script.dataset.focuswavePracticeSignatures = 'true';
+  document.body.appendChild(script);
 }
 
 function validMode(value) {
@@ -160,6 +177,7 @@ function init() {
   bindSessionEntry();
   bindExport();
   bindPrototypeStateReview();
+  ensurePracticeSignatureRuntime();
 }
 
 if (document.readyState === 'loading') {

@@ -74,9 +74,9 @@ window.FocusWaveIdiomGrammar = (() => {
   return { grammars, offset };
 })();
 
-// Runtime modules. The visual engine must be loaded here because index.html still
-// contains the original fallback renderer. Loading this module replaces the global
-// drawField binding used by Live/Today/Summary with the current engine implementation.
-import('./generative-visual-engine.js?v=9');
+// Runtime modules. The v10 engine replaces the legacy fallback renderer.
+import('./generative-visual-engine.js?v=10');
+import('./theme-rain-controller.js?v=1');
+import('./garden-tools-v3.js?v=1');
 import('./settings-controller.js');
 import('./navigation-controller.js');

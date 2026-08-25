@@ -77,6 +77,6 @@ window.FocusWaveIdiomGrammar = (() => {
 // Runtime modules. The visual engine must be loaded here because index.html still
 // contains the original fallback renderer. Loading this module replaces the global
 // drawField binding used by Live/Today/Summary with the current engine implementation.
-import('./generative-visual-engine.js?v=8');
+import('./generative-visual-engine.js?v=9');
 import('./settings-controller.js');
 import('./navigation-controller.js');

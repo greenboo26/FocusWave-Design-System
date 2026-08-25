@@ -12,6 +12,9 @@ const TEXT_MODES = [
 
 const STORAGE_KEY = 'focuswave.defaultTextMode';
 const DEMO_STATE_INTERVAL_MS = 10000;
+const TODAY_THEMES = ['ocean', 'mountain', 'incense', 'dusk'];
+const TODAY_STATES = ['stable', 'drift', 'refocus'];
+let todayVariant = null;
 
 function ensureLayoutStyles() {
   if (!document.querySelector('link[data-focuswave-setup-balance]')) {
@@ -43,6 +46,11 @@ function ensureLayoutStyles() {
       #page-settings .pill{font-family:var(--ui);font-size:11px;font-weight:400}
       #page-settings .content-library-entry{background:transparent;cursor:pointer;color:var(--ink)}
       #page-settings .mini-choice{font-weight:400}
+
+      #page-live .live-brand{font-family:var(--ui);font-size:17px;font-weight:450;letter-spacing:.01em;color:#39443f}
+      #page-live .metric{color:#66706b;font-weight:400}
+      #page-live .metric strong{font-family:var(--ui);font-size:23px;font-weight:400;letter-spacing:-.015em;color:#3e4944}
+      #page-live .metric small{font-weight:400;color:#8a918d}
     `;
     document.head.appendChild(style);
   }
@@ -172,6 +180,41 @@ function bindPrototypeStateReview() {
   };
 }
 
+function chooseTodayVariant() {
+  window.FocusWaveVisualEngine?.reseed?.();
+  todayVariant = {
+    theme: TODAY_THEMES[Math.floor(Math.random() * TODAY_THEMES.length)],
+    stateKey: TODAY_STATES[Math.floor(Math.random() * TODAY_STATES.length)],
+    t: 4 + Math.random() * 48
+  };
+  return todayVariant;
+}
+
+function renderTodayArtwork(forceNew = false) {
+  const canvas = document.querySelector('#todayCanvas');
+  const engine = window.FocusWaveVisualEngine;
+  if (!canvas || !engine?.drawField || typeof states === 'undefined') return;
+  const variant = (!todayVariant || forceNew) ? chooseTodayVariant() : todayVariant;
+  const state = states.find(item => item.key === variant.stateKey) || states[0];
+  engine.drawField(canvas, { theme: variant.theme, state, t: variant.t });
+}
+
+function bindTodayArtwork() {
+  const entries = [
+    ...document.querySelectorAll('[data-nav="today"]'),
+    ...document.querySelectorAll('[data-go="today"]')
+  ];
+  entries.forEach(button => {
+    button.addEventListener('click', () => {
+      chooseTodayVariant();
+      setTimeout(() => renderTodayArtwork(false), 0);
+    });
+  });
+  window.addEventListener('resize', () => requestAnimationFrame(() => renderTodayArtwork(false)));
+  chooseTodayVariant();
+  requestAnimationFrame(() => renderTodayArtwork(false));
+}
+
 async function init() {
   ensureLayoutStyles();
   renderSettingsPanel();
@@ -179,6 +222,7 @@ async function init() {
   bindExport();
   await ensureLiveEngines();
   bindPrototypeStateReview();
+  bindTodayArtwork();
   await ensurePracticeSignatureRuntime();
 }
 

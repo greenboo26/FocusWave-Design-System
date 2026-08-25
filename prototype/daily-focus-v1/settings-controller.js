@@ -72,6 +72,10 @@ function ensurePracticeSignatureRuntime() {
   return appendRuntime('./practice-signatures.js', 'practice-signatures');
 }
 
+function ensurePortraitDetailsRuntime() {
+  return appendRuntime('./portrait-details.js', 'portrait-details');
+}
+
 async function ensureLiveEngines() {
   await appendRuntime('./generative-visual-engine.js', 'generative-visual-engine');
   await appendRuntime('./content-engine.js', 'content-engine');
@@ -223,6 +227,7 @@ async function init() {
   await ensureLiveEngines();
   bindPrototypeStateReview();
   bindTodayArtwork();
+  await ensurePortraitDetailsRuntime();
   await ensurePracticeSignatureRuntime();
 }
 

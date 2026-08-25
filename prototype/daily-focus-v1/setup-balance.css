@@ -1,0 +1,61 @@
+/* Session Setup visual balance
+ * Left and right columns end on the same visual baseline without filler content.
+ */
+@media (min-width: 1001px) {
+  .setup-columns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 58px;
+    align-items: start;
+  }
+
+  .setup-col {
+    gap: 30px;
+  }
+
+  #regulationGroup.semantic-grid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  #regulationGroup .semantic-card {
+    min-height: 67px;
+    padding: 11px 17px;
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    border-radius: 17px;
+  }
+
+  #regulationGroup .semantic-card b {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  #regulationGroup .semantic-card span {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  #themeGroup.theme-grid {
+    gap: 10px 12px;
+  }
+
+  #themeGroup .theme-card {
+    min-height: 102px;
+    padding-top: 15px;
+    padding-bottom: 13px;
+  }
+
+  .setup-wrap > .actions {
+    margin-top: 30px;
+  }
+}
+
+@media (max-width: 1000px) {
+  #regulationGroup.semantic-grid {
+    grid-template-columns: 1fr;
+  }
+}

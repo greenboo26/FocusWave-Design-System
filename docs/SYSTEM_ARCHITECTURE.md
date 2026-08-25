@@ -2,127 +2,220 @@
 
 ## Product definition
 
-FocusWave is a complete attention-state assessment platform. The product connects standardized SART task execution, mmWave acquisition, synchronized signal processing, state inference, normative interpretation, report generation, longitudinal tracking, and optional training/regulation into one usable system.
+FocusWave is a daily focus companion for study and work. The user starts a focus session, the RS6240 senses physiological micro-motion in the background, a released attention model produces continuous state estimates, and the interface turns those estimates into an understandable, calm and useful focus experience.
 
-The current artistic real-time screen is one presentation surface inside this architecture.
+The product experience is organized around daily focus sessions, live state awareness, gentle regulation, session reflection and longitudinal insight.
 
-## End-to-end architecture
+The research program and the consumer-facing product form two connected systems with a formal release boundary.
+
+## Two-system architecture
 
 ```text
-SART task / session control
-        │
-        ├── task events / probe events / response events
-        │
-RS6240 mmWave ──> Acquisition Gateway ──> Sync Layer ──> Raw Stream Store
-                                        │
-                                        └──> Processing Engine
-                                              │
-                                              ├── target locking / range gate
-                                              ├── phase unwrap
-                                              ├── respiration
-                                              ├── heartbeat / IBI / HRV
-                                              ├── movement / micro-motion
-                                              └── quality / coverage
-                                                     │
-                                                     v
-                                              Feature Window Service
-                                                     │
-                         ┌───────────────────────────┼───────────────────────────┐
-                         v                           v                           v
-                 State Inference Engine      Normative Engine          Research Export
-                         │                           │
-                         └─────────────┬─────────────┘
-                                       v
-                              Interpretation Layer
-                                       │
-             ┌─────────────────────────┼─────────────────────────┐
-             v                         v                         v
-      Real-time Monitor          Session Report            History / Trends
-             │                         │                         │
-             └───────────────> Regulation / Training <──────────┘
-                                       │
-                                       v
-                              AI Text / Quote Layer
+RESEARCH / MODEL DEVELOPMENT
+
+SART + probes + mmWave + RGB/NIR + validation data
+                    ↓
+        signal/feature research pipeline
+                    ↓
+        model training and comparison
+                    ↓
+      calibration + validation + testing
+                    ↓
+             Model Release Gate
+                    ↓
+              ModelBundle vX.Y
+
+====================================================
+             RELEASE / DEPLOYMENT BOUNDARY
+====================================================
+
+DAILY FOCUS PRODUCT
+
+RS6240
+  ↓
+Live Acquisition
+  ↓
+Released preprocessing specification
+  ↓
+Feature windows
+  ↓
+Mature Model Inference
+  ↓
+Quality + confidence policy
+  ↓
+Continuous AttentionState stream
+  ↓
+Experience Engine
+  ├── live artistic mmWave field
+  ├── focus status and trend
+  ├── optional regulation cue
+  ├── session summary
+  ├── history / personal baseline
+  └── AI cultural/text layer
 ```
 
-## Core product layers
+## ModelBundle: the contract between research and product
 
-### 1. Session & Task Layer
+The web application consumes a versioned model release rather than participating in model training.
 
-Creates a session, binds participant/session metadata, launches the game-based SART, records response events, condition/block information, mind-probe responses, rest periods and task timestamps.
+A ModelBundle contains:
 
-### 2. Acquisition Gateway
+- `model_version`
+- trained model artifact / weights
+- preprocessing specification
+- input feature schema
+- required window lengths and update cadence
+- normalization / scaling parameters
+- output state schema
+- confidence calibration
+- data-quality gating policy
+- supported device / firmware profile
+- validation summary
+- intended-use scope
+- reference / norm version when applicable
 
-Provides one canonical input contract for both live RS6240 streaming and offline file replay. Live frames and imported NPZ sessions enter the same downstream processing pipeline.
+The complete bundle is versioned so every session can be traced to the exact algorithm that produced its state estimates.
 
-Canonical frame fields:
+## Daily product layers
 
-- session_id
-- source_device
-- sensor_timestamp
-- host_timestamp
-- frame_index
-- raw_complex_iq / frame payload
-- channel metadata
-- sync marker
+### 1. Focus Session Layer
 
-### 3. Synchronization Layer
+Creates a normal study/work focus session.
 
-Builds a unified time axis for mmWave, task events, responses and probe events. Hardware TTL events and software timestamps are both represented as explicit synchronization records so that every derived window can be traced back to source time.
+Typical user inputs:
 
-### 4. Signal Processing Engine
+- session title or task
+- planned duration
+- optional focus goal
+- visual theme preference
+- regulation preference
 
-Transforms raw mmWave frames into physiological and motion signals. Processing stages are versioned and reproducible.
+The system records session start/end, pauses, user-triggered breaks and interaction events required for the product experience.
 
-Primary outputs:
+### 2. Device & Presence Layer
 
-- chest target / range gate
+Connects RS6240 and establishes a usable sensing condition.
+
+Outputs:
+
+- device connection
+- target presence
+- target distance / range support
+- signal quality
+- baseline readiness
+- streaming health
+
+### 3. Signal Runtime
+
+Executes the preprocessing specification shipped with the active ModelBundle.
+
+Primary outputs can include:
+
+- target/range support
 - unwrapped phase
-- respiration waveform and RR
-- cardiac micro-motion
-- beat timestamps / IBI
-- HR / HRV features
-- movement and micro-motion features
-- coverage / confidence / quality flags
+- respiration representation
+- cardiac micro-motion representation
+- movement/micro-motion features
+- quality / coverage features
+- model-ready feature windows
 
-### 5. Feature Window Service
+### 4. Mature Model Inference
 
-Creates analysis windows aligned to SART events, probes, blocks, rest periods and continuous time. It is the bridge between signal processing and psychological modeling.
+Loads the released model artifact and converts valid feature windows into continuous attention-state estimates.
 
-### 6. State Inference Engine
+Every output includes:
 
-Combines physiological, movement and behavioral features to estimate continuous attention-state dimensions and task-relevant state probabilities. Model outputs always include model version, confidence and feature-window provenance.
+- state vector
+- user-facing state class or region
+- confidence
+- quality
+- model version
+- source window
 
-### 7. Normative & Standardization Engine
+### 5. Experience Engine
 
-Converts raw features and model outputs into interpretable percentiles, standardized scores and reference bands once the relevant normative dataset is available. Norm version and subgroup definition are attached to every standardized output.
+Transforms the structured state stream into the FocusWave experience.
 
-### 8. Interpretation & Report Engine
+It drives:
 
-Produces three families of result:
+- mmWave-derived artistic line field
+- state title and short interpretation
+- palette and imagery behavior
+- live trend
+- gentle state transitions
+- regulation entry
 
-- behavioral performance: commission error, omission error, mean RT, RT variability and related SART indicators
-- state dynamics: physiological, micro-motion and attention-state trajectories across the session
-- composite interpretation: attention maintenance, response stability and state fluctuation dimensions
+### 6. Session Insight Engine
 
-### 9. Experience Layer
+Summarizes a completed work/study session into useful daily feedback such as:
 
-Contains multiple product screens rather than one dashboard:
+- focused duration
+- stable-focus segments
+- fluctuation pattern
+- recovery episodes
+- state trajectory
+- signal-quality coverage
+- comparison with the user's own previous comparable sessions
 
-- Home / session setup
-- Device connection & signal calibration
-- Task / live session
-- Real-time attention visualization
-- Scientific signal view
-- Session report
-- History & longitudinal trends
-- Regulation / training
-- Research / admin console
+Reference-population interpretation is introduced only when the relevant norm has passed the required validation stage.
 
-### 10. AI Text & Cultural Layer
+### 7. History & Personal Baseline
 
-Runs outside the critical measurement path. It receives structured state summaries and approved imagery/text metadata, then selects or generates human-readable feedback. It can power multilingual literary references, original short lines and report-language adaptation while preserving the scientific result supplied by the measurement engine.
+Builds a longitudinal view of the user's focus patterns across days and contexts.
 
-## Engineering principle
+The primary comparison is within-person change across comparable sessions. Population references can appear as an additional validated layer.
 
-The architecture uses one source of truth for each layer: one session clock, one signal-processing pipeline, one feature schema, one state-output schema and one report schema. Live UI, report UI, history UI and AI narration all consume those same structured outputs.
+### 8. Regulation Layer
+
+Offers opt-in support when the state model identifies a sustained drift or low-arousal pattern with sufficient confidence.
+
+Possible responses include:
+
+- subtle palette/brightness adjustment
+- short visual reset
+- rest suggestion
+- breathing or sensory regulation module
+- return-to-task transition
+
+The system records pre/post state trajectories so each regulation method can later be evaluated empirically.
+
+### 9. AI & Cultural Layer
+
+Receives the structured product state after scientific inference and creates the human-facing language layer:
+
+- FocusWave original short lines
+- verified literary/philosophical excerpts
+- multilingual text with translation
+- session-summary explanation
+- imagery selection
+
+### 10. Research Release Console
+
+A separate researcher-facing workflow prepares deployable model releases. It manages model validation, version metadata and release manifests. Daily users interact only with approved released versions.
+
+## Product screen family
+
+```text
+Home / Today
+├── Start Focus Session
+│   ├── Device Ready
+│   └── Live Focus
+│       ├── Focus Landscape
+│       ├── Detail / Evidence
+│       └── Regulation
+├── Session Summary
+├── History / Insights
+├── Attention Portraits
+├── Training / Regulation Library
+└── Settings
+    ├── Device
+    ├── Privacy & Storage
+    ├── Visual / Cultural Theme
+    └── Model & Data Information
+```
+
+## Scientific deployment principle
+
+Research determines which signals and models are valid. Product runtime reproduces the released preprocessing and inference contract exactly. The visual, AI and interaction layers consume the resulting `AttentionState` object and remain downstream from the measurement algorithm.
+
+A model trained mainly in SART becomes a daily-use model after ecological / cross-task validation demonstrates sufficient transfer to ordinary study and work contexts. This validation result is part of the ModelBundle release scope.

@@ -1,6 +1,6 @@
-/* FocusWave practice signature visuals v2.1
- * Restores the approved previous signatures.
- * Only "呼吸 + 身体" keeps the later upright abstract treatment.
+/* FocusWave practice signature visuals v2.2
+ * Practice page contains attention-training exercises only.
+ * Real focus-session entry lives in Today / Session Setup.
  */
 (() => {
   const signatures = {
@@ -8,8 +8,7 @@
     return: {label:'回到呼吸', color:[105,145,163]},
     breath: {label:'呼吸锚定', color:[116,145,124]},
     body: {label:'呼吸 + 身体', color:[171,135,100]},
-    accept: {label:'接纳式回收', color:[143,129,154]},
-    work: {label:'专注工作块', color:[96,122,111]}
+    accept: {label:'接纳式回收', color:[143,129,154]}
   };
 
   let activePractice = 'breath';
@@ -119,25 +118,6 @@
     stroke(ctx,c,.20,.95);
   }
 
-  function drawWork(ctx,w,h,c,t){
-    for(let j=0;j<6;j++){
-      const y0=h*(.22+j*.105);
-      ctx.beginPath();
-      for(let i=0;i<=120;i++){
-        const u=i/120,x=w*(.06+.88*u);
-        const drift=Math.sin(u*(2.2+j*.12)+t*.07+j)*h*.008;
-        const lane=Math.exp(-Math.pow((u-(.52+rnd(j)*.16))/(.18+rnd(10+j)*.06),2))*h*.008*(j%2?1:-1);
-        const y=y0+drift+lane;
-        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-      }
-      stroke(ctx,c,.16+j*.03,.75+(j===2||j===3?1.35:0));
-    }
-    ctx.beginPath();
-    ctx.moveTo(w*.18,h*.78);
-    ctx.bezierCurveTo(w*.38,h*.72,w*.63,h*.76,w*.86,h*.68);
-    stroke(ctx,c,.18,1.25);
-  }
-
   function drawSignature(canvas,key,t=0){
     if(!canvas)return;
     const {w,h}=size(canvas),ctx=canvas.getContext('2d'),sig=signatures[key]||signatures.breath;
@@ -146,15 +126,19 @@
     else if(key==='return')drawReturn(ctx,w,h,sig.color,t);
     else if(key==='breath')drawBreath(ctx,w,h,sig.color,t);
     else if(key==='body')drawBody(ctx,w,h,sig.color,t);
-    else if(key==='accept')drawAccept(ctx,w,h,sig.color,t);
-    else drawWork(ctx,w,h,sig.color,t);
+    else drawAccept(ctx,w,h,sig.color,t);
+  }
+
+  function normalizePracticeList(){
+    const duplicateWorkEntry=document.querySelector('#practiceToSetup')?.closest('.practice-card');
+    duplicateWorkEntry?.remove();
   }
 
   function installListVisuals(){
     document.querySelectorAll('.practice-card').forEach(card=>{
       const start=card.querySelector('.practice-start');
-      const key=start?.dataset.practice || (card.querySelector('#practiceToSetup')?'work':null);
-      if(!key)return;
+      const key=start?.dataset.practice;
+      if(!key||!signatures[key])return;
       const slot=card.querySelector('.type');
       if(!slot)return;
       slot.textContent='';
@@ -199,6 +183,6 @@
     if(typeof window.animatePractice==='function')window.animatePractice=animateOverlay;
   }
 
-  function init(){installListVisuals();bindPracticeSelection();replacePracticeAnimator();}
+  function init(){normalizePracticeList();installListVisuals();bindPracticeSelection();replacePracticeAnimator();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

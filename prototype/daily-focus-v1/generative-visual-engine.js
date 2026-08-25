@@ -1,9 +1,9 @@
-/* FocusWave generative visual engine v7
- * One continuous fine-line language; each natural image emerges by transforming that same field.
- * - ocean: top-down water lines locally become connected concentric ripple arcs;
- * - mountain: fixed contour mountains are horizontally occluded / tugged by drifting fog;
- * - incense: organic smoke strands keep their own folding grammar;
- * - dusk: dense horizon lines themselves bulge into the sunset and are broken by lateral veils.
+/* FocusWave generative visual engine v8
+ * One continuous fine-line language; each natural image emerges from the same field.
+ * - ocean: top-down circular ripple bands expand through the field; more lines become involved as radius grows.
+ * - mountain: mountain geometry is completely fixed; only lateral fog masks erase / reveal line segments.
+ * - incense: organic smoke strands keep their own folding grammar.
+ * - dusk: dense horizon lines form a broad soft sunset bulge; moving lateral veils break it apart without hard bends.
  */
 (() => {
   let sessionSeed = Math.floor(Math.random() * 0x7fffffff);
@@ -35,7 +35,11 @@
   }
   function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
   function stroke(ctx,c,a=.24,width=1){
-    ctx.strokeStyle=rgba(c,a);ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+    ctx.strokeStyle=rgba(c,a);
+    ctx.lineWidth=width;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.stroke();
   }
   function stateKey(st){ return st?.key || 'stable'; }
   function stateScale(key){ return key==='stable'?.50:key==='drift'?.78:key==='dispersed'?1.12:.68; }
@@ -43,131 +47,200 @@
   function gaussian(x,m,s){ return Math.exp(-Math.pow((x-m)/s,2)); }
   function clamp01(x){ return Math.max(0,Math.min(1,x)); }
 
-  function buildOceanDrops(key,t,epoch){
+  // ---------------------------------------------------------------------------
+  // OCEAN — top-down ripples.
+  // Radius controls WHICH lines are affected. Displacement stays restrained.
+  // The circularity is computed in canvas pixels so the ripple does not become an "eye".
+  // ---------------------------------------------------------------------------
+  function buildOceanDrops(key,t,epoch,w,h){
     const count=key==='stable'?1:key==='drift'?2:key==='dispersed'?3:2;
-    const speed=key==='stable'?.004:key==='drift'?.007:key==='dispersed'?.010:.006;
+    const cycle=key==='stable'?30:key==='drift'?24:key==='dispersed'?18:24;
+    const minDim=Math.min(w,h);
     const drops=[];
+
     for(let k=0;k<count;k++){
-      const phase=(eventRnd(epoch,k*8+4)+t*speed*(1+k*.17))%1;
+      const seed=eventRnd(epoch,k*11+1);
+      const phase=((t/cycle)*(1+k*.08)+seed)%1;
+      const life=phase<.84 ? smooth01(phase/.84) : 1-smooth01((phase-.84)/.16);
+      const radius=minDim*(.028 + phase*(.27+eventRnd(epoch,k*11+2)*.08));
+      const ringGap=minDim*(.035+eventRnd(epoch,k*11+3)*.012);
       drops.push({
-        x:.18+eventRnd(epoch,k*8)*.66,
-        y:.22+eventRnd(epoch,k*8+1)*.56,
-        rx:.12+eventRnd(epoch,k*8+2)*.075,
-        ry:.075+eventRnd(epoch,k*8+3)*.045,
-        phase,
-        gain:.72+eventRnd(epoch,k*8+5)*.34
+        x:w*(.16+eventRnd(epoch,k*11+4)*.68),
+        y:h*(.20+eventRnd(epoch,k*11+5)*.60),
+        radius,
+        ringGap,
+        band:minDim*(.010+eventRnd(epoch,k*11+6)*.006),
+        life,
+        rings:2+Math.floor(eventRnd(epoch,k*11+7)*3)
       });
     }
     return drops;
   }
 
-  function oceanArcForLine(u,yNorm,drop,key){
-    const dy=yNorm-drop.y;
-    const absDy=Math.abs(dy);
-    const influenceY=drop.ry*1.25;
-    if(absDy>influenceY) return null;
-    const ringBand=.24+.68*drop.phase;
-    const local=clamp01(absDy/influenceY);
-    const ringScale=.44+.56*Math.max(local,ringBand*.55);
-    const rx=drop.rx*ringScale;
-    const ry=drop.ry*ringScale;
-    if(ry<=absDy+.002) return null;
-    const halfX=rx*Math.sqrt(Math.max(0,1-(absDy*absDy)/(ry*ry)));
-    const dx=u-drop.x;
-    if(Math.abs(dx)>halfX) return null;
-    const z=dx/rx;
-    const circleY=drop.y + Math.sign(dy||1)*ry*Math.sqrt(Math.max(0,1-z*z));
-    const edge=1-clamp01(Math.abs(dx)/Math.max(.0001,halfX));
-    const blend=smooth01(edge);
-    const stateGain=key==='stable'?.58:key==='drift'?.82:key==='dispersed'?1:.76;
-    return {y:yNorm+(circleY-yNorm)*blend*drop.gain*stateGain,pull:blend*drop.gain*stateGain};
+  function oceanRippleOffset(x,y,drop){
+    const dx=x-drop.x,dy=y-drop.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<1) return {dx:0,dy:0,weight:0};
+
+    let total=0;
+    for(let r=0;r<drop.rings;r++){
+      const rr=drop.radius-r*drop.ringGap;
+      if(rr<=drop.band*1.4) continue;
+      const band=Math.exp(-Math.pow((dist-rr)/drop.band,2));
+      total+=band*(1-r*.16);
+    }
+    total*=drop.life;
+    if(total<.001) return {dx:0,dy:0,weight:0};
+
+    // Small radial displacement in the picture plane. The visible expansion comes from
+    // more line rows entering the annulus as radius grows, not from stronger bending.
+    const nx=dx/dist,ny=dy/dist;
+    const amount=Math.min(1.45,total)*3.6;
+    return {dx:nx*amount,dy:ny*amount,weight:Math.min(1,total)};
   }
 
   function drawOcean(ctx,w,h,c,st,t){
-    const key=stateKey(st),lines=44+Math.floor(rnd(2)*5),epoch=Math.floor(t/22),drops=buildOceanDrops(key,t,epoch);
+    const key=stateKey(st),lines=48+Math.floor(rnd(2)*5),epoch=Math.floor(t/32);
+    const drops=buildOceanDrops(key,t,epoch,w,h);
+
     for(let j=0;j<lines;j++){
-      const yNorm=(j+.7)/(lines+1);
-      const alpha=.13+rnd(200+j)*.145;
-      const width=.58+rnd(100+j)*1.02+(j%12===0?.22:0);
+      const y0=(j+.72)*h/(lines+1);
+      const alpha=.125+rnd(200+j)*.135;
+      const width=.56+rnd(100+j)*.92+(j%13===0?.18:0);
       ctx.beginPath();
-      for(let i=0;i<=220;i++){
-        const u=i/220;
+
+      for(let i=0;i<=260;i++){
+        const u=i/260;
         let x=u*w;
-        let yn=yNorm + Math.sin(u*1.45+j*.025)*.0028 + Math.sin(u*.62+j*.013)*.0032;
-        let strongest=0;
+        let y=y0 + Math.sin(u*1.35+j*.021)*h*.0019 + Math.sin(u*.58+j*.012)*h*.0022;
+
+        let ox=0,oy=0,weight=0;
         for(const drop of drops){
-          const arc=oceanArcForLine(u,yn,drop,key);
-          if(arc && arc.pull>strongest){yn=arc.y;strongest=arc.pull;}
+          const o=oceanRippleOffset(x,y,drop);
+          ox+=o.dx; oy+=o.dy; weight=Math.max(weight,o.weight);
         }
-        if(key==='dispersed') x+=Math.sin(u*8+j*.31+t*.035)*w*.0028*strongest;
-        if(key==='refocus') x+=Math.sin(u*4+j*.11)*w*.0015*(1-smooth01(u));
-        const y=yn*h;
+        x+=ox; y+=oy;
+
+        // State changes event density / overlap, not the force applied to one ring.
+        if(key==='refocus'){
+          const settle=smooth01(u);
+          x-=ox*settle*.52;
+          y-=oy*settle*.52;
+        }
+        if(key==='dispersed' && weight>.12){
+          x+=Math.sin(j*.43+t*.033+u*5.2)*1.15*weight;
+        }
+
         i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
       stroke(ctx,c,alpha,width);
     }
   }
 
-  function buildMountainFog(key,t,epoch){
+  // ---------------------------------------------------------------------------
+  // MOUNTAIN — the mountains never move.
+  // Three depth layers have deliberately different silhouettes. Fog is a moving
+  // spatial mask only: it travels left/right and erases / reveals fixed segments.
+  // ---------------------------------------------------------------------------
+  function mountainLayerConfig(g){
+    if(g===0) return {
+      base:.27, spacing:.0068, lines:11,
+      peaks:[
+        [.15,.030,.18], [.42,.020,.14], [.72,.035,.17], [.92,.018,.10]
+      ],
+      rough:.0020
+    };
+    if(g===1) return {
+      base:.51, spacing:.0075, lines:12,
+      peaks:[
+        [.10,.050,.12], [.34,.072,.16], [.62,.030,.11], [.82,.058,.13]
+      ],
+      rough:.0028
+    };
+    return {
+      base:.79, spacing:.0082, lines:13,
+      peaks:[
+        [.08,.083,.11], [.26,.042,.08], [.49,.092,.14], [.69,.055,.09], [.88,.078,.105]
+      ],
+      rough:.0038
+    };
+  }
+
+  function mountainProfile(g,u){
+    const cfg=mountainLayerConfig(g);
+    let y=0;
+    cfg.peaks.forEach((p,idx)=>{
+      const [cx,amp,sigma]=p;
+      y-=gaussian(u,cx,sigma)*amp*(.90+rnd(700+g*20+idx)*.20);
+    });
+    // Fixed micro-contour character. No t, no state.
+    y+=Math.sin(u*(5.5+g*1.2)+g*.8)*cfg.rough;
+    y+=Math.sin(u*(11.5+g*1.7)+1.7*g)*cfg.rough*.45;
+    return y;
+  }
+
+  function buildMountainFog(key,t,epoch,h){
     const count=key==='stable'?1:key==='drift'?2:key==='dispersed'?3:2;
-    const speed=key==='stable'?.0026:key==='drift'?.006:key==='dispersed'?.0095:.0065;
+    const speed=key==='stable'?.0022:key==='drift'?.0058:key==='dispersed'?.009:.0062;
     const fog=[];
     for(let k=0;k<count;k++){
-      fog.push({
-        x:((eventRnd(epoch,k*9)+t*speed*(1+k*.13))%1.34)-.17,
-        y:.27+eventRnd(epoch,k*9+1)*.48,
-        w:.20+eventRnd(epoch,k*9+2)*.20,
-        h:.055+eventRnd(epoch,k*9+3)*.075,
-        dir:eventRnd(epoch,k*9+4)>.5?1:-1,
-        gain:(key==='stable'?.30:key==='drift'?.58:key==='dispersed'?.86:.50),
-        phase:eventRnd(epoch,k*9+5)*Math.PI*2
-      });
+      const cx=((eventRnd(epoch,k*10)+t*speed*(1+k*.14))%1.38)-.19;
+      const cy=.30+eventRnd(epoch,k*10+1)*.50;
+      const baseW=.18+eventRnd(epoch,k*10+2)*.20;
+      const baseH=.040+eventRnd(epoch,k*10+3)*.060;
+      const lobes=3+Math.floor(eventRnd(epoch,k*10+4)*3);
+      fog.push({cx,cy,baseW,baseH,lobes,gain:key==='stable'?.52:key==='drift'?.72:key==='dispersed'?.90:.68,seed:k});
     }
     return fog;
   }
 
-  function fogAt(xn,yn,fog,key,t){
-    let shift=0,cover=0;
+  function mountainFogCover(xn,yn,fog,key,t){
+    let cover=0;
     for(const f of fog){
-      const dx=(xn-f.x)/(f.w*.55),dy=(yn-f.y)/(f.h*1.15);
-      const env=Math.exp(-(dx*dx*1.7+dy*dy*1.45))*f.gain;
-      shift+=f.dir*Math.sin(dx*Math.PI+f.phase)*env*.020;
-      cover=Math.max(cover,env);
+      for(let l=0;l<f.lobes;l++){
+        const lx=f.cx+(l-(f.lobes-1)/2)*f.baseW*.34;
+        const ly=f.cy+Math.sin(l*1.7+f.seed)*f.baseH*.30;
+        const sx=f.baseW*(.34+.10*((l+1)%2));
+        const sy=f.baseH*(.72+.16*(l%3));
+        const dx=(xn-lx)/sx,dy=(yn-ly)/sy;
+        cover=Math.max(cover,Math.exp(-(dx*dx*1.45+dy*dy*1.75))*f.gain);
+      }
     }
-    if(key==='refocus'){
-      const fade=.26+.74*(1-smooth01((t%26)/26));shift*=fade;cover*=fade;
-    }
-    return {shift,cover};
+    if(key==='refocus') cover*=.30+.70*(1-smooth01((t%26)/26));
+    return cover;
   }
 
   function drawMountain(ctx,w,h,c,st,t){
-    const key=stateKey(st),fog=buildMountainFog(key,t,Math.floor(t/28));
-    const groups=3,linesPerGroup=13,centers=[.22,.50,.78];
-    for(let g=0;g<groups;g++){
-      const baseY=centers[g]+(rnd(20+g)-.5)*.014;
-      const p1=.18+rnd(40+g*5)*.20,p2=.52+rnd(41+g*5)*.25,p3=.80+rnd(42+g*5)*.10;
-      for(let j=0;j<linesPerGroup;j++){
-        const offset=(j-(linesPerGroup-1)/2)*.0077;
-        const contourPhase=(j-(linesPerGroup-1)/2)/linesPerGroup;
-        const contourScale=.88+Math.cos(contourPhase*Math.PI)*.17;
-        ctx.beginPath();let drawing=false;
-        for(let i=0;i<=220;i++){
-          const u=i/220;
-          const ridge1=gaussian(u,p1,.108+g*.010)*(.064+.013*g);
-          const ridge2=gaussian(u,p2,.150)*(.082-.006*g);
-          const ridge3=gaussian(u,p3,.086)*.035;
-          const yn=baseY+offset+(-ridge1-ridge2*.86+ridge3*.30*(g===1?-1:1))*contourScale;
-          const f=fogAt(u,yn,fog,key,t);
-          const x=(u+f.shift)*w,y=yn*h;
-          const hidden=f.cover>(.48+(j%4)*.055);
+    const key=stateKey(st),fog=buildMountainFog(key,t,Math.floor(t/30),h);
+
+    for(let g=0;g<3;g++){
+      const cfg=mountainLayerConfig(g);
+      for(let j=0;j<cfg.lines;j++){
+        const offset=(j-(cfg.lines-1)/2)*cfg.spacing;
+        const contourScale=.86+Math.cos((j-(cfg.lines-1)/2)/cfg.lines*Math.PI)*.17;
+        ctx.beginPath();
+        let drawing=false;
+
+        for(let i=0;i<=280;i++){
+          const u=i/280;
+          const yn=cfg.base+offset+mountainProfile(g,u)*contourScale;
+          const cover=mountainFogCover(u,yn,fog,key,t);
+          const threshold=.44+(j%4)*.055;
+          const hidden=cover>threshold;
+
+          // x and y are the original fixed mountain coordinates. Fog never drags them.
+          const x=u*w,y=yn*h;
           if(hidden){drawing=false;continue;}
           if(!drawing){ctx.moveTo(x,y);drawing=true}else ctx.lineTo(x,y);
         }
-        stroke(ctx,c,.19+rnd(310+g*20+j)*.11,.72+rnd(420+g*20+j)*.68);
+        stroke(ctx,c,.18+rnd(310+g*20+j)*.105,.70+rnd(420+g*20+j)*.64);
       }
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // INCENSE — keep the approved organic v2-like smoke grammar.
+  // ---------------------------------------------------------------------------
   function drawIncense(ctx,w,h,c,st,t){
     const key=stateKey(st),s=stateScale(key),strands=7+Math.floor(rnd(50)*4),epoch=Math.floor(t/20);
     const eventA=Math.floor(eventRnd(epoch,1)*strands);
@@ -200,69 +273,75 @@
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // DUSK — return to the soft v2 logic: the same dense horizontal bands form a
+  // broad smooth sun/reflection bulge. State motion comes from lateral erase veils.
+  // ---------------------------------------------------------------------------
   function buildDuskVeils(key,t,epoch){
     const count=key==='stable'?1:key==='drift'?2:key==='dispersed'?3:2;
-    const speed=key==='stable'?.0025:key==='drift'?.0065:key==='dispersed'?.010:.0065;
+    const speed=key==='stable'?.0022:key==='drift'?.006:key==='dispersed'?.0095:.0062;
     const veils=[];
     for(let k=0;k<count;k++){
       veils.push({
-        x:((eventRnd(epoch,k*8)+t*speed*(1+k*.15))%1.34)-.17,
-        y:.48+eventRnd(epoch,k*8+1)*.20,
-        w:.16+eventRnd(epoch,k*8+2)*.20,
-        h:.045+eventRnd(epoch,k*8+3)*.050,
-        gain:(key==='stable'?.28:key==='drift'?.55:key==='dispersed'?.84:.48),
-        dir:eventRnd(epoch,k*8+4)>.5?1:-1,
-        phase:eventRnd(epoch,k*8+5)*Math.PI*2
+        x:((eventRnd(epoch,k*9)+t*speed*(1+k*.16))%1.36)-.18,
+        y:.43+eventRnd(epoch,k*9+1)*.28,
+        w:.16+eventRnd(epoch,k*9+2)*.20,
+        h:.036+eventRnd(epoch,k*9+3)*.060,
+        lobes:2+Math.floor(eventRnd(epoch,k*9+4)*3),
+        gain:key==='stable'?.46:key==='drift'?.66:key==='dispersed'?.88:.62,
+        seed:k
       });
     }
     return veils;
   }
 
-  function duskVeilAt(xn,yn,veils,key,t){
-    let shift=0,cover=0;
+  function duskCover(xn,yn,veils,key,t){
+    let cover=0;
     for(const v of veils){
-      const dx=(xn-v.x)/(v.w*.55),dy=(yn-v.y)/(v.h*1.15);
-      const env=Math.exp(-(dx*dx*1.8+dy*dy*1.45))*v.gain;
-      shift+=v.dir*Math.sin(dx*Math.PI+v.phase)*env*.014;
-      cover=Math.max(cover,env);
+      for(let l=0;l<v.lobes;l++){
+        const lx=v.x+(l-(v.lobes-1)/2)*v.w*.38;
+        const ly=v.y+Math.sin(l*1.45+v.seed)*v.h*.28;
+        const sx=v.w*(.36+.08*(l%2));
+        const sy=v.h*(.72+.15*((l+1)%3));
+        const dx=(xn-lx)/sx,dy=(yn-ly)/sy;
+        cover=Math.max(cover,Math.exp(-(dx*dx*1.55+dy*dy*1.70))*v.gain);
+      }
     }
-    if(key==='refocus'){
-      const fade=.24+.76*(1-smooth01((t%24)/24));shift*=fade;cover*=fade;
-    }
-    return {shift,cover};
+    if(key==='refocus') cover*=.28+.72*(1-smooth01((t%24)/24));
+    return cover;
   }
 
   function drawDusk(ctx,w,h,c,st,t){
-    const key=stateKey(st),bands=34+Math.floor(rnd(110)*6),horizon=.60+(.5-rnd(111))*.040;
-    const sunCx=.55+rnd(160)*.13,sunW=.20+rnd(161)*.045,sunH=.115+rnd(162)*.025;
-    const veils=buildDuskVeils(key,t,Math.floor(t/26));
+    const key=stateKey(st),bands=38+Math.floor(rnd(110)*7);
+    const horizon=.59+(.5-rnd(111))*.035;
+    const sunCx=.54+rnd(160)*.14;
+    const sunSigma=.16+rnd(161)*.035;
+    const veils=buildDuskVeils(key,t,Math.floor(t/28));
+
     for(let j=0;j<bands;j++){
-      const base=.15+j/(bands-1)*.72;
-      const near=Math.exp(-Math.pow((base-horizon)/.18,2));
-      const alpha=.11+rnd(140+j)*.145+near*.060;
-      const width=.48+rnd(120+j)*1.22+near*.70;
-      ctx.beginPath();let drawing=false;
-      for(let i=0;i<=220;i++){
-        const u=i/220;
-        const dx=(u-sunCx)/sunW;
-        const row=(base-horizon)/sunH;
-        const inside=Math.abs(dx)<1.08 && Math.abs(row)<1.12;
-        let yn=base + Math.sin(u*1.7+j*.021)*.0025;
-        if(inside){
-          const dome=Math.sqrt(Math.max(0,1-dx*dx));
-          const rowWeight=Math.exp(-row*row*1.55);
-          const upper=row<.18 ? 1 : .48;
-          yn-=dome*sunH*.78*rowWeight*upper;
-          if(row>.08) yn+=dome*sunH*.26*rowWeight;
-        }
-        const veil=duskVeilAt(u,yn,veils,key,t);
-        let x=(u+veil.shift)*w;
-        if(base>horizon-.01){
-          const water=gaussian(u,sunCx,sunW*.80)*Math.sin(j*.78+t*.055)*(.0035+(base-horizon)*.014);
-          x+=water*w*(key==='stable'?.55:key==='drift'?.85:key==='dispersed'?1.25:.75);
-        }
-        const y=yn*h;
-        const hidden=veil.cover>(.54+(j%4)*.045);
+      const base=.14+j/(bands-1)*.73;
+      const near=Math.exp(-Math.pow((base-horizon)/.17,2));
+      const alpha=.105+rnd(140+j)*.14+near*.055;
+      const width=.46+rnd(120+j)*1.16+near*.66;
+      ctx.beginPath();
+      let drawing=false;
+
+      for(let i=0;i<=260;i++){
+        const u=i/260;
+        const horizontal=gaussian(u,sunCx,sunSigma);
+        const vertical=gaussian(base,horizon,.145);
+        const side=base<horizon ? -1 : .52;
+
+        // One soft field deformation; no rectangular cut-off, no sqrt edge, no hard corner.
+        const lift=horizontal*vertical*(.050+.018*near)*side;
+        const yn=base+lift+Math.sin(u*1.55+j*.019)*.0018;
+
+        const cover=duskCover(u,yn,veils,key,t);
+        // Reflection below the horizon is broken a little more readily by water/air veils.
+        const threshold=(base<horizon?.50:.44)+(j%4)*.050;
+        const hidden=cover>threshold;
+        const x=u*w,y=yn*h;
+
         if(hidden){drawing=false;continue;}
         if(!drawing){ctx.moveTo(x,y);drawing=true}else ctx.lineTo(x,y);
       }
@@ -270,9 +349,10 @@
     }
   }
 
-  function drawFieldV7(canvas,opt={}){
+  function drawFieldV8(canvas,opt={}){
     if(!canvas)return;
-    const {w,h}=size(canvas),ctx=canvas.getContext('2d');ctx.clearRect(0,0,w,h);
+    const {w,h}=size(canvas),ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,w,h);
     const theme=opt.theme||(typeof activeTheme!=='undefined'?activeTheme:'ocean');
     const st=opt.state||(typeof states!=='undefined'?states[0]:{key:'stable'});
     const t=opt.t||0,c=palettes[theme]||palettes.ocean;
@@ -283,12 +363,12 @@
   }
 
   function install(){
-    window.drawField=drawFieldV7;
+    window.drawField=drawFieldV8;
     document.querySelector('#beginLive')?.addEventListener('click',reseed,{capture:true});
     document.querySelector('#themeGroup')?.addEventListener('click',()=>requestAnimationFrame(()=>{
       if(typeof renderStatic==='function')renderStatic();
     }));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-  window.FocusWaveVisualEngine={reseed,drawField:drawFieldV7,get seed(){return sessionSeed;}};
+  window.FocusWaveVisualEngine={reseed,drawField:drawFieldV8,get seed(){return sessionSeed;}};
 })();

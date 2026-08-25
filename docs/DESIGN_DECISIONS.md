@@ -117,15 +117,70 @@ FocusWave 将这一思想转译为毫米波数据线场，使“砂纹般的秩�
 
 ---
 
-## D-012 当前工作队列
+## D-012 产品定位：日常学习与工作专注伴侣
 
-1. 在锁定母版上比较现代文楷 / 今楷的屏幕效果。
-2. 形成冷色、暖色、中性色的同版式状态变体。
-3. 完成真实毫米波参数 → 流线参数映射表。
-4. 建立意象词库与跨文化文本库的数据结构。
-5. 扩充颜色、明度、饱和度与持续注意 / 唤醒 / 走神相关研究，并标记证据强度与适用情境。
-6. 定义 Attention Portrait 的 3D 数据空间。
-7. 将每轮视觉实验的选择理由同步回本仓库。
+FocusWave 的网页产品服务普通学习和工作场景。用户启动一个日常专注 session，RS6240 在后台进行无接触感知，系统持续呈现状态、趋势、调节入口、session 总结和长期画像。
+
+研究中的 SART、思维探针、RGB/NIR 与实验标签承担模型训练、效度验证和模型发布的科研任务。产品信息架构围绕日常专注体验组织。
+
+---
+
+## D-013 算法接入：成熟 ModelBundle 推理
+
+产品运行时接入已经完成训练、验证、校准和版本冻结的注意状态模型。
+
+研究侧负责形成 `ModelBundle`，其中包含：
+
+- 训练完成的模型 artifact / weights
+- 对应的信号预处理规格
+- feature schema
+- normalization / scaling
+- confidence calibration
+- quality gating
+- 设备与固件适配信息
+- intended-use scope
+- validation metadata
+- norm/reference version（达到发布条件时）
+
+产品侧执行该 ModelBundle 的实时推理，并将 `AttentionState` 交给视觉、历史、调节和 AI 内容层。
+
+---
+
+## D-014 研究 → 产品发布边界
+
+采用双轨结构：
+
+```text
+研究轨：SART / probes / mmWave / RGB/NIR
+        → 特征研究
+        → 模型训练
+        → 校准与验证
+        → 真实学习/工作迁移验证
+        → ModelBundle release
+
+产品轨：RS6240 日常采集
+        → released preprocessing
+        → mature inference model
+        → AttentionState
+        → FocusWave experience
+```
+
+SART 训练出的模型需要通过普通学习/工作场景的迁移验证，发布范围与验证结果一同记录到 ModelBundle。
+
+---
+
+## D-015 当前工作队列
+
+1. 固化日常产品的信息架构：Today / Start Focus / Device Ready / Live Focus / Summary / History / Portrait / Training / Settings。
+2. 设计这些页面在同一品牌母版下的完整界面系统。
+3. 定义 `ModelBundle`、`AttentionState`、`SessionSummary` 的正式数据 schema。
+4. 建立 schema-compatible state simulator，让网页可在成熟模型完成前真实交互。
+5. 设计 RS6240 日常实时采集与产品 inference runtime 的接口。
+6. 继续完成毫米波参数 → 艺术流线映射，并与 `AttentionState` 输出层对齐。
+7. 建立 AI / 文化文本数据库和 provider adapter。
+8. 设计调节模块及其前后状态验证记录。
+9. 将模型研究轨的生态迁移验证作为产品发布条件之一。
+10. 每轮页面设计与系统架构决策持续同步回本仓库。
 
 ---
 

@@ -169,18 +169,75 @@ SART 训练出的模型需要通过普通学习/工作场景的迁移验证，�
 
 ---
 
-## D-015 当前工作队列
+## D-015 产品信息架构：Focus Mode + Reflection Mode
 
-1. 固化日常产品的信息架构：Today / Start Focus / Device Ready / Live Focus / Summary / History / Portrait / Training / Settings。
-2. 设计这些页面在同一品牌母版下的完整界面系统。
-3. 定义 `ModelBundle`、`AttentionState`、`SessionSummary` 的正式数据 schema。
-4. 建立 schema-compatible state simulator，让网页可在成熟模型完成前真实交互。
-5. 设计 RS6240 日常实时采集与产品 inference runtime 的接口。
-6. 继续完成毫米波参数 → 艺术流线映射，并与 `AttentionState` 输出层对齐。
-7. 建立 AI / 文化文本数据库和 provider adapter。
-8. 设计调节模块及其前后状态验证记录。
-9. 将模型研究轨的生态迁移验证作为产品发布条件之一。
-10. 每轮页面设计与系统架构决策持续同步回本仓库。
+产品采用两种交互密度。
+
+**Focus Mode** 服务正在学习/工作的人，主要包含 Session Setup、Device Ready、Live Focus 与可选 Regulation。界面保持低操作密度，Live Focus 进入近全屏体验。
+
+**Reflection Mode** 服务会话结束后的理解与长期追踪，主要包含 Session Summary、Insights、Attention Portraits、Practice 与 Settings / Trust。
+
+一级导航固定为 `Today / Insights / Portraits / Practice / Settings`。日常主流程为：
+
+```text
+Today → Session Setup → Device Ready → Live Focus → Session Summary
+```
+
+---
+
+## D-016 产品运行架构：本地感知 + 本地成熟模型推理
+
+竞赛原型优先采用本地运行结构：
+
+```text
+RS6240
+→ Sensor Service
+→ released preprocessing
+→ FeatureWindow
+→ ModelBundle Runtime
+→ AttentionState
+→ local Realtime API / WebSocket
+→ browser UI
+```
+
+毫米波采集、特征计算和注意状态推理在本地链路完成。AI / 文化文本属于可选内容服务，并以结构化 AttentionState 为输入。产品在仅使用本地审核文本库时也能完整运行。
+
+---
+
+## D-017 第一版可交互网页
+
+`prototype/daily-focus-v1/index.html` 作为第一版日常产品原型建立。
+
+当前跑通：
+
+- Today
+- Session Setup
+- Device Ready
+- Live Focus
+- Detail / Evidence
+- Regulation overlay
+- Session Summary
+- Insights
+- Attention Portraits
+- Practice
+- Settings / Trust
+
+Live Focus 使用 Canvas 动态线场；开发期由 schema-compatible `AttentionState` 模拟器驱动。未来成熟 ModelBundle 接入后，前端继续消费相同方向的结构化状态消息。
+
+---
+
+## D-018 当前工作队列
+
+1. 审阅 `daily-focus-v1` 的页面结构与交互节奏，形成 v2 页面修改清单。
+2. 将单文件原型拆为 React + TypeScript 产品工程。
+3. 固化 `FocusSessionConfig / DeviceState / AttentionState / SessionSummary` schema。
+4. 建立 FastAPI + WebSocket 本地 Runtime，让模拟状态通过真实传输协议进入网页。
+5. 开发 RS6240 Sensor Service 与设备就绪状态机。
+6. 对接研究轨发布的成熟 ModelBundle。
+7. 继续完成真实毫米波参数 → 艺术流线映射，并定义 Attention Portrait 的 2D/3D 持久化格式。
+8. 建立 AI / 文化文本数据库、审核流程与 provider adapter。
+9. 实现 Regulation policy 与前后状态记录。
+10. 持续记录每轮产品与视觉决策及验证结果。
 
 ---
 

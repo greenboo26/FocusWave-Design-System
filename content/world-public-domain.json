@@ -1,0 +1,8 @@
+{
+  "version": "0.1.0",
+  "items": [
+    {"id":"en-thoreau-001","original":"I went to the woods because I wished to live deliberately.","translation_zh":"我走进树林，因为我想有意识地生活。","author":"Henry David Thoreau","work":"Walden","language":"en","theme":["mountain","ocean"],"state":["stable"],"function":"intentional-focus","source":"https://www.gutenberg.org/ebooks/205","rights":"public-domain-us","verified":true},
+    {"id":"en-marcus-001","original":"Look within.","translation_zh":"向内看。","author":"Marcus Aurelius","work":"Meditations, Book VI","language":"en","theme":["incense","mountain"],"state":["stable","refocus"],"function":"return-inward","source":"https://www.gutenberg.org/files/55317/55317-h/55317-h.htm","rights":"public-domain-us","verified":true},
+    {"id":"en-marcus-002","original":"Flux and change are constantly renewing the world.","translation_zh":"流动与变化不断更新着世界。","author":"Marcus Aurelius","work":"Meditations, Book VI","language":"en","theme":["ocean","dusk"],"state":["drift","refocus"],"function":"normalize-change","source":"https://www.gutenberg.org/files/55317/55317-h/55317-h.htm","rights":"public-domain-us","verified":true}
+  ]
+}

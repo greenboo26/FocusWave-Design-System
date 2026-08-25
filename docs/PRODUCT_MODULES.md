@@ -1,176 +1,187 @@
 # FocusWave Product Modules
 
+## Product role
+
+FocusWave is a daily focus companion for study and work. The browser application uses a released attention model to transform live RS6240 sensing into state awareness, regulation, reflection and long-term insight.
+
 ## Module map
 
-FocusWave is organized around the full measurement workflow rather than a single screen.
+### M1. Home / Today
 
-### M1. Home & Session Setup
-
-Purpose: start a measurement session with clear configuration and provenance.
+Purpose: give the user a calm entry into today's focus activity.
 
 Functions:
-- participant/session identifier
-- task protocol selection
-- load-condition configuration
-- device profile selection
-- model/norm version display
-- start/resume/import session
+- current device readiness
+- today's accumulated focus time
+- recent focus trend
+- resume / start session
+- recent Attention Portrait
+- concise AI/humanistic reflection
 
-### M2. Device & Signal Calibration
+### M2. Start Focus Session
 
-Purpose: establish usable acquisition before the task begins.
-
-Functions:
-- RS6240 connection status
-- frame-rate and channel status
-- target/range-gate preview
-- chest-position guidance
-- live signal-quality score
-- baseline recording
-- synchronization status
-
-### M3. Game-based SART
-
-Purpose: run the standardized sustained-attention task and produce behavioral/probe labels.
+Purpose: begin an ordinary study or work session.
 
 Functions:
-- game task presentation
-- Go/No-Go responses
-- block/load condition management
-- mind probes
-- rest stages
-- event markers
-- trial-level behavioral log
+- task/session title
+- optional planned duration
+- optional focus goal
+- visual theme
+- regulation preference
+- start / pause / finish
 
-### M4. Real-time Monitor
+### M3. Device Ready
 
-Purpose: present the current attention state during live acquisition.
+Purpose: establish a reliable RS6240 sensing condition before live inference begins.
 
-Primary view:
+Functions:
+- RS6240 connection
+- target presence
+- target distance support
+- signal quality
+- baseline readiness
+- active ModelBundle version
+- streaming health
+
+### M4. Live Focus
+
+Purpose: become the flagship everyday experience during study/work.
+
+Primary composition:
 - large negative space
-- left-side attention state and humanistic text
-- right-side mmWave-derived line field
-- Focus Index / Confidence / Data Quality
+- left-side attention state and humanistic/cultural text
+- right-side mmWave-derived generative line field
+- lightweight Focus Index / Confidence / Data Quality
+- session time
 
-Secondary scientific drawer/view:
-- HR
-- IBI/HRV
-- RR
-- movement
-- coverage
-- processing latency
-- state-model confidence
+Live behavior:
+- state evolves continuously
+- imagery and palette respond to state and selected theme
+- model confidence controls feedback certainty
+- regulation entry appears through a restrained transition when appropriate
 
-### M5. Signal & Evidence View
+### M5. Detail / Evidence
 
-Purpose: expose the scientific basis behind the artistic result.
+Purpose: let interested users understand the signal basis behind the current state.
 
 Functions:
-- chest displacement waveform
-- respiration waveform
-- cardiac micro-motion / beat events
-- motion events
-- valid/invalid windows
-- task/probe event overlays
-- selected feature values
-- provenance from visual state back to source window
+- recent state timeline
+- respiration representation
+- movement / micro-motion
+- signal quality / coverage
+- available physiological features supported by the active model
+- model version and update cadence
 
-### M6. Session Report
+The default daily experience stays simple; this page provides transparency and depth.
 
-Purpose: convert the completed session into a structured assessment result.
+### M6. Regulation
+
+Purpose: support a return to stable engagement when the released model detects sustained drift, fatigue or instability with sufficient confidence.
+
+Functions:
+- visual reset
+- color/brightness regulation themes
+- short guided rest
+- breathing / sensory regulation when configured
+- user choice of intervention
+- recovery trajectory
+- pre/post comparison
+
+### M7. Session Summary
+
+Purpose: turn one completed study/work period into an understandable reflection.
 
 Sections:
-- summary portrait
-- attention maintenance
-- response stability
-- state fluctuation
-- behavioral performance
-- physiological trajectory
-- task-stage comparison
-- probe-aligned state analysis
-- reference comparison when a valid norm is available
-- interpretation and data-quality notes
+- total session duration
+- effective sensing coverage
+- stable-focus duration
+- fluctuation trajectory
+- recovery episodes
+- focus rhythm across the session
+- personal-baseline comparison
+- Attention Portrait
+- concise explanation / cultural text
 
-### M7. History & Longitudinal Tracking
+### M8. History / Insights
 
-Purpose: support repeat measurement and change-over-time interpretation.
-
-Functions:
-- session timeline
-- comparable-session filtering
-- trend charts
-- repeated-state portrait gallery
-- within-person baseline comparison
-- longitudinal report export
-
-### M8. Alert & Regulation
-
-Purpose: support the "monitor → assess → feedback" loop described in the project plan and provide a path toward later training.
+Purpose: support longitudinal self-understanding.
 
 Functions:
-- graded state notifications based on validated rules
-- user-controlled regulation entry
-- short visual/color regulation modes
-- breathing/rest guidance when configured
-- recovery-state tracking
-- pre/post regulation comparison
+- day/week/month timeline
+- session comparison
+- task/context tags
+- within-person baseline
+- focus rhythm by time of day
+- recovery patterns
+- repeated Attention Portrait gallery
+- validated reference comparison when available
 
-### M9. Training
+### M9. Attention Portraits
 
-Purpose: provide an optional later-stage attention-training experience driven by real-time state feedback.
-
-Functions:
-- training protocol selection
-- real-time state feedback
-- regulation theme selection
-- training-session score and trajectory
-- longitudinal adherence/progress
-
-### M10. AI Interpretation & Cultural Content
-
-Purpose: translate structured results into natural, culturally rich feedback.
+Purpose: turn a session into a memorable data artwork generated from the same state and mmWave-derived features.
 
 Functions:
-- approved quote retrieval
-- multilingual quote + Chinese translation
+- 2D session portrait
+- optional 3D interactive portrait
+- rotate / inspect / replay
+- state-region annotations
+- session metadata
+
+### M10. AI & Cultural Content
+
+Purpose: create the human-facing semantic layer after mature model inference.
+
+Functions:
 - FocusWave original short-line generation
+- verified literary/philosophical quote retrieval
+- multilingual text + Chinese translation
 - state-to-imagery selection
-- report-language adaptation
-- explanation generation from structured result JSON
+- session-summary wording
+- personalized tone preference
 
-Input contract contains only structured, versioned result fields. AI output is stored separately from measurement outputs.
+### M11. Training / Focus Practice
 
-### M11. Research & Admin Console
-
-Purpose: make the system usable for experiments, validation and model development.
+Purpose: provide optional focus practice that uses the mature model as real-time feedback.
 
 Functions:
-- session metadata inspection
-- raw/processed file browser
-- processing-version audit
-- feature-window inspection
-- model inference replay
-- norm-version management
-- data-quality review
-- export of aligned trial/physiology/probe tables
-- model comparison and validation summaries
+- short focus exercises
+- feedback-driven regulation practice
+- recovery practice
+- progress history
+- pre/post state comparison
 
-## Screen hierarchy
+This is a user training experience. Machine-learning model training belongs to the research release pipeline.
+
+### M12. Settings / Trust
+
+Purpose: make device, privacy and algorithm state understandable.
+
+Functions:
+- device configuration
+- storage and privacy controls
+- visual/cultural theme preference
+- feedback sensitivity
+- AI content preference
+- active model version
+- model intended-use information
+- data export / deletion controls
+
+## Product navigation
 
 ```text
-Home
-├── New Session
-│   ├── Device Calibration
-│   ├── Baseline
-│   ├── SART Task
-│   └── Live Monitor
-│       └── Scientific Evidence View
-├── Reports
-│   └── Session Report
-├── History
-│   └── Longitudinal Trends
-├── Regulation / Training
-└── Research Console
+Today
+├── Start Focus
+│   ├── Device Ready
+│   └── Live Focus
+│       ├── Detail / Evidence
+│       └── Regulation
+├── Session Summary
+├── History / Insights
+├── Attention Portraits
+├── Training / Practice
+└── Settings / Trust
 ```
 
-The artistic live screen remains a flagship visual experience, while the complete product supports preparation, measurement, evidence inspection, interpretation, history and intervention workflows.
+## Research / product boundary
+
+The research program uses SART, probes, RGB/NIR and other validation data to train and validate the attention algorithm. A validated `ModelBundle` is then released to the daily product. The product consumes that frozen inference package during ordinary study and work sessions.

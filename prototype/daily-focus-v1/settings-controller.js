@@ -1,8 +1,6 @@
 /* FocusWave preference + prototype review controller
- * Product preference: one canonical defaultTextMode.
- * Session Setup inherits the default, then may override it for the current session.
- * Prototype review: randomised, non-repeating AttentionState cycle so all visual states can be reviewed.
- * Production runtime replaces this demo driver with ModelBundle output.
+ * One canonical defaultTextMode; Setup may override for one session.
+ * Demo state driver exists only for prototype review.
  */
 
 const TEXT_MODES = [
@@ -23,13 +21,30 @@ function ensureLayoutStyles() {
     link.dataset.focuswaveSetupBalance = 'true';
     document.head.appendChild(link);
   }
-
   if (!document.querySelector('link[data-focuswave-practice-signatures]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = './practice-signatures.css';
     link.dataset.focuswavePracticeSignatures = 'true';
     document.head.appendChild(link);
+  }
+  if (!document.querySelector('style[data-focuswave-settings-refinement]')) {
+    const style = document.createElement('style');
+    style.dataset.focuswaveSettingsRefinement = 'true';
+    style.textContent = `
+      #page-settings .settings-shell{grid-template-columns:190px minmax(0,1fr);gap:58px;max-width:1120px}
+      #page-settings .settings-nav{padding-top:3px;gap:6px}
+      #page-settings .settings-nav button{font-size:15px;font-weight:400;line-height:1.5;padding:10px 0;color:#858b87}
+      #page-settings .settings-nav button.active{font-weight:450;color:var(--ink)}
+      #page-settings .settings-panel{max-width:900px}
+      #page-settings .settings-row{padding:24px 0;gap:44px;min-height:92px}
+      #page-settings .settings-row b{font-family:var(--ui);font-size:15px;font-weight:450;letter-spacing:.01em;color:var(--ink)}
+      #page-settings .settings-row p{font-size:12px;line-height:1.75;margin:7px 0 0;max-width:620px}
+      #page-settings .pill{font-family:var(--ui);font-size:11px;font-weight:400}
+      #page-settings .content-library-entry{background:transparent;cursor:pointer;color:var(--ink)}
+      #page-settings .mini-choice{font-weight:400}
+    `;
+    document.head.appendChild(style);
   }
 }
 
@@ -38,7 +53,6 @@ function appendRuntime(src, datasetKey) {
   return new Promise(resolve => {
     const script = document.createElement('script');
     script.src = src;
-    script.dataset[`focuswave${datasetKey.replace(/(^|-)(\w)/g, (_, __, c) => c.toUpperCase())}`] = 'true';
     script.setAttribute(`data-focuswave-${datasetKey}`, 'true');
     script.onload = resolve;
     script.onerror = resolve;
@@ -53,29 +67,22 @@ function ensurePracticeSignatureRuntime() {
 async function ensureLiveEngines() {
   await appendRuntime('./generative-visual-engine.js', 'generative-visual-engine');
   await appendRuntime('./content-engine.js', 'content-engine');
-  if (window.FocusWaveContentEngine?.refresh) window.FocusWaveContentEngine.refresh();
+  window.FocusWaveContentEngine?.refresh?.();
   if (typeof renderStatic === 'function') requestAnimationFrame(renderStatic);
 }
 
 function validMode(value) {
   return TEXT_MODES.some(mode => mode.value === value) ? value : 'original';
 }
-
-function getDefaultMode() {
-  return validMode(localStorage.getItem(STORAGE_KEY) || 'original');
-}
-
+function getDefaultMode() { return validMode(localStorage.getItem(STORAGE_KEY) || 'original'); }
 function setSelected(group, value) {
   if (!group) return;
-  group.querySelectorAll('[data-value]').forEach(button => {
-    button.classList.toggle('selected', button.dataset.value === value);
-  });
+  group.querySelectorAll('[data-value]').forEach(button => button.classList.toggle('selected', button.dataset.value === value));
 }
 
 function renderSettingsPanel() {
   const navButton = document.querySelector('[data-setting="ai"]');
   if (navButton) navButton.textContent = '文字';
-
   const panel = document.querySelector('#setting-ai');
   if (!panel) return;
 
@@ -92,14 +99,13 @@ function renderSettingsPanel() {
     <div class="settings-row">
       <div>
         <b>内容来源</b>
-        <p>原创短句、世界文学与中文古典分别使用对应内容库；文字模式决定呈现内容，内容服务负责检索与生成。</p>
+        <p>原创短句、世界文学与中文古典分别使用对应内容库。内容库可查看当前条目、作者、作品与适用状态。</p>
       </div>
-      <span class="pill">内容库</span>
+      <button class="pill content-library-entry" type="button">内容库</button>
     </div>`;
 
   const group = panel.querySelector('#defaultTextSetting');
   setSelected(group, getDefaultMode());
-
   group.querySelectorAll('[data-value]').forEach(button => {
     button.addEventListener('click', () => {
       const next = validMode(button.dataset.value);
@@ -109,36 +115,20 @@ function renderSettingsPanel() {
   });
 }
 
-function inheritDefaultForNewSession() {
-  const setupGroup = document.querySelector('#textGroup');
-  setSelected(setupGroup, getDefaultMode());
-}
-
+function inheritDefaultForNewSession() { setSelected(document.querySelector('#textGroup'), getDefaultMode()); }
 function bindSessionEntry() {
-  const entryButtons = [
-    document.querySelector('#startFocus'),
-    document.querySelector('#practiceToSetup')
-  ].filter(Boolean);
-
-  entryButtons.forEach(button => {
-    button.addEventListener('click', inheritDefaultForNewSession);
-  });
-
+  [document.querySelector('#startFocus'), document.querySelector('#practiceToSetup')].filter(Boolean)
+    .forEach(button => button.addEventListener('click', inheritDefaultForNewSession));
   inheritDefaultForNewSession();
 }
 
 function bindExport() {
   const button = document.querySelector('#exportSettings');
   if (!button) return;
-
   button.onclick = () => {
     const selected = id => document.querySelector(`#${id} .selected`)?.dataset.value || '';
-    const data = {
-      motion: selected('motionSetting'),
-      feedback: selected('feedbackSetting'),
-      defaultTextMode: getDefaultMode()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const data = { motion:selected('motionSetting'), feedback:selected('feedbackSetting'), defaultTextMode:getDefaultMode() };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
     const anchor = document.createElement('a');
     anchor.href = URL.createObjectURL(blob);
     anchor.download = 'focuswave-settings.json';
@@ -148,43 +138,35 @@ function bindExport() {
 }
 
 function shuffledStateBag(previous = -1) {
-  const bag = Array.from({ length: states.length }, (_, index) => index);
-  for (let i = bag.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [bag[i], bag[j]] = [bag[j], bag[i]];
+  const bag = Array.from({length:states.length}, (_,index)=>index);
+  for (let i=bag.length-1;i>0;i-=1) {
+    const j=Math.floor(Math.random()*(i+1));
+    [bag[i],bag[j]]=[bag[j],bag[i]];
   }
-  if (bag.length > 1 && bag[0] === previous) {
-    [bag[0], bag[1]] = [bag[1], bag[0]];
-  }
+  if (bag.length>1 && bag[0]===previous) [bag[0],bag[1]]=[bag[1],bag[0]];
   return bag;
 }
 
 function bindPrototypeStateReview() {
-  const begin = document.querySelector('#beginLive');
-  if (!begin || typeof states === 'undefined' || typeof showPage !== 'function') return;
-
+  const begin=document.querySelector('#beginLive');
+  if (!begin || typeof states==='undefined' || typeof showPage!=='function') return;
   begin.onclick = () => {
     window.FocusWaveVisualEngine?.reseed?.();
     showPage('live');
-    liveStarted = Date.now();
-
-    let bag = shuffledStateBag(-1);
-    stateIndex = bag.shift();
+    liveStarted=Date.now();
+    let bag=shuffledStateBag(-1);
+    stateIndex=bag.shift();
     applyState();
     window.FocusWaveContentEngine?.refresh?.();
-
-    clearInterval(timerId);
-    timerId = setInterval(updateTimer, 1000);
-
+    clearInterval(timerId); timerId=setInterval(updateTimer,1000);
     clearInterval(stateTimer);
-    stateTimer = setInterval(() => {
-      const previous = stateIndex;
-      if (!bag.length) bag = shuffledStateBag(previous);
-      stateIndex = bag.shift();
+    stateTimer=setInterval(()=>{
+      const previous=stateIndex;
+      if(!bag.length) bag=shuffledStateBag(previous);
+      stateIndex=bag.shift();
       applyState();
       window.FocusWaveContentEngine?.refresh?.();
-    }, DEMO_STATE_INTERVAL_MS);
-
+    },DEMO_STATE_INTERVAL_MS);
     updateTimer();
     animateLive();
   };
@@ -200,8 +182,4 @@ async function init() {
   await ensurePracticeSignatureRuntime();
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();

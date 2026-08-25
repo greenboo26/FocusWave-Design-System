@@ -12,6 +12,15 @@ const TEXT_MODES = [
 
 const STORAGE_KEY = 'focuswave.defaultTextMode';
 
+function ensureLayoutStyles() {
+  if (document.querySelector('link[data-focuswave-setup-balance]')) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = './setup-balance.css';
+  link.dataset.focuswaveSetupBalance = 'true';
+  document.head.appendChild(link);
+}
+
 function validMode(value) {
   return TEXT_MODES.some(mode => mode.value === value) ? value : 'original';
 }
@@ -79,7 +88,6 @@ function bindSessionEntry() {
     button.addEventListener('click', inheritDefaultForNewSession);
   });
 
-  // Initial prototype state also reflects the stored default.
   inheritDefaultForNewSession();
 }
 
@@ -104,6 +112,7 @@ function bindExport() {
 }
 
 function init() {
+  ensureLayoutStyles();
   renderSettingsPanel();
   bindSessionEntry();
   bindExport();

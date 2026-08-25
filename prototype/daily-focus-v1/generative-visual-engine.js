@@ -1,167 +1,134 @@
-/* FocusWave generative visual engine v2
- * Theme = composition grammar.
- * Attention state = motion/order intensity.
- * Session seed + slow event epochs = non-repeating local variation.
+/* FocusWave generative visual engine v3
+ * One visual language: quiet, uniform fine lines.
+ * Theme changes geometry. Attention state changes entropy, speed and coherence.
+ * Refocus never changes axis; it reduces disorder inside the same field.
  */
 (() => {
   let sessionSeed = Math.floor(Math.random() * 0x7fffffff);
-  let lastPage = '';
-
   const palettes = {
-    ocean:[93,139,160], mountain:[98,132,104], incense:[164,116,75], dusk:[181,119,102]
+    ocean:[103,145,163],
+    mountain:[105,139,112],
+    incense:[170,125,82],
+    dusk:[190,132,108]
   };
 
   function reseed(){
-    if (crypto?.getRandomValues) {
-      const a = new Uint32Array(1); crypto.getRandomValues(a); sessionSeed = a[0];
-    } else sessionSeed = Math.floor(Math.random()*0xffffffff);
+    if (window.crypto?.getRandomValues) {
+      const a=new Uint32Array(1); crypto.getRandomValues(a); sessionSeed=a[0];
+    } else sessionSeed=Math.floor(Math.random()*0xffffffff);
   }
-
-  function hash(n){
-    n = Math.imul(n ^ (n >>> 16), 0x45d9f3b);
-    n = Math.imul(n ^ (n >>> 16), 0x45d9f3b);
-    return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
-  }
-  function rnd(k){ return hash((sessionSeed + Math.imul(k+1, 2654435761))|0); }
-  function eventRnd(epoch,k){ return hash((sessionSeed ^ Math.imul(epoch+11,1597334677) ^ Math.imul(k+17,3812015801))|0); }
+  function hash(n){n=Math.imul(n^(n>>>16),0x45d9f3b);n=Math.imul(n^(n>>>16),0x45d9f3b);return ((n^(n>>>16))>>>0)/4294967295}
+  function rnd(k){return hash((sessionSeed+Math.imul(k+1,2654435761))|0)}
+  function eventRnd(epoch,k){return hash((sessionSeed^Math.imul(epoch+11,1597334677)^Math.imul(k+17,3812015801))|0)}
   function size(c){
-    const d=Math.min(devicePixelRatio||1,2), r=c.getBoundingClientRect();
-    const w=Math.max(10,Math.floor(r.width*d)), h=Math.max(10,Math.floor(r.height*d));
+    const d=Math.min(devicePixelRatio||1,2),r=c.getBoundingClientRect();
+    const w=Math.max(10,Math.floor(r.width*d)),h=Math.max(10,Math.floor(r.height*d));
     if(c.width!==w||c.height!==h){c.width=w;c.height=h} return {w,h};
   }
-  function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
-  function stateScale(st){
-    const key=st?.key||'stable';
-    return key==='stable'?.45:key==='drift'?.72:key==='dispersed'?1.12:.62;
+  function stroke(ctx,c,a=.24){
+    ctx.strokeStyle=`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+    ctx.lineWidth=1;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.stroke();
   }
-  function grammar(st,x,y,w,h,t,j,seed){
-    return window.FocusWaveIdiomGrammar?.offset(st?.key||'stable',x,y,w,h,t,j,seed)||{dx:0,dy:0};
+  function entropy(key){return key==='stable'?.16:key==='drift'?.42:key==='dispersed'?.82:.30}
+  function smooth01(x){return x*x*(3-2*x)}
+
+  function vortexOffset(x,y,cx,cy,strength,radius,sign=1){
+    const dx=x-cx,dy=y-cy,d2=dx*dx+dy*dy,fall=Math.exp(-d2/(radius*radius));
+    const inv=1/Math.max(12,Math.sqrt(d2));
+    return {dx:-dy*inv*strength*fall*sign,dy:dx*inv*strength*fall*sign};
   }
-  function strokePath(ctx,c,a,width){ctx.strokeStyle=rgba(c,a);ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();}
 
   function drawOcean(ctx,w,h,c,st,t){
-    const s=stateScale(st), lines=34 + Math.floor(rnd(2)*15), epoch=Math.floor(t/18), phase=(t%18)/18;
-    const eFade=Math.sin(Math.PI*phase);
+    const key=st?.key||'stable',e=entropy(key),lines=38;
+    const epoch=Math.floor(t/20),centers=[];
+    const count=key==='stable'?1:key==='drift'?2:key==='dispersed'?4:2;
+    for(let k=0;k<count;k++) centers.push({
+      x:w*(.18+eventRnd(epoch,k*5)*.68),
+      y:h*(.20+eventRnd(epoch,k*5+1)*.60),
+      r:Math.min(w,h)*(.08+eventRnd(epoch,k*5+2)*.08),
+      s:(eventRnd(epoch,k*5+3)>.5?1:-1)*(6+eventRnd(epoch,k*5+4)*9)
+    });
     for(let j=0;j<lines;j++){
-      const y0=(j+.7)*h/(lines+1);
-      const width=.55+rnd(100+j)*1.45 + (j%9===0?.8:0);
-      const alpha=.12+rnd(200+j)*.18;
-      ctx.beginPath();
-      for(let i=0;i<=150;i++){
-        const x=i/150*w, xn=x/w;
-        const swell=Math.sin(xn*(4.2+rnd(4)*2)+t*.055+j*.075)*h*.010*s;
-        const long=Math.sin(xn*1.5+t*.025+j*.021)*h*.020*s;
-        let y=y0+swell+long;
-        const g=grammar(st,x,y,w,h,t,j,4); y+=g.dy*.65;
-        i?ctx.lineTo(x+g.dx*.5,y):ctx.moveTo(x+g.dx*.5,y);
+      const y0=(j+.8)*h/(lines+1);ctx.beginPath();
+      for(let i=0;i<=180;i++){
+        const u=i/180,x=u*w;
+        let y=y0+Math.sin(u*5.2+t*.035+j*.10)*h*.006+Math.sin(u*1.7+t*.018+j*.025)*h*.010;
+        let xx=x;
+        const refocusFade=key==='refocus'?(1-smooth01(u)) : 1;
+        centers.forEach((v,k)=>{
+          const o=vortexOffset(xx,y,v.x,v.y,v.s*e*refocusFade,v.r,k%2?1:-1);
+          xx+=o.dx; y+=o.dy;
+        });
+        i?ctx.lineTo(xx,y):ctx.moveTo(xx,y);
       }
-      strokePath(ctx,c,alpha,width);
-    }
-    // slow local water events: irregular rings + eddy arcs
-    const n=st?.key==='dispersed'?4:st?.key==='drift'?3:2;
-    for(let k=0;k<n;k++){
-      const cx=w*(.18+eventRnd(epoch,k*7)*.68), cy=h*(.18+eventRnd(epoch,k*7+1)*.64);
-      const r=Math.min(w,h)*(.035+eventRnd(epoch,k*7+2)*.08)*eFade;
-      ctx.beginPath();
-      for(let i=0;i<=80;i++){
-        const a=i/80*Math.PI*2, wob=1+Math.sin(a*3+eventRnd(epoch,k)*5)*.08;
-        const x=cx+Math.cos(a)*r*wob*1.6, y=cy+Math.sin(a)*r*wob*.72;
-        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-      }
-      strokePath(ctx,c,.12+.16*eFade,.7+eventRnd(epoch,k+40)*1.2);
+      stroke(ctx,c,.22);
     }
   }
 
   function drawMountain(ctx,w,h,c,st,t){
-    const s=stateScale(st), bands=15+Math.floor(rnd(12)*10), epoch=Math.floor(t/22), eFade=Math.sin(Math.PI*((t%22)/22));
-    for(let j=0;j<bands;j++){
-      const y0=h*(.18+j/(bands-1)*.66), offset=j/(bands-1);
-      const p1=.24+rnd(20)*.18, p2=.62+rnd(21)*.18;
-      const a1=.075+rnd(30)*.07, a2=.045+rnd(31)*.06;
-      ctx.beginPath(); let drawing=false;
-      for(let i=0;i<=170;i++){
-        const x=i/170*w,xn=x/w;
-        const ridge=-(Math.exp(-Math.pow((xn-p1)/(.10+rnd(32)*.06),2))*a1 + Math.exp(-Math.pow((xn-p2)/(.13+rnd(33)*.08),2))*a2)*h*(.55+.45*Math.sin(offset*Math.PI));
-        let y=y0+ridge*s+Math.sin(xn*8+j*.32+t*.035)*h*.003*s;
-        const g=grammar(st,x,y,w,h,t,j,8); y+=g.dy*.45;
-        // contour gaps are part of the mountain language
-        const gap=(Math.sin(xn*21+j*1.7+eventRnd(epoch,j)*5)>.91 && j%3!==0);
-        if(gap){drawing=false;continue}
-        if(!drawing){ctx.moveTo(x+g.dx*.35,y);drawing=true}else ctx.lineTo(x+g.dx*.35,y);
+    const key=st?.key||'stable',e=entropy(key),lines=30;
+    const epoch=Math.floor(t/24);
+    const peaks=[
+      {x:.28+eventRnd(epoch,1)*.12,a:.045+eventRnd(epoch,2)*.035,s:.11},
+      {x:.62+eventRnd(epoch,3)*.12,a:.035+eventRnd(epoch,4)*.035,s:.15}
+    ];
+    if(key==='dispersed') peaks.push({x:.46+eventRnd(epoch,5)*.18,a:.05,s:.10});
+    for(let j=0;j<lines;j++){
+      const base=h*(.15+j/(lines-1)*.70),band=Math.sin(j/(lines-1)*Math.PI);ctx.beginPath();
+      for(let i=0;i<=180;i++){
+        const u=i/180,x=u*w;let lift=0;
+        peaks.forEach((p,k)=>{lift-=Math.exp(-Math.pow((u-p.x)/p.s,2))*h*p.a*band*(.65+e*.55)*(k%2?.8:1)});
+        const local=Math.sin(u*7+j*.22+t*.022)*h*.003*(.5+e);
+        const fade=key==='refocus'?(1-.72*smooth01(u)):1;
+        const y=base+(lift+local)*fade;
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
-      strokePath(ctx,c,.16+rnd(300+j)*.18,.65+rnd(350+j)*1.9+(j%6===0?.65:0));
-    }
-    // sparse nested contour islands
-    if(eFade>.08){
-      const cx=w*(.3+eventRnd(epoch,2)*.42),cy=h*(.36+eventRnd(epoch,3)*.28);
-      for(let r=0;r<3;r++){
-        ctx.beginPath();
-        for(let i=0;i<=80;i++){
-          const a=i/80*Math.PI*2, rr=(22+r*16)*eFade*(.8+eventRnd(epoch,r+9)*.5);
-          const x=cx+Math.cos(a)*rr*1.55, y=cy+Math.sin(a)*rr*.55*(1+.12*Math.sin(a*4));
-          i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-        }
-        strokePath(ctx,c,.08+.09*eFade,.7+r*.35);
-      }
+      stroke(ctx,c,.22);
     }
   }
 
   function drawIncense(ctx,w,h,c,st,t){
-    const s=stateScale(st), strands=6+Math.floor(rnd(50)*5), epoch=Math.floor(t/20), eFade=Math.sin(Math.PI*((t%20)/20));
-    for(let j=0;j<strands;j++){
-      const x0=w*(.18+j/(strands-1)*.64)+(rnd(60+j)-.5)*w*.035;
-      ctx.beginPath();
-      for(let i=0;i<=140;i++){
-        const yn=i/140, y=h*(.9-yn*.78), upper=Math.pow(yn,1.6);
-        const curl1=Math.sin(yn*(5.5+rnd(70+j)*4)+t*.09+j)*w*.014*upper*s;
-        const curl2=Math.sin(yn*13+t*.16+j*.7)*w*.009*upper*s;
-        const drift=(rnd(80+j)-.5)*w*.055*yn;
-        let x=x0+curl1+curl2+drift;
-        const g=grammar(st,x,y,w,h,t,j,12); x+=g.dx*.45;
-        i?ctx.lineTo(x,y+g.dy*.25):ctx.moveTo(x,y+g.dy*.25);
+    const key=st?.key||'stable',e=entropy(key),lines=10;
+    for(let j=0;j<lines;j++){
+      const x0=w*(.20+j/(lines-1)*.62),phase=j*.74+rnd(j)*2;ctx.beginPath();
+      for(let i=0;i<=170;i++){
+        const u=i/170,y=h*(.88-u*.72);
+        const heightFactor=Math.pow(u,1.35);
+        const refocusFade=key==='refocus'?(1-.76*smooth01(j/(lines-1))):1;
+        const sway=Math.sin(u*(4.5+j*.07)+t*.07+phase)*w*.010*e*heightFactor*refocusFade;
+        const fine=Math.sin(u*10.5+t*.11+j)*w*.0035*e*heightFactor*refocusFade;
+        const x=x0+sway+fine;
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
-      strokePath(ctx,c,.17+rnd(90+j)*.2,.65+rnd(100+j)*2.25);
+      stroke(ctx,c,.23);
     }
-    // ephemeral smoke loop, never fixed in place
-    const cx=w*(.3+eventRnd(epoch,1)*.4),cy=h*(.22+eventRnd(epoch,2)*.3),rr=Math.min(w,h)*(.04+.05*eventRnd(epoch,3))*eFade;
-    ctx.beginPath();
-    for(let i=0;i<=70;i++){
-      const a=i/70*Math.PI*1.75, x=cx+Math.cos(a)*rr*(1.1+.25*Math.sin(a*2)), y=cy+Math.sin(a)*rr*.8-a*rr*.10;
-      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-    }
-    strokePath(ctx,c,.18*eFade,.8+eventRnd(epoch,4)*1.4);
   }
 
   function drawDusk(ctx,w,h,c,st,t){
-    const s=stateScale(st), bands=20+Math.floor(rnd(110)*10), horizon=.60+(.5-rnd(111))*.08;
-    for(let j=0;j<bands;j++){
-      const y0=h*(.17+j/(bands-1)*.68), near=Math.exp(-Math.pow((y0/h-horizon)/.15,2));
-      const width=.45+rnd(120+j)*1.7+near*1.25;
-      ctx.beginPath();
-      for(let i=0;i<=150;i++){
-        const x=i/150*w,xn=x/w;
-        const arc=Math.exp(-Math.pow((xn-(.58+rnd(130)*.15))/(.22+rnd(131)*.12),2))*h*.024*(y0/h<horizon?-1:1);
-        let y=y0+arc*s+Math.sin(xn*3.1+t*.025+j*.035)*h*.004*s;
-        const g=grammar(st,x,y,w,h,t,j,16); y+=g.dy*.38;
-        i?ctx.lineTo(x+g.dx*.28,y):ctx.moveTo(x+g.dx*.28,y);
+    const key=st?.key||'stable',e=entropy(key),lines=28;
+    const horizon=.60;
+    for(let j=0;j<lines;j++){
+      const base=h*(.16+j/(lines-1)*.68),near=Math.exp(-Math.pow((base/h-horizon)/.20,2));ctx.beginPath();
+      for(let i=0;i<=180;i++){
+        const u=i/180,x=u*w;
+        const broad=Math.sin(u*2.6+t*.018+j*.025)*h*.006;
+        const sink=Math.exp(-Math.pow((u-.62)/.24,2))*h*.014*(base/h<horizon?-1:1)*(.4+e*.5);
+        const fade=key==='refocus'?(1-.62*smooth01(u)):1;
+        const y=base+(broad+sink)*fade;
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
-      strokePath(ctx,c,.10+rnd(140+j)*.18+near*.10,width);
+      stroke(ctx,c,.20+near*.02);
     }
-    // one soft horizon arc; position varies per session
-    const cx=w*(.45+rnd(160)*.22),cy=h*horizon,rx=w*(.12+rnd(161)*.08),ry=h*(.045+rnd(162)*.035);
-    ctx.beginPath();
-    for(let i=0;i<=80;i++){
-      const a=Math.PI+i/80*Math.PI, x=cx+Math.cos(a)*rx,y=cy+Math.sin(a)*ry;
-      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-    }
-    strokePath(ctx,c,.16,.8+rnd(163)*1.2);
   }
 
-  function drawFieldV2(canvas,opt={}){
+  function drawFieldV3(canvas,opt={}){
     if(!canvas)return;
     const {w,h}=size(canvas),ctx=canvas.getContext('2d');ctx.clearRect(0,0,w,h);
-    const theme=opt.theme || (typeof activeTheme!=='undefined'?activeTheme:'ocean');
-    const st=opt.state || (typeof states!=='undefined'?states[0]:{key:'stable'}), t=opt.t||0, c=palettes[theme]||palettes.ocean;
+    const theme=opt.theme||(typeof activeTheme!=='undefined'?activeTheme:'ocean');
+    const st=opt.state||(typeof states!=='undefined'?states[0]:{key:'stable'}),t=opt.t||0,c=palettes[theme]||palettes.ocean;
     if(theme==='ocean')drawOcean(ctx,w,h,c,st,t);
     else if(theme==='mountain')drawMountain(ctx,w,h,c,st,t);
     else if(theme==='incense')drawIncense(ctx,w,h,c,st,t);
@@ -169,12 +136,9 @@
   }
 
   function install(){
-    // Replace the original global renderer used by live/static/practice callers.
-    window.drawField = drawFieldV2;
-    const begin=document.querySelector('#beginLive');
-    begin?.addEventListener('click',()=>reseed(),{capture:true});
-    document.querySelector('#themeGroup')?.addEventListener('click',()=>{ if(typeof renderStatic==='function') requestAnimationFrame(renderStatic); });
+    window.drawField=drawFieldV3;
+    document.querySelector('#beginLive')?.addEventListener('click',reseed,{capture:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-  window.FocusWaveVisualEngine={reseed,drawField:drawFieldV2,get seed(){return sessionSeed;}};
+  window.FocusWaveVisualEngine={reseed,drawField:drawFieldV3,get seed(){return sessionSeed;}};
 })();

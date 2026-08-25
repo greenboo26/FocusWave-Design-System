@@ -1,5 +1,6 @@
 name: Deploy FocusWave Preview
 
+# Publishes the interactive daily-focus prototype to GitHub Pages.
 on:
   push:
     branches: [main]

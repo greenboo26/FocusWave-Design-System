@@ -1,0 +1,10 @@
+{
+  "version":"0.1.0",
+  "items":[
+    {"id":"zh-tao-001","text":"采菊东篱下，悠然见南山。","author":"陶渊明","work":"饮酒·其五","theme":["mountain"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},
+    {"id":"zh-tao-002","text":"山气日夕佳，飞鸟相与还。","author":"陶渊明","work":"饮酒·其五","theme":["mountain","dusk"],"state":["stable","refocus"],"function":"return","rights":"public-domain","verified":true},
+    {"id":"zh-su-001","text":"何妨吟啸且徐行。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["drift","refocus"],"function":"accept-and-return","rights":"public-domain","verified":true},
+    {"id":"zh-su-002","text":"山头斜照却相迎。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["mountain","dusk"],"state":["refocus"],"function":"recovery","rights":"public-domain","verified":true},
+    {"id":"zh-su-003","text":"也无风雨也无晴。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["stable","refocus"],"function":"equanimity","rights":"public-domain","verified":true}
+  ]
+}

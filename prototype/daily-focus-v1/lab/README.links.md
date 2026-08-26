@@ -1,1 +1,0 @@
-These files are deployed with the existing GitHub Pages artifact because the workflow publishes the entire prototype/daily-focus-v1 directory.

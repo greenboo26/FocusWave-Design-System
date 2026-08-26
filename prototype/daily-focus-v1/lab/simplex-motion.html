@@ -63,10 +63,10 @@
 import { createNoise2D, createNoise3D } from 'https://esm.sh/simplex-noise@4.0.3';
 
 const stateSpec = {
-  stable:    { fogBands:2, fogSpeed:.020, fogWidth:.22, fogAlpha:.84, smokeAmp:.030, smokeFreq:1.3, strands:8 },
-  drift:     { fogBands:3, fogSpeed:.030, fogWidth:.26, fogAlpha:.88, smokeAmp:.050, smokeFreq:1.6, strands:9 },
-  dispersed: { fogBands:5, fogSpeed:.044, fogWidth:.30, fogAlpha:.93, smokeAmp:.090, smokeFreq:2.0, strands:11 },
-  refocus:   { fogBands:2, fogSpeed:.024, fogWidth:.20, fogAlpha:.78, smokeAmp:.038, smokeFreq:1.4, strands:7 }
+  stable:    { fogBands:3, fogSpeed:.035, fogWidth:.22, fogAlpha:.84, smokeAmp:.030, smokeFreq:1.3, strands:8 },
+  drift:     { fogBands:3, fogSpeed:.050, fogWidth:.26, fogAlpha:.88, smokeAmp:.050, smokeFreq:1.6, strands:9 },
+  dispersed: { fogBands:5, fogSpeed:.075, fogWidth:.30, fogAlpha:.93, smokeAmp:.090, smokeFreq:2.0, strands:11 },
+  refocus:   { fogBands:3, fogSpeed:.040, fogWidth:.20, fogAlpha:.78, smokeAmp:.038, smokeFreq:1.4, strands:7 }
 };
 let state = 'stable';
 
@@ -100,7 +100,6 @@ let mountainCache=[];
 let geometryBuilds=0;
 
 function ridgeProfile(u, layer){
-  // Low + mid frequency noise are evaluated ONCE into cached points.
   const base=[.31,.50,.69][layer];
   const amp=[.12,.17,.22][layer];
   const low=mountainNoise(u*1.55 + layer*13.1, layer*.8);
@@ -152,14 +151,13 @@ function strokeCachedMountains(){
   });
 }
 
-function paintFog(t){
+function paintFog(tSec){
   const spec=stateSpec[state],w=mountainCanvas.width,h=mountainCanvas.height;
   const bands=spec.fogBands;
   mctx.save();
   for(let b=0;b<bands;b++){
-    // Spread fog through upper, middle and lower zones.
     const baseY=(.17 + (b+.55)/(bands+1)*.67)*h;
-    const travel=((t*spec.fogSpeed + b*.29)%1.55)-.28;
+    const travel=((tSec*spec.fogSpeed + b*.29)%1.55)-.28;
     const centerX=travel*w;
     const width=spec.fogWidth*w*(.82+(.25*((b%3)/2)));
     const grad=mctx.createLinearGradient(centerX-width,0,centerX+width,0);
@@ -175,7 +173,7 @@ function paintFog(t){
     const steps=70;
     for(let i=0;i<=steps;i++){
       const x=centerX-width + (2*width*i/steps);
-      const n=fogNoise(x/w*1.4,b*.63,t*.0045);
+      const n=fogNoise(x/w*1.4,b*.63,tSec*.12);
       const y=baseY+n*h*.018;
       i?mctx.lineTo(x,y):mctx.moveTo(x,y);
     }
@@ -186,12 +184,11 @@ function paintFog(t){
 
 const smokeCanvas=document.querySelector('#smoke');
 const sctx=smokeCanvas.getContext('2d');
-function drawSmoke(t){
+function drawSmoke(tSec){
   fitCanvas(smokeCanvas);
   const w=smokeCanvas.width,h=smokeCanvas.height,spec=stateSpec[state];
   sctx.clearRect(0,0,w,h);sctx.fillStyle='#fbfaf7';sctx.fillRect(0,0,w,h);
   const baseX=w*.50, bottom=h*.87, top=h*.13;
-  // incense stick — static and subdued
   sctx.strokeStyle='rgba(104,93,82,.28)';sctx.lineWidth=Math.max(1,1.2*(devicePixelRatio||1));
   sctx.beginPath();sctx.moveTo(baseX,bottom);sctx.lineTo(baseX,h*.97);sctx.stroke();
 
@@ -204,9 +201,8 @@ function drawSmoke(t){
       const q=i/115;
       const y=bottom-(bottom-top)*q;
       const widen=.18+.82*q;
-      const n1=smokeNoise(s*.57, q*spec.smokeFreq*2.2, t*.0055);
-      const n2=smokeNoise(10+s*.31, q*spec.smokeFreq*.9, t*.0033);
-      // no periodic sin: horizontal drift derives only from continuous noise.
+      const n1=smokeNoise(s*.57, q*spec.smokeFreq*2.2, tSec*.18);
+      const n2=smokeNoise(10+s*.31, q*spec.smokeFreq*.9, tSec*.11);
       const drift=(n1*.72+n2*.28)*w*spec.smokeAmp*widen;
       const x=baseX + side*w*.045*widen + drift;
       i?sctx.lineTo(x,y):sctx.moveTo(x,y);
@@ -216,10 +212,11 @@ function drawSmoke(t){
 }
 
 function frame(ms){
+  const tSec=ms/1000;
   if(fitCanvas(mountainCanvas)) rebuildMountains();
   strokeCachedMountains();
-  paintFog(ms);
-  drawSmoke(ms);
+  paintFog(tSec);
+  drawSmoke(tSec);
   requestAnimationFrame(frame);
 }
 

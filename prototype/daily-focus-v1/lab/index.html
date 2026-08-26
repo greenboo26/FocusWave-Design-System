@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FocusWave Visual Lab</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f3ef;--ink:#454b49;--muted:#8a908d;--line:#d9d8d2;--card:#fbfaf7}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,"Noto Sans SC",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+    main{max-width:980px;margin:0 auto;padding:72px 28px 96px}
+    .eyebrow{font-size:12px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+    h1{font-weight:500;font-size:34px;letter-spacing:-.02em;margin:12px 0 14px}
+    p{max-width:720px;line-height:1.8;color:#6f7572;margin:0 0 34px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);background:var(--card);border-radius:18px;padding:26px;transition:.18s ease}
+    a:hover{transform:translateY(-2px);border-color:#bfc3bf}
+    h2{font-weight:500;font-size:19px;margin:0 0 9px}
+    .meta{font-size:13px;color:var(--muted);line-height:1.65}
+    .note{margin-top:30px;font-size:13px;color:var(--muted)}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}main{padding-top:44px}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">FocusWave / isolated visual lab</div>
+  <h1>视觉引擎隔离 PoC</h1>
+  <p>这里只验证底层视觉机制，不替换正式页面。确认后再把通过的算法接入 FocusWave 主体验。</p>
+  <div class="grid">
+    <a href="./simplex-motion.html">
+      <h2>01 · 固定山 / 云雾 / 线香</h2>
+      <div class="meta">simplex-noise.js 4.0.3<br>验证：山体一次生成后完全固定；只有雾移动；线香使用连续非周期噪声，而不是正弦摆动。</div>
+    </a>
+    <a href="./rake-tools.html">
+      <h2>02 · 枯山水耙沙工具</h2>
+      <div class="meta">perfect-freehand 1.2.3<br>验证：默认干净白砂；细/中/粗耙；纹路由用户自己叠加；抹平、撤销、重置。</div>
+    </a>
+  </div>
+  <div class="note">实验页使用独立模块，不修改现有 generative-visual-engine 与庭院正式逻辑。</div>
+</main>
+</body>
+</html>

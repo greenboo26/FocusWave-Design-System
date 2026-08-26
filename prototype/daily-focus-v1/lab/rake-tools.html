@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FocusWave Lab · Karesansui Tools</title>
   <style>
-    :root{--page:#f3f1ec;--sand:#fbfaf6;--ink:#5d625f;--muted:#909590;--line:#d8d5cd;--wood:#c8a87c;--wood-dark:#9b7952;--wood-light:#e1c59a}
+    :root{--page:#f3f1ec;--sand:#fbfaf6;--ink:#5d625f;--muted:#909590;--line:#d8d5cd;--wood:#c7a477;--wood-hi:#e4c99f;--wood-mid:#b58e60;--wood-deep:#7b5a39}
     *{box-sizing:border-box}
     body{margin:0;background:var(--page);font-family:Inter,"Noto Sans SC",system-ui,sans-serif;color:var(--ink)}
     main{max-width:1120px;margin:0 auto;padding:34px 24px 70px}
@@ -19,31 +19,55 @@
     canvas{position:relative;display:block;width:100%;height:620px;touch-action:none;cursor:none}
 
     .tool-cursor{position:absolute;left:0;top:0;width:72px;height:88px;pointer-events:none;z-index:5;opacity:0;transform:translate(-36px,-72px) rotate(-7deg);transition:opacity .08s ease}
-    .tool-cursor.visible{opacity:.9}
-    .tool-cursor .tool-entity{left:36px;top:40px;transform:translate(-50%,-50%);filter:drop-shadow(0 2px 2px rgba(66,48,30,.14))}
+    .tool-cursor.visible{opacity:.94}
+    .tool-cursor .tool-entity{left:36px;top:40px;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 3px rgba(66,48,30,.22))}
 
-    .tool-area{display:flex;align-items:center;gap:14px;margin-top:14px}
-    .tool-tray{position:relative;flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;min-height:112px;padding:13px 15px 12px;border:1px solid #cbb899;border-radius:16px;background:linear-gradient(180deg,#d7bd94 0%,#c7a477 100%);box-shadow:inset 0 1px rgba(255,255,255,.52),0 7px 18px rgba(77,58,35,.07)}
-    .tool-tray:before{content:"";position:absolute;inset:7px;border:1px solid rgba(111,82,47,.15);border-radius:11px;pointer-events:none}
-    .tool-slot{position:relative;min-height:84px;border-radius:10px;cursor:pointer;background:rgba(244,226,198,.17);box-shadow:inset 0 1px 4px rgba(91,65,37,.11);transition:background .15s ease,box-shadow .15s ease}
-    .tool-slot:hover{background:rgba(247,231,205,.25)}
-    .tool-slot.active{background:rgba(250,237,216,.34);box-shadow:inset 0 0 0 1px rgba(93,69,42,.34),inset 0 2px 5px rgba(91,65,37,.11)}
-    .tool-name{position:absolute;left:8px;right:8px;bottom:6px;text-align:center;font-size:10px;color:#6e5941;letter-spacing:.02em}
+    .tool-area{margin-top:18px}
+    .tray-wrap{position:relative;padding:8px 14px 18px}
+    .tool-tray{position:relative;height:126px;border-radius:24px 24px 18px 18px;background:
+      linear-gradient(180deg,rgba(255,255,255,.34),transparent 16%),
+      repeating-linear-gradient(2deg,rgba(101,70,38,.045) 0 1px,transparent 1px 8px),
+      linear-gradient(180deg,#d9b98b 0%,#c49a68 55%,#ad8050 100%);
+      border:1px solid rgba(107,77,44,.36);
+      box-shadow:0 13px 23px rgba(78,55,31,.17),inset 0 2px rgba(255,255,255,.45),inset 0 -8px 12px rgba(89,58,30,.13)}
+    .tool-tray:before{content:"";position:absolute;left:18px;right:18px;top:17px;bottom:20px;border-radius:16px;background:
+      repeating-linear-gradient(4deg,rgba(90,59,31,.035) 0 1px,transparent 1px 9px),
+      linear-gradient(180deg,#c9a372,#ddb98a 100%);
+      box-shadow:inset 0 7px 12px rgba(69,44,23,.24),inset 0 -2px 3px rgba(255,255,255,.38)}
+    .tool-tray:after{content:"";position:absolute;left:28px;right:28px;bottom:-8px;height:13px;border-radius:50%;background:rgba(73,49,29,.13);filter:blur(7px);z-index:-1}
 
-    .tool-entity{--head:30px;--teeth-width:24px;position:absolute;left:50%;top:34px;width:66px;height:50px;transform:translate(-50%,-50%) rotate(-7deg);pointer-events:none}
-    .handle{position:absolute;left:50%;top:0;width:5px;height:32px;border-radius:3px;background:linear-gradient(90deg,var(--wood-dark),var(--wood-light),var(--wood-dark));transform:translateX(-50%);box-shadow:0 1px 1px rgba(67,45,21,.16)}
-    .rake-head{position:absolute;left:50%;top:27px;width:var(--head);height:5px;border-radius:3px;background:linear-gradient(180deg,var(--wood-light),var(--wood-dark));transform:translateX(-50%);box-shadow:0 1px 1px rgba(67,45,21,.18)}
-    .teeth{position:absolute;left:50%;top:31px;width:var(--teeth-width);height:16px;transform:translateX(-50%);display:flex;justify-content:space-between;align-items:flex-start}
-    .teeth i{display:block;width:2px;height:15px;border-radius:0 0 2px 2px;background:linear-gradient(90deg,var(--wood-dark),var(--wood-light))}
+    .tool-rest{position:absolute;top:14px;width:25%;height:96px;cursor:pointer;z-index:2;outline:none}
+    .tool-rest:nth-child(1){left:0}.tool-rest:nth-child(2){left:25%}.tool-rest:nth-child(3){left:50%}.tool-rest:nth-child(4){left:75%}
+    .tool-rest:before{content:"";position:absolute;left:24%;right:24%;bottom:17px;height:9px;border-radius:50%;background:rgba(84,54,28,.12);filter:blur(4px);transition:.18s ease}
+    .tool-rest.active:before{left:18%;right:18%;background:rgba(84,54,28,.20);filter:blur(6px)}
+    .tool-rest .tool-entity{transition:transform .18s ease,filter .18s ease}
+    .tool-rest:nth-child(1) .tool-entity{transform:translate(-50%,-50%) rotate(-13deg) scale(1.55)}
+    .tool-rest:nth-child(2) .tool-entity{transform:translate(-50%,-50%) rotate(-5deg) scale(1.55)}
+    .tool-rest:nth-child(3) .tool-entity{transform:translate(-50%,-50%) rotate(8deg) scale(1.55)}
+    .tool-rest:nth-child(4) .tool-entity{transform:translate(-50%,-50%) rotate(-9deg) scale(1.55)}
+    .tool-rest.active .tool-entity{transform:translate(-50%,-62%) rotate(-4deg) scale(1.66);filter:drop-shadow(0 9px 5px rgba(75,49,26,.28))}
+
+    .tool-entity{--head:30px;--teeth-width:24px;position:absolute;left:50%;top:49px;width:66px;height:54px;pointer-events:none;transform-origin:50% 72%}
+    .handle{position:absolute;left:50%;top:0;width:5px;height:34px;border-radius:4px;background:
+      linear-gradient(90deg,#805d39 0%,#c59c69 24%,#ecd0a2 48%,#b98956 72%,#755334 100%);
+      transform:translateX(-50%) rotate(-1deg);box-shadow:1px 1px 1px rgba(58,37,19,.25),inset 1px 0 rgba(255,255,255,.25)}
+    .handle:after{content:"";position:absolute;left:1px;top:2px;width:1px;height:29px;background:rgba(255,255,255,.18)}
+    .rake-head{position:absolute;left:50%;top:28px;width:var(--head);height:6px;border-radius:5px;background:
+      linear-gradient(180deg,#efd4a8 0%,#c49762 52%,#8e663e 100%);
+      transform:translateX(-50%) perspective(20px) rotateX(5deg);box-shadow:0 2px 2px rgba(62,39,20,.25),inset 0 1px rgba(255,255,255,.35)}
+    .teeth{position:absolute;left:50%;top:33px;width:var(--teeth-width);height:18px;transform:translateX(-50%);display:flex;justify-content:space-between;align-items:flex-start}
+    .teeth i{display:block;width:2px;height:17px;border-radius:1px 1px 2px 2px;background:linear-gradient(90deg,#795535,#d0a772 52%,#8e663e);box-shadow:1px 1px 1px rgba(64,40,21,.18)}
     .fine{--head:29px;--teeth-width:22px}.medium{--head:31px;--teeth-width:24px}.coarse{--head:27px;--teeth-width:19px}
-    .flatten{--head:50px}.flatten .handle{height:29px}.flatten .rake-head{top:26px;height:9px;border-radius:6px}.flatten .teeth{display:none}
-    .tool-slot .tool-entity{transform:translate(-50%,-50%) rotate(-11deg) scale(1.22)}
+    .flatten{--head:50px}.flatten .handle{height:30px}.flatten .rake-head{top:27px;height:10px;border-radius:8px;background:linear-gradient(180deg,#f0d4a7,#c0945f 54%,#8b633b)}.flatten .teeth{display:none}
 
-    .actions{display:flex;gap:7px;flex:0 0 auto}
-    .actions button{border:1px solid var(--line);background:#faf9f5;color:#747872;border-radius:999px;padding:8px 13px;font:inherit;font-size:11px;cursor:pointer}
-    .footer{display:flex;justify-content:space-between;gap:18px;margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7}
+    .tool-labels{display:grid;grid-template-columns:repeat(4,1fr);margin:3px 22px 0;font-size:10px;color:#8a765f;text-align:center;letter-spacing:.04em}
+    .tool-labels span.active{color:#5f4d3b}
+    .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+    .actions button{border:0;background:transparent;color:#8c908b;padding:5px 8px;font:inherit;font-size:11px;cursor:pointer}
+    .actions button:hover{color:#626762}
+    .footer{display:flex;justify-content:space-between;gap:18px;margin-top:8px;font-size:12px;color:var(--muted);line-height:1.7}
     code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#666b68}
-    @media(max-width:760px){canvas{height:500px}.tool-area{display:block}.actions{margin-top:9px}.tool-tray{gap:6px;padding:11px}.tool-slot .tool-entity{transform:translate(-50%,-50%) rotate(-11deg) scale(1.04)}.footer,header{display:block}.back{display:inline-block;margin-top:15px}}
+    @media(max-width:760px){canvas{height:500px}.tool-tray{height:116px}.tool-rest .tool-entity{transform:translate(-50%,-50%) scale(1.3)!important}.footer,header{display:block}.back{display:inline-block;margin-top:15px}}
   </style>
 </head>
 <body>
@@ -51,8 +75,8 @@
   <header>
     <div>
       <div class="eyebrow">FocusWave / isolated PoC / physical karesansui tools</div>
-      <h1>枯山水 · 实体庭具 / 浅木工具槽</h1>
-      <div class="desc">白砂初始保持干净。细耙、中耙、粗耙和平整棒横放在低矮浅木槽里；进入沙面后，当前工具本体替代系统光标。耙齿实体宽度与实际生成的砂纹宽度使用同一组参数，不再出现“大耙子画出一小撮线”的比例错位。</div>
+      <h1>枯山水 · 木庭具 / 实体浅槽</h1>
+      <div class="desc">庭具按真实器物关系处理：连续木托盘、内凹槽、木纹、厚度和投影；四件工具直接躺在槽里，不再使用卡片式选择框。进入白砂后，当前工具本体替代系统光标，齿宽仍与实际砂纹严格对应。</div>
     </div>
     <a class="back" href="./index.html">← 返回实验目录</a>
   </header>
@@ -64,30 +88,21 @@
   </div>
 
   <div class="tool-area">
-    <div class="tool-tray" id="toolTray" aria-label="庭具浅木槽">
-      <div class="tool-slot active" data-tool="fine">
-        <div class="tool-entity fine"><span class="handle"></span><span class="rake-head"></span><span class="teeth"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
-        <span class="tool-name">细耙 · 7 齿</span>
+    <div class="tray-wrap">
+      <div class="tool-tray" id="toolTray" aria-label="庭具木托盘">
+        <div class="tool-rest active" data-tool="fine" title="细耙 · 7 齿"><div class="tool-entity fine"><span class="handle"></span><span class="rake-head"></span><span class="teeth"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div></div>
+        <div class="tool-rest" data-tool="medium" title="中耙 · 5 齿"><div class="tool-entity medium"><span class="handle"></span><span class="rake-head"></span><span class="teeth"><i></i><i></i><i></i><i></i><i></i></span></div></div>
+        <div class="tool-rest" data-tool="coarse" title="粗耙 · 3 齿"><div class="tool-entity coarse"><span class="handle"></span><span class="rake-head"></span><span class="teeth"><i></i><i></i><i></i></span></div></div>
+        <div class="tool-rest" data-tool="flatten" title="平整棒"><div class="tool-entity flatten"><span class="handle"></span><span class="rake-head"></span><span class="teeth"></span></div></div>
       </div>
-      <div class="tool-slot" data-tool="medium">
-        <div class="tool-entity medium"><span class="handle"></span><span class="rake-head"></span><span class="teeth"><i></i><i></i><i></i><i></i><i></i></span></div>
-        <span class="tool-name">中耙 · 5 齿</span>
-      </div>
-      <div class="tool-slot" data-tool="coarse">
-        <div class="tool-entity coarse"><span class="handle"></span><span class="rake-head"></span><span class="teeth"><i></i><i></i><i></i></span></div>
-        <span class="tool-name">粗耙 · 3 齿</span>
-      </div>
-      <div class="tool-slot" data-tool="flatten">
-        <div class="tool-entity flatten"><span class="handle"></span><span class="rake-head"></span><span class="teeth"></span></div>
-        <span class="tool-name">平整棒</span>
-      </div>
+      <div class="tool-labels" id="toolLabels"><span class="active">细耙 · 7 齿</span><span>中耙 · 5 齿</span><span>粗耙 · 3 齿</span><span>平整棒</span></div>
     </div>
     <div class="actions"><button id="undo">撤销</button><button id="reset">重置白砂</button></div>
   </div>
 
   <div class="footer">
     <span id="status">0 actions · fine</span>
-    <span><code>actions[]</code> 是唯一纹路来源；工具实体仅负责交互呈现。</span>
+    <span><code>actions[]</code> 是唯一纹路来源；木庭具只负责交互呈现。</span>
   </div>
 </main>
 
@@ -97,6 +112,7 @@ import { getStrokePoints } from 'https://esm.sh/perfect-freehand@1.2.3';
 const canvas=document.querySelector('#garden');
 const ctx=canvas.getContext('2d');
 const toolTray=document.querySelector('#toolTray');
+const toolLabels=document.querySelector('#toolLabels');
 const board=document.querySelector('#board');
 const toolCursor=document.querySelector('#toolCursor');
 const status=document.querySelector('#status');
@@ -111,17 +127,8 @@ const specs={
   flatten:{eraseWidth:54}
 };
 
-function entityWidths(name){
-  if(name==='flatten')return {head:50,teeth:0};
-  const spec=specs[name];
-  const trace=(spec.teeth-1)*spec.spacing;
-  return {head:Math.round(trace+7),teeth:Math.round(trace)};
-}
-function toolMarkup(name){
-  const w=entityWidths(name);
-  if(name==='flatten')return `<div class="tool-entity flatten" style="--head:${w.head}px"><span class="handle"></span><span class="rake-head"></span><span class="teeth"></span></div>`;
-  return `<div class="tool-entity ${name}" style="--head:${w.head}px;--teeth-width:${w.teeth}px"><span class="handle"></span><span class="rake-head"></span><span class="teeth">${'<i></i>'.repeat(specs[name].teeth)}</span></div>`;
-}
+function entityWidths(name){if(name==='flatten')return {head:50,teeth:0};const spec=specs[name],trace=(spec.teeth-1)*spec.spacing;return {head:Math.round(trace+7),teeth:Math.round(trace)}}
+function toolMarkup(name){const w=entityWidths(name);if(name==='flatten')return `<div class="tool-entity flatten" style="--head:${w.head}px"><span class="handle"></span><span class="rake-head"></span><span class="teeth"></span></div>`;return `<div class="tool-entity ${name}" style="--head:${w.head}px;--teeth-width:${w.teeth}px"><span class="handle"></span><span class="rake-head"></span><span class="teeth">${'<i></i>'.repeat(specs[name].teeth)}</span></div>`}
 function syncCursorTool(){toolCursor.innerHTML=toolMarkup(tool)}
 syncCursorTool();
 
@@ -143,7 +150,7 @@ canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);
 function finish(e){if(!current)return;if(current.points.length>1)actions.push(current);current=null;try{canvas.releasePointerCapture(e.pointerId)}catch{}redraw()}
 canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',finish);
 
-toolTray.querySelectorAll('[data-tool]').forEach(slot=>slot.addEventListener('click',()=>{tool=slot.dataset.tool;toolTray.querySelectorAll('[data-tool]').forEach(s=>s.classList.toggle('active',s===slot));syncCursorTool();status.textContent=`${actions.length} actions · ${tool}`}));
+toolTray.querySelectorAll('[data-tool]').forEach((rest,index)=>rest.addEventListener('click',()=>{tool=rest.dataset.tool;toolTray.querySelectorAll('[data-tool]').forEach(r=>r.classList.toggle('active',r===rest));toolLabels.querySelectorAll('span').forEach((s,i)=>s.classList.toggle('active',i===index));syncCursorTool();status.textContent=`${actions.length} actions · ${tool}`}));
 document.querySelector('#undo').addEventListener('click',()=>{actions.pop();redraw()});
 document.querySelector('#reset').addEventListener('click',()=>{actions=[];current=null;redraw()});
 

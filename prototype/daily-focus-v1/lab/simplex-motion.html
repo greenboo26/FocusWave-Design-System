@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FocusWave Lab · Horizontal Line Erasure</title>
+  <title>FocusWave Lab · Horizontal Opacity Fog</title>
   <style>
     :root{--bg:#f5f3ef;--ink:#4e5552;--muted:#878d89;--line:#d8d7d1;--paper:#fbfaf7}
     *{box-sizing:border-box}
@@ -31,9 +31,9 @@
 <main>
   <header>
     <div>
-      <div class="eyebrow">FocusWave / isolated PoC / horizontal line erasure</div>
-      <h1>固定山体 + 横向擦除成雾 / 非周期线香</h1>
-      <div class="desc">不绘制雾层，不建立二维雾域，也不沿山脊传播状态。山脊坐标只生成一次并保持固定；动画只根据画面的横向 x 位置，让同一层所有平行山线在一整片区域内同步淡出、留白、再恢复。</div>
+      <div class="eyebrow">FocusWave / isolated PoC / horizontal opacity modulation</div>
+      <h1>固定山体 + 横向透明度成雾 / 非周期线香</h1>
+      <div class="desc">不绘制雾层，不建立二维雾域，也不沿山脊传播状态。山脊坐标只生成一次并保持固定；动画只根据画面的横向 x 位置连续改变线条透明度。线条始终存在，即使在雾最浓处也不会被完全擦除。</div>
     </div>
     <a class="back" href="./index.html">← 返回实验目录</a>
   </header>
@@ -47,9 +47,9 @@
 
   <div class="grid">
     <section class="card">
-      <div class="card-head"><span>山 · 固定几何 / 横向擦除</span><span id="mountainStatus">geometry builds: 0</span></div>
+      <div class="card-head"><span>山 · 固定几何 / 横向透明度</span><span id="mountainStatus">geometry builds: 0</span></div>
       <canvas id="mountain"></canvas>
-      <div class="legend">硬约束：<code>x/y = constant</code>。擦除只由横向位置决定；不叠加白色图层、不建立 y 方向遮罩、不按单条线随机破碎。</div>
+      <div class="legend">硬约束：<code>x/y = constant</code>。不删除任何线段；雾只表现为同一层山线在横向区域内同步、连续地变淡与恢复。</div>
     </section>
     <section class="card">
       <div class="card-head"><span>线香 · 连续噪声</span><span>noise3D(height, strand, time)</span></div>
@@ -63,10 +63,10 @@
 import { createNoise2D, createNoise3D } from 'https://esm.sh/simplex-noise@4.0.3';
 
 const stateSpec = {
-  stable:    { eraseSpeed:.020, eraseSpan:.20, eraseDepth:.78, smokeAmp:.030, smokeFreq:1.3, strands:8 },
-  drift:     { eraseSpeed:.030, eraseSpan:.23, eraseDepth:.84, smokeAmp:.050, smokeFreq:1.6, strands:9 },
-  dispersed: { eraseSpeed:.043, eraseSpan:.27, eraseDepth:.91, smokeAmp:.090, smokeFreq:2.0, strands:11 },
-  refocus:   { eraseSpeed:.024, eraseSpan:.18, eraseDepth:.70, smokeAmp:.038, smokeFreq:1.4, strands:7 }
+  stable:    { eraseSpeed:.020, eraseSpan:.20, eraseDepth:.60, minVisibility:.30, smokeAmp:.030, smokeFreq:1.3, strands:8 },
+  drift:     { eraseSpeed:.030, eraseSpan:.23, eraseDepth:.68, minVisibility:.25, smokeAmp:.050, smokeFreq:1.6, strands:9 },
+  dispersed: { eraseSpeed:.043, eraseSpan:.27, eraseDepth:.76, minVisibility:.19, smokeAmp:.090, smokeFreq:2.0, strands:11 },
+  refocus:   { eraseSpeed:.024, eraseSpan:.18, eraseDepth:.54, minVisibility:.34, smokeAmp:.038, smokeFreq:1.4, strands:7 }
 };
 let state='stable';
 
@@ -148,11 +148,9 @@ function horizontalVisibility(u,layerIndex,tSec){
   const span=spec.eraseSpan*(1+[.04,.10,.16][layerIndex]);
   const dist=Math.abs(u-(center+edgeShift));
 
-  // A broad coherent horizontal fade. The whole line family shares the same boundary.
-  const fade=1-smoothstep(span*.24,span,dist);
-  const deepest=1-smoothstep(span*.06,span*.34,dist);
-  const loss=Math.max(fade*.72,deepest)*spec.eraseDepth;
-  return Math.max(.025,1-loss);
+  const fade=1-smoothstep(span*.16,span,dist);
+  const attenuation=fade*spec.eraseDepth;
+  return Math.max(spec.minVisibility,1-attenuation);
 }
 
 function strokeCachedMountains(tSec){
@@ -171,7 +169,7 @@ function strokeCachedMountains(tSec){
       for(let i=1;i<pts.length;i++){
         const midU=((pts[i-1][0]+pts[i][0])*.5)/w;
         const visible=horizontalVisibility(midU,layerIndex,tSec);
-        const bucket=Math.max(0,Math.min(12,Math.round(visible*12)));
+        const bucket=Math.max(1,Math.min(32,Math.round(visible*32)));
 
         if(lastBucket===-1){
           lastBucket=bucket;
@@ -180,8 +178,8 @@ function strokeCachedMountains(tSec){
 
         if(bucket!==lastBucket || i===pts.length-1){
           const runEnd=(i===pts.length-1)?i:i-1;
-          const alpha=layer.alpha*(lastBucket/12);
-          if(alpha>.008 && runEnd>runStart){
+          const alpha=layer.alpha*(lastBucket/32);
+          if(runEnd>runStart){
             mctx.strokeStyle=`rgba(92,108,100,${alpha})`;
             mctx.beginPath();
             mctx.moveTo(pts[runStart][0],pts[runStart][1]);

@@ -5,40 +5,45 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FocusWave Lab · Karesansui Tools</title>
   <style>
-    :root{--page:#f3f1ec;--sand:#fbfaf6;--ink:#5d625f;--muted:#909590;--line:#d8d5cd;--groove:#b9b4a9;--wood:#c8a87c;--wood-dark:#9e7d56;--wood-light:#e2c69d}
+    :root{--page:#f3f1ec;--sand:#fbfaf6;--ink:#5d625f;--muted:#909590;--line:#d8d5cd;--wood:#c8a87c;--wood-dark:#9b7952;--wood-light:#e1c59a}
     *{box-sizing:border-box}
     body{margin:0;background:var(--page);font-family:Inter,"Noto Sans SC",system-ui,sans-serif;color:var(--ink)}
     main{max-width:1120px;margin:0 auto;padding:34px 24px 70px}
     header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:18px}
     .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
     h1{font-size:25px;font-weight:500;margin:0 0 8px}
-    .desc{max-width:800px;color:var(--muted);font-size:13px;line-height:1.7}
+    .desc{max-width:820px;color:var(--muted);font-size:13px;line-height:1.7}
     .back{font-size:13px;color:var(--muted);text-decoration:none}
-    .workbench{display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start}
-    .tool-dock{border:1px solid #c9b99f;border-radius:18px;padding:13px;background:linear-gradient(145deg,#d6bd98,#bc976a);box-shadow:inset 0 1px rgba(255,255,255,.45),0 10px 25px rgba(74,59,40,.08)}
-    .dock-title{font-size:11px;letter-spacing:.12em;color:#6f5b43;margin:1px 3px 10px;text-transform:uppercase}
-    .tool-slot{position:relative;height:92px;border:1px solid rgba(104,78,47,.22);border-radius:13px;margin:8px 0;background:linear-gradient(180deg,rgba(255,255,255,.20),rgba(93,67,38,.08));cursor:pointer;transition:.15s ease;overflow:hidden}
-    .tool-slot:hover{transform:translateY(-1px)}
-    .tool-slot.active{box-shadow:inset 0 0 0 1px rgba(92,72,48,.55),0 4px 12px rgba(77,56,32,.10);background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(93,67,38,.10))}
-    .tool-name{position:absolute;left:10px;bottom:7px;font-size:11px;color:#6e5941}
-    .tool-entity{position:absolute;left:50%;top:38px;width:112px;height:38px;transform:translate(-50%,-50%) rotate(-7deg);pointer-events:none}
-    .handle{position:absolute;left:50%;top:0;width:7px;height:30px;border-radius:4px;background:linear-gradient(90deg,var(--wood-dark),var(--wood-light),var(--wood-dark));transform:translateX(-50%);box-shadow:0 1px 1px rgba(67,45,21,.18)}
-    .rake-head{position:absolute;left:50%;top:25px;height:7px;border-radius:4px;background:linear-gradient(180deg,var(--wood-light),var(--wood-dark));transform:translateX(-50%);box-shadow:0 1px 1px rgba(67,45,21,.20)}
-    .teeth{position:absolute;left:50%;top:31px;height:16px;transform:translateX(-50%);display:flex;justify-content:space-between;align-items:flex-start}
-    .teeth i{display:block;width:3px;height:15px;border-radius:0 0 2px 2px;background:linear-gradient(90deg,var(--wood-dark),var(--wood-light))}
-    .fine .rake-head,.fine .teeth{width:72px}.medium .rake-head,.medium .teeth{width:66px}.coarse .rake-head,.coarse .teeth{width:62px}
-    .flatten .handle{height:27px}.flatten .rake-head{top:24px;width:78px;height:12px;border-radius:7px}.flatten .teeth{display:none}
-    .dock-actions{display:flex;gap:6px;margin-top:12px}
-    .dock-actions button{flex:1;border:1px solid rgba(100,74,43,.25);background:rgba(251,247,238,.58);color:#6f5b43;border-radius:999px;padding:7px 8px;font:inherit;font-size:11px;cursor:pointer}
     .board{position:relative;border:1px solid #d4d0c7;border-radius:20px;overflow:hidden;background:var(--sand);box-shadow:0 12px 35px rgba(74,69,59,.06)}
     .sand{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 20% 30%,rgba(91,82,67,.028) 0 0.7px,transparent .8px),radial-gradient(circle at 70% 63%,rgba(91,82,67,.022) 0 0.65px,transparent .75px),var(--sand);background-size:8px 8px,11px 11px,auto}
     canvas{position:relative;display:block;width:100%;height:620px;touch-action:none;cursor:none}
-    .tool-cursor{position:absolute;left:0;top:0;width:92px;height:92px;pointer-events:none;z-index:5;opacity:0;transform:translate(-46px,-75px) rotate(-9deg);transition:opacity .08s ease}
-    .tool-cursor.visible{opacity:.88}
-    .tool-cursor .tool-entity{left:46px;top:40px;transform:translate(-50%,-50%);filter:drop-shadow(0 3px 3px rgba(66,48,30,.16))}
-    .footer{display:flex;justify-content:space-between;gap:18px;margin-top:12px;font-size:12px;color:var(--muted);line-height:1.7}
+
+    .tool-cursor{position:absolute;left:0;top:0;width:72px;height:88px;pointer-events:none;z-index:5;opacity:0;transform:translate(-36px,-72px) rotate(-7deg);transition:opacity .08s ease}
+    .tool-cursor.visible{opacity:.9}
+    .tool-cursor .tool-entity{left:36px;top:40px;transform:translate(-50%,-50%);filter:drop-shadow(0 2px 2px rgba(66,48,30,.14))}
+
+    .tool-area{display:flex;align-items:center;gap:14px;margin-top:14px}
+    .tool-tray{position:relative;flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;min-height:112px;padding:13px 15px 12px;border:1px solid #cbb899;border-radius:16px;background:linear-gradient(180deg,#d7bd94 0%,#c7a477 100%);box-shadow:inset 0 1px rgba(255,255,255,.52),0 7px 18px rgba(77,58,35,.07)}
+    .tool-tray:before{content:"";position:absolute;inset:7px;border:1px solid rgba(111,82,47,.15);border-radius:11px;pointer-events:none}
+    .tool-slot{position:relative;min-height:84px;border-radius:10px;cursor:pointer;background:rgba(244,226,198,.17);box-shadow:inset 0 1px 4px rgba(91,65,37,.11);transition:background .15s ease,box-shadow .15s ease}
+    .tool-slot:hover{background:rgba(247,231,205,.25)}
+    .tool-slot.active{background:rgba(250,237,216,.34);box-shadow:inset 0 0 0 1px rgba(93,69,42,.34),inset 0 2px 5px rgba(91,65,37,.11)}
+    .tool-name{position:absolute;left:8px;right:8px;bottom:6px;text-align:center;font-size:10px;color:#6e5941;letter-spacing:.02em}
+
+    .tool-entity{--head:30px;--teeth-width:24px;position:absolute;left:50%;top:34px;width:66px;height:50px;transform:translate(-50%,-50%) rotate(-7deg);pointer-events:none}
+    .handle{position:absolute;left:50%;top:0;width:5px;height:32px;border-radius:3px;background:linear-gradient(90deg,var(--wood-dark),var(--wood-light),var(--wood-dark));transform:translateX(-50%);box-shadow:0 1px 1px rgba(67,45,21,.16)}
+    .rake-head{position:absolute;left:50%;top:27px;width:var(--head);height:5px;border-radius:3px;background:linear-gradient(180deg,var(--wood-light),var(--wood-dark));transform:translateX(-50%);box-shadow:0 1px 1px rgba(67,45,21,.18)}
+    .teeth{position:absolute;left:50%;top:31px;width:var(--teeth-width);height:16px;transform:translateX(-50%);display:flex;justify-content:space-between;align-items:flex-start}
+    .teeth i{display:block;width:2px;height:15px;border-radius:0 0 2px 2px;background:linear-gradient(90deg,var(--wood-dark),var(--wood-light))}
+    .fine{--head:29px;--teeth-width:22px}.medium{--head:31px;--teeth-width:24px}.coarse{--head:27px;--teeth-width:19px}
+    .flatten{--head:50px}.flatten .handle{height:29px}.flatten .rake-head{top:26px;height:9px;border-radius:6px}.flatten .teeth{display:none}
+    .tool-slot .tool-entity{transform:translate(-50%,-50%) rotate(-11deg) scale(1.22)}
+
+    .actions{display:flex;gap:7px;flex:0 0 auto}
+    .actions button{border:1px solid var(--line);background:#faf9f5;color:#747872;border-radius:999px;padding:8px 13px;font:inherit;font-size:11px;cursor:pointer}
+    .footer{display:flex;justify-content:space-between;gap:18px;margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7}
     code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#666b68}
-    @media(max-width:820px){.workbench{grid-template-columns:1fr}.tool-dock{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.dock-title,.dock-actions{grid-column:1/-1}.tool-slot{margin:0;height:86px}canvas{height:500px}.footer,header{display:block}.back{display:inline-block;margin-top:15px}}
+    @media(max-width:760px){canvas{height:500px}.tool-area{display:block}.actions{margin-top:9px}.tool-tray{gap:6px;padding:11px}.tool-slot .tool-entity{transform:translate(-50%,-50%) rotate(-11deg) scale(1.04)}.footer,header{display:block}.back{display:inline-block;margin-top:15px}}
   </style>
 </head>
 <body>
@@ -46,15 +51,20 @@
   <header>
     <div>
       <div class="eyebrow">FocusWave / isolated PoC / physical karesansui tools</div>
-      <h1>枯山水 · 木耙实体工具 / 浅木收纳槽</h1>
-      <div class="desc">工具不再是普通按钮，也不再使用十字鼠标。细耙、中耙、粗耙和平整棒都作为木质实体放在浅木工具槽里；选中后，工具本体跟随指针进入白砂操作区。白砂初始仍保持干净，纹路只由用户手势产生。</div>
+      <h1>枯山水 · 实体庭具 / 浅木工具槽</h1>
+      <div class="desc">白砂初始保持干净。细耙、中耙、粗耙和平整棒横放在低矮浅木槽里；进入沙面后，当前工具本体替代系统光标。耙齿实体宽度与实际生成的砂纹宽度使用同一组参数，不再出现“大耙子画出一小撮线”的比例错位。</div>
     </div>
     <a class="back" href="./index.html">← 返回实验目录</a>
   </header>
 
-  <div class="workbench">
-    <aside class="tool-dock" id="toolDock">
-      <div class="dock-title">庭具 · wooden tools</div>
+  <div class="board" id="board">
+    <div class="sand"></div>
+    <canvas id="garden"></canvas>
+    <div class="tool-cursor" id="toolCursor" aria-hidden="true"></div>
+  </div>
+
+  <div class="tool-area">
+    <div class="tool-tray" id="toolTray" aria-label="庭具浅木槽">
       <div class="tool-slot active" data-tool="fine">
         <div class="tool-entity fine"><span class="handle"></span><span class="rake-head"></span><span class="teeth"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
         <span class="tool-name">细耙 · 7 齿</span>
@@ -71,20 +81,13 @@
         <div class="tool-entity flatten"><span class="handle"></span><span class="rake-head"></span><span class="teeth"></span></div>
         <span class="tool-name">平整棒</span>
       </div>
-      <div class="dock-actions"><button id="undo">撤销</button><button id="reset">重置白砂</button></div>
-    </aside>
-
-    <div>
-      <div class="board" id="board">
-        <div class="sand"></div>
-        <canvas id="garden"></canvas>
-        <div class="tool-cursor" id="toolCursor" aria-hidden="true"></div>
-      </div>
-      <div class="footer">
-        <span id="status">0 actions · fine</span>
-        <span>工具实体只负责交互呈现；<code>actions[]</code> 仍是唯一纹路来源。</span>
-      </div>
     </div>
+    <div class="actions"><button id="undo">撤销</button><button id="reset">重置白砂</button></div>
+  </div>
+
+  <div class="footer">
+    <span id="status">0 actions · fine</span>
+    <span><code>actions[]</code> 是唯一纹路来源；工具实体仅负责交互呈现。</span>
   </div>
 </main>
 
@@ -93,7 +96,7 @@ import { getStrokePoints } from 'https://esm.sh/perfect-freehand@1.2.3';
 
 const canvas=document.querySelector('#garden');
 const ctx=canvas.getContext('2d');
-const toolDock=document.querySelector('#toolDock');
+const toolTray=document.querySelector('#toolTray');
 const board=document.querySelector('#board');
 const toolCursor=document.querySelector('#toolCursor');
 const status=document.querySelector('#status');
@@ -108,38 +111,27 @@ const specs={
   flatten:{eraseWidth:54}
 };
 
+function entityWidths(name){
+  if(name==='flatten')return {head:50,teeth:0};
+  const spec=specs[name];
+  const trace=(spec.teeth-1)*spec.spacing;
+  return {head:Math.round(trace+7),teeth:Math.round(trace)};
+}
 function toolMarkup(name){
-  if(name==='flatten')return '<div class="tool-entity flatten"><span class="handle"></span><span class="rake-head"></span><span class="teeth"></span></div>';
-  const count=specs[name].teeth;
-  return `<div class="tool-entity ${name}"><span class="handle"></span><span class="rake-head"></span><span class="teeth">${'<i></i>'.repeat(count)}</span></div>`;
+  const w=entityWidths(name);
+  if(name==='flatten')return `<div class="tool-entity flatten" style="--head:${w.head}px"><span class="handle"></span><span class="rake-head"></span><span class="teeth"></span></div>`;
+  return `<div class="tool-entity ${name}" style="--head:${w.head}px;--teeth-width:${w.teeth}px"><span class="handle"></span><span class="rake-head"></span><span class="teeth">${'<i></i>'.repeat(specs[name].teeth)}</span></div>`;
 }
 function syncCursorTool(){toolCursor.innerHTML=toolMarkup(tool)}
 syncCursorTool();
 
 function dpr(){return Math.min(devicePixelRatio||1,2)}
-function fit(){
-  const r=canvas.getBoundingClientRect(),p=dpr();
-  const w=Math.max(1,Math.round(r.width*p)),h=Math.max(1,Math.round(r.height*p));
-  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;redraw()}
-}
+function fit(){const r=canvas.getBoundingClientRect(),p=dpr();const w=Math.max(1,Math.round(r.width*p)),h=Math.max(1,Math.round(r.height*p));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;redraw()}}
 function localPoint(e){const r=canvas.getBoundingClientRect(),p=dpr();return[(e.clientX-r.left)*p,(e.clientY-r.top)*p,e.pressure||.5]}
 function cleanPoints(points){if(points.length<2)return points.map(p=>({point:[p[0],p[1]]}));return getStrokePoints(points,{size:1,thinning:0,smoothing:.86,streamline:.58,simulatePressure:false})}
 function normalAt(pts,i){const a=pts[Math.max(0,i-1)].point,b=pts[Math.min(pts.length-1,i+1)].point;let dx=b[0]-a[0],dy=b[1]-a[1];const len=Math.hypot(dx,dy)||1;dx/=len;dy/=len;return[-dy,dx]}
-function renderRake(action){
-  const spec=specs[action.tool],smooth=cleanPoints(action.points);if(smooth.length<2)return;
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=spec.width*dpr();ctx.strokeStyle=`rgba(125,118,106,${spec.alpha})`;
-  const center=(spec.teeth-1)/2;
-  for(let tooth=0;tooth<spec.teeth;tooth++){
-    const off=(tooth-center)*spec.spacing*dpr();ctx.beginPath();
-    smooth.forEach((sp,i)=>{const n=normalAt(smooth,i),x=sp.point[0]+n[0]*off,y=sp.point[1]+n[1]*off;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
-  }
-  ctx.restore();
-}
-function renderFlatten(action){
-  const smooth=cleanPoints(action.points);if(smooth.length<2)return;
-  ctx.save();ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=specs.flatten.eraseWidth*dpr();ctx.beginPath();
-  smooth.forEach((sp,i)=>i?ctx.lineTo(sp.point[0],sp.point[1]):ctx.moveTo(sp.point[0],sp.point[1]));ctx.stroke();ctx.restore();
-}
+function renderRake(action){const spec=specs[action.tool],smooth=cleanPoints(action.points);if(smooth.length<2)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=spec.width*dpr();ctx.strokeStyle=`rgba(125,118,106,${spec.alpha})`;const center=(spec.teeth-1)/2;for(let tooth=0;tooth<spec.teeth;tooth++){const off=(tooth-center)*spec.spacing*dpr();ctx.beginPath();smooth.forEach((sp,i)=>{const n=normalAt(smooth,i),x=sp.point[0]+n[0]*off,y=sp.point[1]+n[1]*off;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}ctx.restore()}
+function renderFlatten(action){const smooth=cleanPoints(action.points);if(smooth.length<2)return;ctx.save();ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=specs.flatten.eraseWidth*dpr();ctx.beginPath();smooth.forEach((sp,i)=>i?ctx.lineTo(sp.point[0],sp.point[1]):ctx.moveTo(sp.point[0],sp.point[1]));ctx.stroke();ctx.restore()}
 function renderAction(a){a.tool==='flatten'?renderFlatten(a):renderRake(a)}
 function redraw(){ctx.clearRect(0,0,canvas.width,canvas.height);actions.forEach(renderAction);if(current)renderAction(current);status.textContent=`${actions.length} actions · ${tool}`}
 
@@ -151,9 +143,7 @@ canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);
 function finish(e){if(!current)return;if(current.points.length>1)actions.push(current);current=null;try{canvas.releasePointerCapture(e.pointerId)}catch{}redraw()}
 canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',finish);
 
-toolDock.querySelectorAll('[data-tool]').forEach(slot=>slot.addEventListener('click',()=>{
-  tool=slot.dataset.tool;toolDock.querySelectorAll('[data-tool]').forEach(s=>s.classList.toggle('active',s===slot));syncCursorTool();status.textContent=`${actions.length} actions · ${tool}`;
-}));
+toolTray.querySelectorAll('[data-tool]').forEach(slot=>slot.addEventListener('click',()=>{tool=slot.dataset.tool;toolTray.querySelectorAll('[data-tool]').forEach(s=>s.classList.toggle('active',s===slot));syncCursorTool();status.textContent=`${actions.length} actions · ${tool}`}));
 document.querySelector('#undo').addEventListener('click',()=>{actions.pop();redraw()});
 document.querySelector('#reset').addEventListener('click',()=>{actions=[];current=null;redraw()});
 

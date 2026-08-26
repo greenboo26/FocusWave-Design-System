@@ -155,29 +155,41 @@ function paintFog(tSec){
   const spec=stateSpec[state],w=mountainCanvas.width,h=mountainCanvas.height;
   const bands=spec.fogBands;
   mctx.save();
+  mctx.globalCompositeOperation='source-over';
+
   for(let b=0;b<bands;b++){
-    const baseY=(.17 + (b+.55)/(bands+1)*.67)*h;
-    const travel=((tSec*spec.fogSpeed + b*.29)%1.55)-.28;
-    const centerX=travel*w;
-    const width=spec.fogWidth*w*(.82+(.25*((b%3)/2)));
-    const grad=mctx.createLinearGradient(centerX-width,0,centerX+width,0);
-    grad.addColorStop(0,'rgba(245,243,239,0)');
-    grad.addColorStop(.18,`rgba(245,243,239,${spec.fogAlpha*.70})`);
-    grad.addColorStop(.5,`rgba(245,243,239,${spec.fogAlpha})`);
-    grad.addColorStop(.82,`rgba(245,243,239,${spec.fogAlpha*.70})`);
-    grad.addColorStop(1,'rgba(245,243,239,0)');
-    mctx.strokeStyle=grad;
-    mctx.lineWidth=(.060 + b%2*.018)*h;
-    mctx.lineCap='round';
-    mctx.beginPath();
-    const steps=70;
-    for(let i=0;i<=steps;i++){
-      const x=centerX-width + (2*width*i/steps);
-      const n=fogNoise(x/w*1.4,b*.63,tSec*.12);
-      const y=baseY+n*h*.018;
-      i?mctx.lineTo(x,y):mctx.moveTo(x,y);
+    const baseY=(.20 + (b+.5)/(bands+1)*.58)*h;
+    const travel=((tSec*spec.fogSpeed + b*.34)%1.80)-.40;
+    const anchorX=travel*w;
+    const cloudSpan=spec.fogWidth*w*2.4;
+    const puffCount=7 + (b%2)*2;
+
+    for(let p=0;p<puffCount;p++){
+      const u=p/Math.max(1,puffCount-1);
+      const centered=(u-.5)*2;
+      const x=anchorX + centered*cloudSpan;
+      const nY=fogNoise(b*.71,p*.43,tSec*.035);
+      const nW=fogNoise(10+b*.53,p*.61,tSec*.025);
+      const nH=fogNoise(20+b*.47,p*.57,tSec*.030);
+      const y=baseY + nY*h*.045;
+      const rx=cloudSpan*(.18 + .055*(nW+1));
+      const ry=h*(.048 + .020*(nH+1));
+      const localAlpha=spec.fogAlpha*(.56 + .18*(1-Math.abs(centered)));
+
+      mctx.save();
+      mctx.translate(x,y);
+      mctx.scale(1,ry/rx);
+      const g=mctx.createRadialGradient(0,0,0,0,0,rx);
+      g.addColorStop(0,`rgba(251,250,247,${Math.min(.92,localAlpha)})`);
+      g.addColorStop(.48,`rgba(251,250,247,${Math.min(.82,localAlpha*.82)})`);
+      g.addColorStop(.76,`rgba(251,250,247,${Math.min(.56,localAlpha*.48)})`);
+      g.addColorStop(1,'rgba(251,250,247,0)');
+      mctx.fillStyle=g;
+      mctx.beginPath();
+      mctx.arc(0,0,rx,0,Math.PI*2);
+      mctx.fill();
+      mctx.restore();
     }
-    mctx.stroke();
   }
   mctx.restore();
 }

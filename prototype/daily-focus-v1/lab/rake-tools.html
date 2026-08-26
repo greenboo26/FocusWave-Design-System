@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FocusWave Lab · Karesansui Rakes</title>
+  <style>
+    :root{--page:#f3f1ec;--sand:#fbfaf6;--ink:#5d625f;--muted:#909590;--line:#d8d5cd;--groove:#b9b4a9}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--page);font-family:Inter,"Noto Sans SC",system-ui,sans-serif;color:var(--ink)}
+    main{max-width:1120px;margin:0 auto;padding:34px 24px 70px}
+    header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:18px}
+    .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+    h1{font-size:25px;font-weight:500;margin:0 0 8px}
+    .desc{max-width:760px;color:var(--muted);font-size:13px;line-height:1.7}
+    .back{font-size:13px;color:var(--muted);text-decoration:none}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 14px}
+    button{border:1px solid var(--line);background:#faf9f5;color:var(--ink);border-radius:999px;padding:8px 13px;font:inherit;font-size:12px;cursor:pointer}
+    button.active{background:#e6e6df;border-color:#c7c7bf}
+    .sep{width:1px;height:26px;background:var(--line);margin:0 3px}
+    .board{position:relative;border:1px solid #d4d0c7;border-radius:20px;overflow:hidden;background:var(--sand);box-shadow:0 12px 35px rgba(74,69,59,.06)}
+    .sand{position:absolute;inset:0;pointer-events:none;background:
+      radial-gradient(circle at 20% 30%,rgba(91,82,67,.028) 0 0.7px,transparent .8px),
+      radial-gradient(circle at 70% 63%,rgba(91,82,67,.022) 0 0.65px,transparent .75px),
+      var(--sand);background-size:8px 8px,11px 11px,auto}
+    canvas{position:relative;display:block;width:100%;height:620px;touch-action:none;cursor:crosshair}
+    .footer{display:flex;justify-content:space-between;gap:18px;margin-top:12px;font-size:12px;color:var(--muted);line-height:1.7}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#666b68}
+    @media(max-width:720px){canvas{height:500px}.footer,header{display:block}.back{display:inline-block;margin-top:15px}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">FocusWave / isolated PoC / perfect-freehand 1.2.3</div>
+      <h1>枯山水 · 多齿耙 / 抹平 / 叠加</h1>
+      <div class="desc">默认是干净、无线条的白砂。任何纹路都只能由用户手势产生；石头与系统不自动生成纹路。中心手势先经 perfect-freehand 平滑，再沿法向量复制成多齿耙痕。</div>
+    </div>
+    <a class="back" href="./index.html">← 返回实验目录</a>
+  </header>
+
+  <div class="toolbar" id="toolbar">
+    <button data-tool="fine" class="active">细耙 · 7 齿</button>
+    <button data-tool="medium">中耙 · 5 齿</button>
+    <button data-tool="coarse">粗耙 · 3 齿</button>
+    <button data-tool="flatten">抹平</button>
+    <span class="sep"></span>
+    <button id="undo">撤销</button>
+    <button id="reset">重置白砂</button>
+  </div>
+
+  <div class="board">
+    <div class="sand"></div>
+    <canvas id="garden"></canvas>
+  </div>
+  <div class="footer">
+    <span id="status">0 strokes · fine</span>
+    <span>验证点：<code>strokes[]</code> 是唯一纹路来源；抹平本身也是一条可撤销 action。</span>
+  </div>
+</main>
+
+<script type="module">
+import { getStrokePoints } from 'https://esm.sh/perfect-freehand@1.2.3';
+
+const canvas=document.querySelector('#garden');
+const ctx=canvas.getContext('2d');
+const toolbar=document.querySelector('#toolbar');
+const status=document.querySelector('#status');
+let tool='fine';
+let actions=[];
+let current=null;
+
+const specs={
+  fine:{teeth:7, spacing:3.6, width:.72, alpha:.56},
+  medium:{teeth:5, spacing:5.8, width:.82, alpha:.58},
+  coarse:{teeth:3, spacing:9.2, width:.95, alpha:.60},
+  flatten:{eraseWidth:54}
+};
+
+function dpr(){return Math.min(devicePixelRatio||1,2)}
+function fit(){
+  const r=canvas.getBoundingClientRect(),p=dpr();
+  const w=Math.max(1,Math.round(r.width*p)),h=Math.max(1,Math.round(r.height*p));
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;redraw();}
+}
+function localPoint(e){
+  const r=canvas.getBoundingClientRect(),p=dpr();
+  return [(e.clientX-r.left)*p,(e.clientY-r.top)*p,e.pressure||.5];
+}
+function cleanPoints(points){
+  if(points.length<2) return points.map(p=>({point:[p[0],p[1]]}));
+  return getStrokePoints(points,{size:1,thinning:0,smoothing:.86,streamline:.58,simulatePressure:false});
+}
+function normalAt(pts,i){
+  const a=pts[Math.max(0,i-1)].point,b=pts[Math.min(pts.length-1,i+1)].point;
+  let dx=b[0]-a[0],dy=b[1]-a[1];
+  const len=Math.hypot(dx,dy)||1; dx/=len;dy/=len;
+  return [-dy,dx];
+}
+function renderRake(action){
+  const spec=specs[action.tool],smooth=cleanPoints(action.points);
+  if(smooth.length<2)return;
+  ctx.save();
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.lineWidth=spec.width*dpr();
+  ctx.strokeStyle=`rgba(125,118,106,${spec.alpha})`;
+  const center=(spec.teeth-1)/2;
+  for(let tooth=0;tooth<spec.teeth;tooth++){
+    const off=(tooth-center)*spec.spacing*dpr();
+    ctx.beginPath();
+    smooth.forEach((sp,i)=>{
+      const n=normalAt(smooth,i),x=sp.point[0]+n[0]*off,y=sp.point[1]+n[1]*off;
+      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+    });
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function renderFlatten(action){
+  const smooth=cleanPoints(action.points);if(smooth.length<2)return;
+  ctx.save();
+  // White-sand overpaint affects only the user-stroke layer; base sand texture remains untouched.
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.lineWidth=specs.flatten.eraseWidth*dpr();
+  ctx.strokeStyle='#fbfaf6';
+  ctx.beginPath();
+  smooth.forEach((sp,i)=>i?ctx.lineTo(sp.point[0],sp.point[1]):ctx.moveTo(sp.point[0],sp.point[1]));
+  ctx.stroke();
+  ctx.restore();
+}
+function renderAction(a){a.tool==='flatten'?renderFlatten(a):renderRake(a)}
+function redraw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  actions.forEach(renderAction);
+  if(current)renderAction(current);
+  status.textContent=`${actions.length} actions · ${tool}`;
+}
+
+canvas.addEventListener('pointerdown',e=>{
+  canvas.setPointerCapture(e.pointerId);
+  current={tool,points:[localPoint(e)]};
+  redraw();
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!current || !canvas.hasPointerCapture(e.pointerId))return;
+  const p=localPoint(e),last=current.points[current.points.length-1];
+  if(Math.hypot(p[0]-last[0],p[1]-last[1])>1.4*dpr()) current.points.push(p);
+  redraw();
+});
+function finish(e){
+  if(!current)return;
+  if(current.points.length>1)actions.push(current);
+  current=null;
+  try{canvas.releasePointerCapture(e.pointerId)}catch{}
+  redraw();
+}
+canvas.addEventListener('pointerup',finish);
+canvas.addEventListener('pointercancel',finish);
+
+toolbar.querySelectorAll('[data-tool]').forEach(btn=>btn.addEventListener('click',()=>{
+  tool=btn.dataset.tool;
+  toolbar.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b===btn));
+  status.textContent=`${actions.length} actions · ${tool}`;
+}));
+document.querySelector('#undo').addEventListener('click',()=>{actions.pop();redraw();});
+document.querySelector('#reset').addEventListener('click',()=>{actions=[];current=null;redraw();});
+
+new ResizeObserver(fit).observe(canvas);
+fit();
+</script>
+</body>
+</html>

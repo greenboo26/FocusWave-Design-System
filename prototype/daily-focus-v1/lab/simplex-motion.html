@@ -33,7 +33,7 @@
     <div>
       <div class="eyebrow">FocusWave / isolated PoC / line-only fog</div>
       <h1>固定山体 + 线条显隐成雾 / 非周期线香</h1>
-      <div class="desc">画面中不绘制任何独立雾层。山脊坐标只生成一次并保持固定；所谓“雾”只是一个不可见的移动场，让经过区域的山线逐渐变淡、断开，再恢复。远山受影响更强，近山更克制。</div>
+      <div class="desc">画面中不绘制任何独立雾层。山脊坐标只生成一次并保持固定；上、中、下三个不可见雾域缓慢横移，让一整片山线连续淡出、留白，再恢复。雾的位置由画面坐标决定，不再按远近山层级硬编码。</div>
     </div>
     <a class="back" href="./index.html">← 返回实验目录</a>
   </header>
@@ -49,7 +49,7 @@
     <section class="card">
       <div class="card-head"><span>山 · 固定几何 / 线条成雾</span><span id="mountainStatus">geometry builds: 0</span></div>
       <canvas id="mountain"></canvas>
-      <div class="legend">硬约束：<code>x/y = constant</code>。动画只改变线段可见度，不移动山、不绘制白色遮罩、不叠加云团。</div>
+      <div class="legend">硬约束：<code>x/y = constant</code>。动画只改变线段可见度；不移动山、不绘制白色遮罩、不叠加云团，也不随机打碎成短虚线。</div>
     </section>
     <section class="card">
       <div class="card-head"><span>线香 · 连续噪声</span><span>noise3D(height, strand, time)</span></div>
@@ -63,10 +63,10 @@
 import { createNoise2D, createNoise3D } from 'https://esm.sh/simplex-noise@4.0.3';
 
 const stateSpec = {
-  stable:    { fogSpeed:.030, fogCount:3, fogSpan:.21, fogDepth:.66, smokeAmp:.030, smokeFreq:1.3, strands:8 },
-  drift:     { fogSpeed:.043, fogCount:3, fogSpan:.24, fogDepth:.76, smokeAmp:.050, smokeFreq:1.6, strands:9 },
-  dispersed: { fogSpeed:.060, fogCount:4, fogSpan:.27, fogDepth:.88, smokeAmp:.090, smokeFreq:2.0, strands:11 },
-  refocus:   { fogSpeed:.034, fogCount:3, fogSpan:.19, fogDepth:.60, smokeAmp:.038, smokeFreq:1.4, strands:7 }
+  stable:    { fogSpeed:.024, fogCount:3, fogSpan:.25, fogHeight:.115, fogDepth:.78, smokeAmp:.030, smokeFreq:1.3, strands:8 },
+  drift:     { fogSpeed:.034, fogCount:3, fogSpan:.27, fogHeight:.125, fogDepth:.84, smokeAmp:.050, smokeFreq:1.6, strands:9 },
+  dispersed: { fogSpeed:.046, fogCount:4, fogSpan:.29, fogHeight:.145, fogDepth:.91, smokeAmp:.090, smokeFreq:2.0, strands:11 },
+  refocus:   { fogSpeed:.027, fogCount:3, fogSpan:.23, fogHeight:.105, fogDepth:.72, smokeAmp:.038, smokeFreq:1.4, strands:7 }
 };
 let state='stable';
 
@@ -83,7 +83,7 @@ function hashSeed(text){
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 const mountainNoise=createNoise2D(mulberry32(hashSeed('focuswave-mountain-static-v1')));
-const fogNoise=createNoise3D(mulberry32(hashSeed('focuswave-line-fog-v1')));
+const fogNoise=createNoise3D(mulberry32(hashSeed('focuswave-line-fog-v2')));
 const smokeNoise=createNoise3D(mulberry32(hashSeed('focuswave-incense-v1')));
 
 function fitCanvas(canvas){
@@ -140,21 +140,29 @@ function smoothstep(edge0,edge1,x){
   return q*q*(3-2*q);
 }
 
-function fogLoss(u,layer,pathIndex,tSec){
+function fogLoss(u,v,pathIndex,tSec){
   const spec=stateSpec[state];
+  const yAnchors=spec.fogCount===4 ? [.26,.44,.62,.76] : [.29,.50,.70];
   let loss=0;
+
   for(let f=0;f<spec.fogCount;f++){
-    const center=((tSec*spec.fogSpeed+f/spec.fogCount*1.17+layer*.07)%1.42)-.21;
-    const rough=fogNoise(u*2.4+f*4.1,layer*.73+pathIndex*.055,tSec*.026);
-    const localCenter=center+rough*.030;
-    const dist=Math.abs(u-localCenter);
-    const span=spec.fogSpan*(.82+.13*f);
-    const core=1-smoothstep(span*.18,span,dist);
-    const grain=.72+.28*(fogNoise(u*8.5+f*7.0,pathIndex*.19+layer,tSec*.045)*.5+.5);
-    loss=Math.max(loss,core*grain);
+    const centerX=((tSec*spec.fogSpeed + f/spec.fogCount*1.31)%1.58)-.29;
+    const verticalDrift=fogNoise(f*2.7,4.1,tSec*.018)*.020;
+    const centerY=yAnchors[f]+verticalDrift;
+
+    const boundary=fogNoise(u*2.2+f*5.3,v*2.0+pathIndex*.018,tSec*.018);
+    const span=spec.fogSpan*(.90+.08*f);
+    const height=spec.fogHeight*(.92+.10*(f%2));
+    const dx=(u-centerX)/(span*(1+boundary*.06));
+    const dy=(v-centerY)/(height*(1-boundary*.04));
+    const dist=Math.hypot(dx,dy);
+
+    // Broad coherent field: long continuous fade with only slight natural edge variation.
+    const core=1-smoothstep(.28,1.0,dist);
+    loss=Math.max(loss,core);
   }
-  const layerWeight=[1.00,.80,.52][layer];
-  return Math.min(.96,loss*spec.fogDepth*layerWeight);
+
+  return Math.min(.98,loss*spec.fogDepth);
 }
 
 function strokeCachedMountains(tSec){
@@ -164,20 +172,18 @@ function strokeCachedMountains(tSec){
   mctx.lineWidth=Math.max(1,1.05*(devicePixelRatio||1));
   mctx.lineJoin='round';mctx.lineCap='round';
 
-  mountainCache.forEach((layer,layerIndex)=>{
+  mountainCache.forEach(layer=>{
     layer.paths.forEach((pts,pathIndex)=>{
       for(let i=1;i<pts.length;i++){
         const p0=pts[i-1],p1=pts[i];
         const u=((p0[0]+p1[0])*.5)/w;
-        const loss=fogLoss(u,layerIndex,pathIndex,tSec);
-        const jitter=fogNoise(u*17.0,pathIndex*.37+layerIndex*3.1,tSec*.035)*.5+.5;
-        const visible=1-loss;
+        const v=((p0[1]+p1[1])*.5)/h;
+        const visible=1-fogLoss(u,v,pathIndex,tSec);
 
-        // Deep fog becomes broken line rather than a uniform translucent band.
-        if(visible<.20 && jitter>.26) continue;
-        if(visible<.34 && jitter>.58) continue;
+        // Only the deepest central part becomes a clean continuous gap.
+        if(visible<.075) continue;
 
-        const alpha=layer.alpha*Math.max(.055,visible);
+        const alpha=layer.alpha*Math.max(.035,visible);
         mctx.strokeStyle=`rgba(92,108,100,${alpha})`;
         mctx.beginPath();
         mctx.moveTo(p0[0],p0[1]);

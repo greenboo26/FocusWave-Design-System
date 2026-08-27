@@ -54,3 +54,4 @@ import('./theme-rain-controller.js?v=2');
 import('./garden-tools-v3.js?v=4');
 import('./settings-controller.js');
 import('./navigation-controller.js');
+import('./home-concept-carousel.js?v=2');

@@ -19,7 +19,6 @@ window.FocusWaveIdiomGrammar = (() => {
     const petals=Math.sin(a*4 + phase + t*.55);
     return {dx:Math.cos(a)*w*.018*envelope*petals,dy:Math.sin(a)*h*.030*envelope*petals};
   }
-
   function stable(x,y,w,h,t,lineIndex){
     const breathe=Math.sin(t*.12 + lineIndex*.025)*h*.0018;
     return {dx:0,dy:breathe};
@@ -50,7 +49,7 @@ window.FocusWaveIdiomGrammar = (() => {
 
 // Keep homepage boot deliberately small. Heavy page runtimes are loaded on demand
 // by settings-controller.js only after the user enters the corresponding flow.
-import('./theme-rain-controller.js?v=2');
+import('./theme-rain-controller.js?v=3');
 import('./settings-controller.js?v=2');
 import('./navigation-controller.js');
 import('./home-concept-carousel.js?v=3');

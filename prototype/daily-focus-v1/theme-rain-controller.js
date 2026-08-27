@@ -10,14 +10,17 @@
   function isRainSelected(){
     return !!document.querySelector('#themeGroup .theme-card.selected[data-value="ocean"]');
   }
+
   function patchThemeCard(){
     const card=document.querySelector('#themeGroup .theme-card[data-value="ocean"]');
     if(!card)return;
     const b=card.querySelector('b'),small=card.querySelector('small');
-    if(b)b.textContent='雨 · 青灰';
-    if(small)small.textContent='落雨涟漪';
+    if(b && b.textContent!=='雨 · 青灰') b.textContent='雨 · 青灰';
+    if(small && small.textContent!=='落雨涟漪') small.textContent='落雨涟漪';
+
     const mini=card.querySelector('.theme-mini');
-    if(mini){
+    if(mini && mini.dataset.rainPatched!=='true'){
+      mini.dataset.rainPatched='true';
       mini.classList.remove('ocean-mini');
       mini.innerHTML='<i></i><i></i><i></i>';
       mini.style.position='absolute';
@@ -27,25 +30,32 @@
       });
     }
   }
+
   function patchLiveCopy(){
     if(!isRainSelected())return;
     const title=document.querySelector('#stateTitle')?.textContent?.trim();
     const copy=rainCopy[title];if(!copy)return;
     const q=document.querySelector('#stateQuote'),i=document.querySelector('#stateImagery');
-    if(q)q.textContent=copy[0];
-    if(i)i.textContent=copy[1];
+    if(q && q.textContent!==copy[0]) q.textContent=copy[0];
+    if(i && i.textContent!==copy[1]) i.textContent=copy[1];
   }
+
   function patch(){patchThemeCard();patchLiveCopy();}
+
   function install(){
     patch();
     const root=document.querySelector('#themeGroup');
     if(root){
       root.addEventListener('click',()=>requestAnimationFrame(patch));
-      new MutationObserver(patch).observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+      // Observe only selection class changes. Watching childList here used to
+      // retrigger patchThemeCard's innerHTML write forever and freeze the page.
+      new MutationObserver(patchLiveCopy).observe(root,{subtree:true,attributes:true,attributeFilter:['class']});
     }
     const title=document.querySelector('#stateTitle');
     if(title)new MutationObserver(patchLiveCopy).observe(title,{childList:true,characterData:true,subtree:true});
-    setTimeout(patch,50);setTimeout(patch,300);
+    setTimeout(patch,50);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+  else install();
 })();

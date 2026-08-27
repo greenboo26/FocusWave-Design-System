@@ -1,6 +1,6 @@
 /* FocusWave homepage concept carousel.
- * Reuses the existing line renderer so the homepage concept states can later
- * be driven by the released model instead of being a dead image carousel.
+ * Captures the lightweight built-in line renderer for the homepage so later
+ * page-specific visual engines cannot change the approved concept carousel.
  */
 (() => {
   const slides = [
@@ -40,6 +40,7 @@
     const tiny=document.querySelector('.tiny-stat');
     if(!page||!canvas||!art||!copy||!title||!body||typeof window.drawField!=='function')return;
 
+    const conceptRenderer=window.drawField.bind(window);
     const style=document.createElement('style');
     style.textContent=`
       .today-art{overflow:hidden}
@@ -71,15 +72,13 @@
 
     let index=0,timer=0,transition=0;
     function paint(slide){
-      window.drawField(canvas,{theme:'ocean',state:slide.state,lines:slide.lines,alpha:slide.alpha,t:slide.t});
+      conceptRenderer(canvas,{theme:'ocean',state:slide.state,lines:slide.lines,alpha:slide.alpha,t:slide.t});
       title.textContent=slide.title;
       body.textContent=slide.body;
       if(tiny)tiny.textContent=slide.stat;
       [...dots.children].forEach((d,i)=>d.classList.toggle('active',i===index));
     }
-    function repaint(){
-      requestAnimationFrame(()=>paint(slides[index]));
-    }
+    function repaint(){requestAnimationFrame(()=>paint(slides[index]));}
     function show(next,animate){
       index=(next+slides.length)%slides.length;
       clearTimeout(transition);
@@ -108,16 +107,14 @@
     art.addEventListener('mouseleave',start);
     window.addEventListener('resize',()=>{if(page.classList.contains('active'))setTimeout(repaint,40)});
     new MutationObserver(()=>{
-      if(page.classList.contains('active')){
-        setTimeout(repaint,30);
-        start();
-      }else stop();
+      if(page.classList.contains('active')){setTimeout(repaint,30);start();}
+      else stop();
     }).observe(page,{attributes:true,attributeFilter:['class']});
     document.addEventListener('visibilitychange',()=>document.hidden?stop():(repaint(),start()));
     show(0,false);
     start();
   }
 
-  if(document.readyState==='complete')init();
-  else window.addEventListener('load',init,{once:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
 })();

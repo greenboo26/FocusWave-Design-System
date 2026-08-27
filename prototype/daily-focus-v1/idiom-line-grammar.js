@@ -48,10 +48,9 @@ window.FocusWaveIdiomGrammar = (() => {
   return {grammars,offset};
 })();
 
-// Runtime modules. Versioned imports deliberately bust GitHub Pages/browser caches.
-import('./generative-visual-engine.js?v=11');
+// Keep homepage boot deliberately small. Heavy page runtimes are loaded on demand
+// by settings-controller.js only after the user enters the corresponding flow.
 import('./theme-rain-controller.js?v=2');
-import('./garden-tools-v3.js?v=4');
-import('./settings-controller.js');
+import('./settings-controller.js?v=2');
 import('./navigation-controller.js');
-import('./home-concept-carousel.js?v=2');
+import('./home-concept-carousel.js?v=3');

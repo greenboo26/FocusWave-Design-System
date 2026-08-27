@@ -1,6 +1,6 @@
 /* FocusWave preference + prototype review controller
  * One canonical defaultTextMode; Setup may override for one session.
- * Demo state driver exists only for prototype review.
+ * Heavy page runtimes are loaded only when the corresponding flow is entered.
  */
 
 const TEXT_MODES = [
@@ -15,6 +15,10 @@ const DEMO_STATE_INTERVAL_MS = 10000;
 const TODAY_THEMES = ['ocean', 'mountain', 'incense', 'dusk'];
 const TODAY_STATES = ['stable', 'drift', 'refocus'];
 let todayVariant = null;
+let liveReady = false;
+let liveEnginePromise = null;
+let prototypeStateBound = false;
+const runtimePromises = new Map();
 
 function ensureLayoutStyles() {
   if (!document.querySelector('link[data-focuswave-setup-balance]')) {
@@ -57,15 +61,31 @@ function ensureLayoutStyles() {
 }
 
 function appendRuntime(src, datasetKey) {
-  if (document.querySelector(`script[data-focuswave-${datasetKey}]`)) return Promise.resolve();
-  return new Promise(resolve => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.setAttribute(`data-focuswave-${datasetKey}`, 'true');
-    script.onload = resolve;
-    script.onerror = resolve;
-    document.body.appendChild(script);
+  if (runtimePromises.has(datasetKey)) return runtimePromises.get(datasetKey);
+  const existing = document.querySelector(`script[data-focuswave-${datasetKey}]`);
+  if (existing?.dataset.loaded === 'true') return Promise.resolve();
+
+  const promise = new Promise(resolve => {
+    const script = existing || document.createElement('script');
+    if (!existing) {
+      script.src = src;
+      script.setAttribute(`data-focuswave-${datasetKey}`, 'true');
+      document.body.appendChild(script);
+    }
+    const done = () => {
+      script.dataset.loaded = 'true';
+      resolve();
+    };
+    if (existing && existing.dataset.loaded !== 'true') {
+      script.addEventListener('load', done, {once:true});
+      script.addEventListener('error', done, {once:true});
+    } else {
+      script.onload = done;
+      script.onerror = done;
+    }
   });
+  runtimePromises.set(datasetKey, promise);
+  return promise;
 }
 
 function ensurePracticeSignatureRuntime() {
@@ -76,15 +96,23 @@ function ensurePortraitDetailsRuntime() {
   return appendRuntime('./portrait-details.js', 'portrait-details');
 }
 
-function ensureInsightsRuntime() {
-  return appendRuntime('./insights-longterm.js', 'insights-longterm');
+async function ensureInsightsRuntime() {
+  await appendRuntime('./insights-longterm.js', 'insights-longterm');
+  await appendRuntime('./garden-tools-v3.js', 'garden-tools-v3');
 }
 
-async function ensureLiveEngines() {
-  await appendRuntime('./generative-visual-engine.js', 'generative-visual-engine');
-  await appendRuntime('./content-engine.js', 'content-engine');
-  window.FocusWaveContentEngine?.refresh?.();
-  if (typeof renderStatic === 'function') requestAnimationFrame(renderStatic);
+function ensureLiveEngines() {
+  if (liveEnginePromise) return liveEnginePromise;
+  liveEnginePromise = Promise.all([
+    appendRuntime('./generative-visual-engine.js', 'generative-visual-engine'),
+    appendRuntime('./content-engine.js', 'content-engine')
+  ]).then(() => {
+    liveReady = true;
+    window.FocusWaveContentEngine?.refresh?.();
+    if (typeof renderStatic === 'function') requestAnimationFrame(renderStatic);
+    bindPrototypeStateReview();
+  });
+  return liveEnginePromise;
 }
 
 function validMode(value) {
@@ -164,6 +192,7 @@ function shuffledStateBag(previous = -1) {
 }
 
 function bindPrototypeStateReview() {
+  if (prototypeStateBound || !liveReady) return;
   const begin=document.querySelector('#beginLive');
   if (!begin || typeof states==='undefined' || typeof showPage!=='function') return;
   begin.onclick = () => {
@@ -186,6 +215,7 @@ function bindPrototypeStateReview() {
     updateTimer();
     animateLive();
   };
+  prototypeStateBound = true;
 }
 
 function chooseTodayVariant() {
@@ -223,17 +253,57 @@ function bindTodayArtwork() {
   requestAnimationFrame(() => renderTodayArtwork(false));
 }
 
-async function init() {
+function pageTargetFromClick(target) {
+  const route = target?.closest?.('[data-nav],[data-go]');
+  if (route?.dataset.nav) return route.dataset.nav;
+  if (route?.dataset.go) return route.dataset.go;
+  if (target?.closest?.('#startFocus,#practiceToSetup')) return 'setup';
+  if (target?.closest?.('#toDevice,#beginLive')) return 'device';
+  return null;
+}
+
+function loadForPage(page) {
+  if (page === 'setup' || page === 'device' || page === 'live' || page === 'summary') {
+    return ensureLiveEngines();
+  }
+  if (page === 'portraits') {
+    return Promise.all([ensureLiveEngines(), ensurePortraitDetailsRuntime()]);
+  }
+  if (page === 'insights') return ensureInsightsRuntime();
+  if (page === 'practice') return ensurePracticeSignatureRuntime();
+  return Promise.resolve();
+}
+
+function bindLazyRuntimeLoading() {
+  document.addEventListener('click', event => {
+    const page = pageTargetFromClick(event.target);
+    if (page) loadForPage(page);
+  }, {capture:true, passive:true});
+
+  const begin = document.querySelector('#beginLive');
+  if (begin) {
+    begin.addEventListener('click', event => {
+      if (liveReady) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const label = begin.textContent;
+      begin.disabled = true;
+      begin.textContent = '正在准备';
+      ensureLiveEngines().then(() => {
+        begin.disabled = false;
+        begin.textContent = label;
+        begin.click();
+      });
+    }, true);
+  }
+}
+
+function init() {
   ensureLayoutStyles();
   renderSettingsPanel();
   bindSessionEntry();
   bindExport();
-  await ensureLiveEngines();
-  bindPrototypeStateReview();
-  bindTodayArtwork();
-  await ensurePortraitDetailsRuntime();
-  await ensureInsightsRuntime();
-  await ensurePracticeSignatureRuntime();
+  bindLazyRuntimeLoading();
 }
 
 if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();

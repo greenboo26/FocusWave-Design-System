@@ -77,6 +77,9 @@
       if(tiny)tiny.textContent=slide.stat;
       [...dots.children].forEach((d,i)=>d.classList.toggle('active',i===index));
     }
+    function repaint(){
+      requestAnimationFrame(()=>paint(slides[index]));
+    }
     function show(next,animate){
       index=(next+slides.length)%slides.length;
       clearTimeout(transition);
@@ -103,7 +106,14 @@
 
     art.addEventListener('mouseenter',stop);
     art.addEventListener('mouseleave',start);
-    document.addEventListener('visibilitychange',()=>document.hidden?stop():start());
+    window.addEventListener('resize',()=>{if(page.classList.contains('active'))setTimeout(repaint,40)});
+    new MutationObserver(()=>{
+      if(page.classList.contains('active')){
+        setTimeout(repaint,30);
+        start();
+      }else stop();
+    }).observe(page,{attributes:true,attributeFilter:['class']});
+    document.addEventListener('visibilitychange',()=>document.hidden?stop():(repaint(),start()));
     show(0,false);
     start();
   }

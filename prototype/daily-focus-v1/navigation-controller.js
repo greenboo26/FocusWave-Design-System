@@ -57,8 +57,17 @@
   function syncPrimaryNav(pageName) {
     const parent = NAV_PARENT[pageName] || pageName;
     document.querySelectorAll('[data-nav]').forEach(button => {
-      button.classList.toggle('active', button.dataset.nav === parent);
+      const active = button.dataset.nav === parent;
+      button.classList.toggle('active', active);
+      if (active) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
     });
+  }
+
+  function syncShellState(pageName) {
+    document.body.dataset.page = pageName;
+    const rail = document.querySelector('#rail');
+    if (rail) rail.setAttribute('aria-hidden', String(pageName === 'live'));
   }
 
   function resetViewport() {
@@ -80,10 +89,15 @@
 
       baseShowPage(name);
       syncPrimaryNav(name);
+      syncShellState(name);
       resetViewport();
     };
 
     syncPrimaryNav(typeof currentPage !== 'undefined' ? currentPage : 'today');
+    syncShellState(typeof currentPage !== 'undefined' ? currentPage : 'today');
+    document.querySelectorAll('button').forEach(button => {
+      if (!button.hasAttribute('type')) button.type = 'button';
+    });
     installed = true;
   }
 
@@ -95,4 +109,13 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    document.querySelector('#detailDrawer')?.classList.remove('open');
+    document.querySelector('#regOverlay')?.classList.remove('open');
+    document.querySelector('#practiceOverlay')?.classList.remove('open');
+    document.querySelector('#contentLibraryOverlay')?.classList.remove('open');
+    document.querySelector('.fw-detail.open')?.classList.remove('open');
+  });
 })();

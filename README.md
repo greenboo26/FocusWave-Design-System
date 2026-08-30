@@ -56,3 +56,5 @@ Live Focus 以大面积暖白留白建立呼吸感。左侧承载状态与人文
 ## 当前开发状态
 
 `daily-focus-v1` 已从静态效果图进入可交互网页阶段。当前使用 schema-compatible `AttentionState` 模拟器开发交互和视觉；未来成熟 ModelBundle 接入本地 Runtime 后，浏览器继续消费同一类结构化状态消息。
+
+当前原型已补齐桌面侧栏与移动端底部一级导航，Reflection Mode 页面共享同一导航状态，Live Focus 继续保持低干扰的沉浸模式。会话总结新增可选 AI 回顾原型：当前以本地模板展示加载、完成、失败与来源记录状态；正式 provider 将通过可替换适配层接入，默认只接收结构化 `SessionSummary`，不接收原始毫米波。

@@ -96,3 +96,18 @@ The measurement engine publishes structured numbers and state outputs first. AI 
 - generation timestamp
 
 This separation preserves reproducibility of the scientific result while allowing the human-facing layer to evolve quickly.
+
+## Prototype interaction contract
+
+The interactive prototype exposes AI as an optional reflection capability rather than as a persistent chat surface in Focus Mode.
+
+The user-visible states are:
+
+```text
+idle → loading → success
+          └──→ error → retry
+```
+
+Each result shows its input type, excluded data, provider/runtime status and template version. The default cloud-eligible input is a structured `SessionSummary`; raw mmWave, direct identifiers and scientific inference are excluded from the AI path. When no provider is connected, curated content and a clearly labelled local preview remain available.
+
+The UI calls one replaceable adapter contract. A future local model, cloud provider or competition runtime may replace the implementation without changing the measurement pipeline or the session-summary interface.

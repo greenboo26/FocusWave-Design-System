@@ -242,3 +242,31 @@ Live Focus 使用 Canvas 动态线场；开发期由 schema-compatible `Attentio
 ---
 
 后续每次形成实质设计决策，都用新的 D-xxx 条目记录被选定的目标方向、理由与验证结果。
+
+---
+
+## D-019 响应式产品外壳：共享页面状态，分别适配桌面与移动端
+
+一级导航在 Today、Insights、Portraits、Practice、Settings 与会话总结之间保持连续。桌面使用固定侧栏；移动端使用固定底部导航；Live Focus 继续隐藏一级导航，只保留紧凑的会话控制。
+
+导航按钮同步活动状态与 `aria-current`，键盘焦点可见，临时抽屉和遮罩支持 Escape 关闭。Insights 的沉浸式庭院保留原有视觉，但不再改变全站导航结构。
+
+参考实现采用结构性学习而非视觉复制：
+
+- [Radix Primitives](https://github.com/radix-ui/primitives) 的可访问、可组合基础组件原则；
+- [shadcn/ui Sidebar](https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/radix/ui/sidebar.tsx) 对桌面与移动端导航状态的分离管理。
+
+---
+
+## D-020 AI 接入：可选回顾、最小输入与可追溯生成
+
+AI 在 FocusWave 中属于测量和会话聚合之后的解释层。实时专注继续优先使用低延迟、已审核的本地内容；AI 回顾只在会话结束后由用户主动生成，不进入毫米波测量、注意状态推断或分数计算。
+
+原型采用 provider 可替换的 `FocusWaveAIAdapter`，并显式呈现等待、生成中、成功、失败与重试状态。默认输入为结构化 `SessionSummary`，排除原始毫米波和身份信息；每条结果保留 provider/runtime、模板版本、输入类型与生成时间。
+
+参考实现：
+
+- [Vercel AI SDK](https://github.com/vercel/ai) 的 provider 统一接口与结构化输出方向；
+- [assistant-ui](https://github.com/assistant-ui/assistant-ui) 的可组合运行时、生成状态、重试与人工确认模式。
+
+当前 Pages 原型明确标注“本地预览 · 未连接”，不会伪装成已接入外部模型。正式接入时，密钥保留在本地 Runtime 或服务端，不进入浏览器静态资源。

@@ -271,6 +271,7 @@ function loadForPage(page) {
   }
   if (page === 'insights') return ensureInsightsRuntime();
   if (page === 'practice') return ensurePracticeSignatureRuntime();
+  if (page === 'settings') return appendRuntime('./content-engine.js', 'content-engine');
   return Promise.resolve();
 }
 

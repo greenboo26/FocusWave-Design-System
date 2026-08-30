@@ -111,3 +111,5 @@ idle → loading → success
 Each result shows its input type, excluded data, provider/runtime status and template version. The default cloud-eligible input is a structured `SessionSummary`; raw mmWave, direct identifiers and scientific inference are excluded from the AI path. When no provider is connected, curated content and a clearly labelled local preview remain available.
 
 The UI calls one replaceable adapter contract. A future local model, cloud provider or competition runtime may replace the implementation without changing the measurement pipeline or the session-summary interface.
+
+Content generation may run as an offline batch outside a focus session. The content library presents these items under the neutral user-facing category `新创短句`; it does not add a distracting AI badge to every line. The stored item still retains generation method, template version, timestamp and review status so the production library can audit, filter or withdraw a batch later. Generated drafts never become measurement evidence and do not bypass content review.

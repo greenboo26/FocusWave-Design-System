@@ -1,7 +1,7 @@
-/* FocusWave long-term garden interaction v4
- * Default = clean flat white sand. No system rakes, no stone-generated rings.
- * Only user strokes create texture. Tools: move, fine/medium/coarse rake,
- * local flatten, undo, reset.
+/* FocusWave long-term physical garden interaction v5
+ * Keeps the rendered sand grain, stone mass, shadows and stone-generated rake
+ * flow visible. User tools add physical-looking strokes above that persistent
+ * scene: move, fine/medium/coarse rake, local flatten, undo and reset.
  */
 (() => {
   let installed=false, canvas=null, frame=null, inner=null, toolbar=null;
@@ -89,26 +89,30 @@
     canvas.addEventListener('pointerdown',start);canvas.addEventListener('pointermove',move);
     window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);return true;
   }
-  function forceCleanBase(){
-    const base=document.querySelector('#fwGardenCanvas');if(base)base.style.setProperty('display','none','important');
-    if(inner){inner.style.setProperty('background','#f5f5f1','important');inner.style.setProperty('background-image','none','important');}
+  function restorePhysicalBase(){
+    const base=document.querySelector('#fwGardenCanvas');if(base)base.style.setProperty('display','block','important');
+    if(inner){
+      inner.style.setProperty('background','linear-gradient(145deg,#f7f6f1,#ebe9e2)','important');
+      inner.style.setProperty('box-shadow','inset 0 0 28px rgba(70,67,59,.11), inset 0 1px 0 rgba(255,255,255,.8)','important');
+    }
   }
   function install(){
     if(installed)return true;
     frame=document.querySelector('#fwGardenFrame');inner=document.querySelector('#fwGardenInner');
     if(!frame||!inner||!document.querySelector('#fwGardenCanvas')||!document.querySelector('#fwGardenUserCanvas')||!document.querySelector('#fwEditTools'))return false;
     if(!buildToolbar()||!replaceUserCanvas())return false;
-    installed=true;forceCleanBase();setMode('move');
-    const help=document.querySelector('.fw-garden-help');if(help)help.textContent='白沙默认保持平整。纹路只由你自己叠加：细耙、中耙、粗耙；“抹平”可局部恢复干净沙面。';
+    installed=true;restorePhysicalBase();setMode('move');
+    const help=document.querySelector('.fw-garden-help');if(help)help.textContent='实体沙纹会围绕石组自然转向。你也可以拖动石头，或用细耙、中耙、粗耙继续塑形；“抹平”只整理自己的局部纹路。';
     const style=document.createElement('style');style.dataset.gardenToolsV4='true';style.textContent=`
-      #fwGardenInner{background:#f5f5f1!important;background-image:none!important}
-      #fwGardenInner #fwGardenCanvas{display:none!important}
+      #fwGardenInner{background:linear-gradient(145deg,#f7f6f1,#ebe9e2)!important;box-shadow:inset 0 0 28px rgba(70,67,59,.11),inset 0 1px 0 rgba(255,255,255,.8)!important}
+      #fwGardenInner #fwGardenCanvas{display:block!important}
       #fwGardenUserCanvas{z-index:4!important;touch-action:none;background:transparent!important}
       .fw-edit-tools-v4{width:68px!important;right:-82px!important;padding:7px 5px!important;border-radius:18px!important}
       .fw-edit-tools-v4 .fw-tool{height:45px!important;font-size:10px!important;line-height:1.05!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important}
       .fw-edit-tools-v4 .fw-tool svg{width:15px!important;height:15px!important;margin:0!important}
+      @media(max-width:1050px){.fw-edit-tools-v4{right:8px!important;top:8px!important;transform:none!important;width:190px!important;grid-template-columns:repeat(4,1fr)!important;gap:3px!important;background:rgba(250,249,246,.94)!important}.fw-editing .fw-edit-tools-v4{display:grid!important}.fw-edit-tools-v4 .fw-tool{height:40px!important}}
     `;document.head.appendChild(style);
-    new MutationObserver(()=>{forceCleanBase();setMode(mode);}).observe(frame,{attributes:true,attributeFilter:['class']});
+    new MutationObserver(()=>{restorePhysicalBase();setMode(mode);}).observe(frame,{attributes:true,attributeFilter:['class']});
     window.addEventListener('resize',redraw);requestAnimationFrame(redraw);return true;
   }
   function boot(){

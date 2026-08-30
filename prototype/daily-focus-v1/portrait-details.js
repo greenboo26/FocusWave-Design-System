@@ -33,13 +33,13 @@
   ];
 
   const STATE_META = {
-    stable:{label:'稳定',color:'rgba(117,145,132,.42)'},
-    drift:{label:'游移',color:'rgba(139,151,143,.32)'},
-    dispersed:{label:'分散',color:'rgba(168,151,130,.34)'},
-    refocus:{label:'回收',color:'rgba(123,146,137,.52)'}
+    stable:{label:'稳定',color:'rgba(103,139,120,.58)',line:'#688f79',wash:'rgba(103,139,120,.055)'},
+    drift:{label:'游移',color:'rgba(142,151,140,.52)',line:'#8b9589',wash:'rgba(142,151,140,.052)'},
+    dispersed:{label:'分散',color:'rgba(174,145,113,.56)',line:'#aa8d6d',wash:'rgba(174,145,113,.065)'},
+    refocus:{label:'回收',color:'rgba(89,137,135,.62)',line:'#5b8986',wash:'rgba(89,137,135,.065)'}
   };
 
-  let detailPage=null,currentIndex=-1,chartMetric='focus';
+  let detailPage=null,currentIndex=-1,chartMetric='focus',chartRaf=0;
 
   function injectStyles(){
     if(document.querySelector('style[data-focuswave-portrait-detail]'))return;
@@ -72,7 +72,7 @@
       .portrait-metric-tabs{display:flex;gap:7px;flex-wrap:wrap}
       .portrait-metric-tabs button{border:1px solid var(--hair);background:transparent;border-radius:999px;padding:7px 11px;font-size:11px;cursor:pointer;color:#65706b}
       .portrait-metric-tabs button.active{border-color:#83988e;background:rgba(131,152,142,.06);color:var(--ink)}
-      .portrait-chart-wrap{height:250px;margin-top:22px;position:relative}
+      .portrait-chart-wrap{height:285px;margin-top:22px;position:relative}
       .portrait-chart-wrap canvas{width:100%;height:100%;display:block}
       .portrait-timeline{margin-top:24px}
       .portrait-timeline-title{font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:10px}
@@ -164,7 +164,7 @@
       const button=e.target.closest('[data-metric]');if(!button)return;
       chartMetric=button.dataset.metric;
       detailPage.querySelectorAll('#pdMetricTabs button').forEach(b=>b.classList.toggle('active',b===button));
-      renderChart();
+      animateChart();
     });
     return detailPage;
   }
@@ -181,30 +181,55 @@
     if(engine?.drawField) engine.drawField(canvas,{theme:session.theme,state,t:session.seed*.73});
   }
 
-  function renderChart(){
+  function renderChart(progress=1){
     if(currentIndex<0)return;
     const session=SESSION_DATA[currentIndex],series=session._series||(session._series=buildSeries(session));
-    const values=series[chartMetric],canvas=detailPage.querySelector('#pdChart'),{w,h}=resizeCanvas(canvas),ctx=canvas.getContext('2d');
+    const values=series[chartMetric],canvas=detailPage.querySelector('#pdChart'),{w,h,d}=resizeCanvas(canvas),ctx=canvas.getContext('2d');
     ctx.clearRect(0,0,w,h);
-    const padL=42,padR=12,padT=18,padB=28,plotW=w-padL-padR,plotH=h-padT-padB;
+    const padL=42*d,padR=12*d,padT=18*d,padB=30*d,plotW=w-padL-padR,plotH=h-padT-padB;
     const ranges={focus:[30,100],confidence:[.5,1],quality:[70,100]},[min,max]=ranges[chartMetric];
+    session.segments.forEach(seg=>{
+      const x=padL+seg.s/session.duration*plotW,width=(seg.e-seg.s)/session.duration*plotW;
+      ctx.fillStyle=STATE_META[seg.state].wash;ctx.fillRect(x,padT,width,plotH);
+    });
     ctx.strokeStyle='rgba(41,51,47,.08)';ctx.lineWidth=1;
     for(let k=0;k<4;k++){const y=padT+plotH*k/3;ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(w-padR,y);ctx.stroke()}
-    ctx.fillStyle='rgba(90,99,94,.58)';ctx.font=`${Math.max(18,10*(devicePixelRatio||1))}px sans-serif`;
+    ctx.fillStyle='rgba(90,99,94,.58)';ctx.font=`${10*d}px Inter, sans-serif`;
     ctx.textAlign='right';ctx.textBaseline='middle';
     for(let k=0;k<4;k++){
       const v=max-(max-min)*k/3,label=chartMetric==='confidence'?v.toFixed(2):Math.round(v).toString();
-      ctx.fillText(label,padL-8,padT+plotH*k/3);
+      ctx.fillText(label,padL-8*d,padT+plotH*k/3);
     }
-    ctx.beginPath();
-    values.forEach((v,i)=>{
-      const x=padL+i/(values.length-1)*plotW,y=padT+(1-(v-min)/(max-min))*plotH;
-      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+    const points=values.map((v,i)=>({
+      x:padL+i/(values.length-1)*plotW,
+      y:padT+(1-(v-min)/(max-min))*plotH,
+      minute:i/(values.length-1)*session.duration
+    }));
+    const revealIndex=Math.max(1,Math.floor((points.length-1)*progress));
+    ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=1.8*d;
+    for(let i=1;i<=revealIndex;i++){
+      const previous=points[i-1],point=points[i],state=segmentAt(session,(previous.minute+point.minute)/2);
+      ctx.beginPath();ctx.moveTo(previous.x,previous.y);ctx.lineTo(point.x,point.y);
+      ctx.strokeStyle=STATE_META[state].line;ctx.stroke();
+    }
+    session.segments.slice(1).forEach(seg=>{
+      if(seg.s/session.duration>progress)return;
+      const i=Math.min(points.length-1,Math.round(seg.s/session.duration*(points.length-1))),point=points[i];
+      ctx.beginPath();ctx.arc(point.x,point.y,2.25*d,0,Math.PI*2);ctx.fillStyle=STATE_META[seg.state].line;ctx.fill();
     });
-    ctx.strokeStyle=chartMetric==='focus'?'rgba(105,139,128,.72)':chartMetric==='confidence'?'rgba(116,132,143,.66)':'rgba(151,137,110,.60)';
-    ctx.lineWidth=Math.max(1.2,(devicePixelRatio||1)*.85);ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
     ctx.fillStyle='rgba(90,99,94,.58)';ctx.textAlign='center';ctx.textBaseline='top';
-    [0,.25,.5,.75,1].forEach(p=>ctx.fillText(`${Math.round(session.duration*p)} min`,padL+plotW*p,h-padB+8));
+    [0,.25,.5,.75,1].forEach(p=>ctx.fillText(`${Math.round(session.duration*p)} min`,padL+plotW*p,h-padB+8*d));
+  }
+
+  function animateChart(){
+    cancelAnimationFrame(chartRaf);
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){renderChart(1);return}
+    const start=performance.now();
+    const frame=now=>{
+      const raw=Math.min(1,(now-start)/780),progress=1-Math.pow(1-raw,3);
+      renderChart(progress);if(raw<1)chartRaf=requestAnimationFrame(frame);
+    };
+    chartRaf=requestAnimationFrame(frame);
   }
 
   function renderStates(session){
@@ -236,7 +261,7 @@
     detailPage.querySelector('#pdCoverage').textContent=`${s.quality}%`;
     detailPage.querySelector('#pdSummary').textContent=s.summary;
     chartMetric='focus';detailPage.querySelectorAll('#pdMetricTabs button').forEach(b=>b.classList.toggle('active',b.dataset.metric==='focus'));
-    requestAnimationFrame(()=>{renderPortrait(s);renderChart();renderStates(s);renderMoments(s)});
+    requestAnimationFrame(()=>{renderPortrait(s);animateChart();renderStates(s);renderMoments(s)});
   }
 
   function openDetail(index,push=true){
@@ -257,7 +282,7 @@
 
   function init(){
     injectStyles();ensurePage();bindCards();
-    window.addEventListener('resize',()=>{if(currentIndex>=0){renderPortrait(SESSION_DATA[currentIndex]);renderChart()}});
+    window.addEventListener('resize',()=>{if(currentIndex>=0){renderPortrait(SESSION_DATA[currentIndex]);renderChart(1)}});
     window.addEventListener('popstate',e=>{
       const idx=e.state?.portraitDetail;
       if(Number.isInteger(idx))openDetail(idx,false);else closeDetail();

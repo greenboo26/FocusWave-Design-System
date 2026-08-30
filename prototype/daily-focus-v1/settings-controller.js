@@ -93,19 +93,19 @@ function ensurePracticeSignatureRuntime() {
 }
 
 function ensurePortraitDetailsRuntime() {
-  return appendRuntime('./portrait-details.js', 'portrait-details');
+  return appendRuntime('./portrait-details.js?v=2', 'portrait-details');
 }
 
 async function ensureInsightsRuntime() {
-  await appendRuntime('./insights-longterm.js', 'insights-longterm');
-  await appendRuntime('./garden-tools-v3.js', 'garden-tools-v3');
+  await appendRuntime('./insights-longterm.js?v=3', 'insights-longterm');
+  await appendRuntime('./garden-tools-v3.js?v=5', 'garden-tools-v3');
 }
 
 function ensureLiveEngines() {
   if (liveEnginePromise) return liveEnginePromise;
   liveEnginePromise = Promise.all([
-    appendRuntime('./generative-visual-engine.js', 'generative-visual-engine'),
-    appendRuntime('./content-engine.js', 'content-engine')
+    appendRuntime('./generative-visual-engine.js?v=12', 'generative-visual-engine'),
+    appendRuntime('./content-engine.js?v=2', 'content-engine')
   ]).then(() => {
     liveReady = true;
     window.FocusWaveContentEngine?.refresh?.();
@@ -271,7 +271,7 @@ function loadForPage(page) {
   }
   if (page === 'insights') return ensureInsightsRuntime();
   if (page === 'practice') return ensurePracticeSignatureRuntime();
-  if (page === 'settings') return appendRuntime('./content-engine.js', 'content-engine');
+  if (page === 'settings') return appendRuntime('./content-engine.js?v=2', 'content-engine');
   return Promise.resolve();
 }
 

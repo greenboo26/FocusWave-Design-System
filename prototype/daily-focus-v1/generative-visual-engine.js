@@ -1,4 +1,4 @@
-/* FocusWave generative visual engine v11
+/* FocusWave generative visual engine v12
  * Four distinct natural grammars in one restrained fine-line language.
  * - rain (internal key: ocean): concentric rain ripples only; no horizontal background field.
  * - mountain: immutable mountain geometry; only visible fog moves laterally across it.
@@ -45,10 +45,10 @@
   // RAIN — only top-down concentric ripples. No horizontal water field.
   // ---------------------------------------------------------------------------
   function rainMode(key){
-    if(key==='stable')    return {sources:15,min:.026,max:.070,rings:[3,5],speed:.026,alpha:.34,varn:.10};
-    if(key==='drift')     return {sources:13,min:.022,max:.115,rings:[2,5],speed:.043,alpha:.36,varn:.40};
-    if(key==='dispersed') return {sources:18,min:.014,max:.175,rings:[1,5],speed:.068,alpha:.40,varn:.88};
-    return {sources:14,min:.024,max:.085,rings:[3,5],speed:.032,alpha:.37,varn:.20};
+    if(key==='stable')    return {sources:15,min:.032,max:.090,rings:[3,5],speed:.24,alpha:.42,varn:.10};
+    if(key==='drift')     return {sources:13,min:.026,max:.135,rings:[2,5],speed:.28,alpha:.44,varn:.46};
+    if(key==='dispersed') return {sources:19,min:.018,max:.195,rings:[1,5],speed:.34,alpha:.48,varn:1.02};
+    return {sources:14,min:.028,max:.105,rings:[3,5],speed:.26,alpha:.45,varn:.24};
   }
   function drawRain(ctx,w,h,c,st,t){
     const key=stateKey(st),m=rainMode(key),minDim=Math.min(w,h);
@@ -109,7 +109,7 @@
           const u=i/360,yn=cfg.base+offset+fixedMountainProfile(g,u)*scale;
           const x=u*w,y=yn*h; i?ctx.lineTo(x,y):ctx.moveTo(x,y);
         }
-        stroke(ctx,c,.19+g*.015+(j%4)*.008,.78+(j%3)*.12);
+        stroke(ctx,c,.25+g*.018+(j%4)*.009,.90+(j%3)*.14);
       }
     }
     return cv;
@@ -120,10 +120,10 @@
     return mountainCache.canvas;
   }
   function fogMode(key){
-    if(key==='stable') return {count:2,speed:.0012,erase:.48,visible:.17};
-    if(key==='drift') return {count:3,speed:.0028,erase:.63,visible:.20};
-    if(key==='dispersed') return {count:4,speed:.0046,erase:.78,visible:.23};
-    return {count:3,speed:.0022,erase:.57,visible:.19};
+    if(key==='stable') return {count:2,speed:.10,erase:.52,visible:.21};
+    if(key==='drift') return {count:3,speed:.12,erase:.67,visible:.24};
+    if(key==='dispersed') return {count:4,speed:.15,erase:.82,visible:.28};
+    return {count:3,speed:.11,erase:.61,visible:.23};
   }
   const fogTemplates=[
     {y:.29,w:.34,h:.055,p:.04},{y:.43,w:.42,h:.070,p:.37},{y:.61,w:.38,h:.078,p:.69},{y:.75,w:.33,h:.060,p:.88}
@@ -183,22 +183,22 @@
   // ---------------------------------------------------------------------------
   function incenseScale(key){ return key==='stable'?.55:key==='drift'?.82:key==='dispersed'?1.16:.70; }
   function drawIncense(ctx,w,h,c,st,t){
-    const key=stateKey(st),s=incenseScale(key),strands=8;
+    const key=stateKey(st),s=incenseScale(key),strands=9,motion=t*5.2;
     for(let j=0;j<strands;j++){
       const x0=w*(.18+j/(strands-1)*.64)+(rnd(60+j)-.5)*w*.032;
       ctx.beginPath();
       for(let i=0;i<=170;i++){
         const yn=i/170,y=h*(.90-yn*.79),upper=Math.pow(yn,1.58);
-        const curl1=Math.sin(yn*(5.4+rnd(70+j)*3.8)+t*.075+j*.83)*w*.014*upper*s;
-        const curl2=Math.sin(yn*12.2+t*.13+j*.69)*w*.008*upper*s;
+        const curl1=Math.sin(yn*(5.4+rnd(70+j)*3.8)+motion*.075+j*.83)*w*.014*upper*s;
+        const curl2=Math.sin(yn*12.2+motion*.13+j*.69)*w*.008*upper*s;
         const drift=(rnd(80+j)-.5)*w*.044*yn;
         let fold=0;
-        if(j===3) fold+=w*(key==='stable'?.010:key==='drift'?.032:key==='dispersed'?.050:.024)*Math.sin((yn-.38)*Math.PI*2.2+t*.05)*gaussian(yn,.69,.22);
-        if(key==='dispersed'&&j===5) fold-=w*.040*Math.sin((yn-.34)*Math.PI*1.9-t*.045+1.1)*gaussian(yn,.66,.25);
+        if(j===3) fold+=w*(key==='stable'?.010:key==='drift'?.032:key==='dispersed'?.050:.024)*Math.sin((yn-.38)*Math.PI*2.2+motion*.05)*gaussian(yn,.69,.22);
+        if(key==='dispersed'&&j===5) fold-=w*.040*Math.sin((yn-.34)*Math.PI*1.9-motion*.045+1.1)*gaussian(yn,.66,.25);
         if(key==='refocus') fold+=(w*.50-(x0+drift))*smooth01(yn)*.10;
         const x=x0+curl1+curl2+drift+fold; i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
-      stroke(ctx,c,.18+rnd(90+j)*.17,.72+rnd(100+j)*1.20);
+      stroke(ctx,c,.25+rnd(90+j)*.18,.84+rnd(100+j)*1.24);
     }
   }
 
@@ -226,7 +226,7 @@
       const rq=(yn-topY)/(bottomY-topY);
       const taper=rq<.12 ? 0 : smooth01((rq-.12)/.88);
       const half=w*lerp(m.top,m.bottom,taper)*(1+(rnd(2200+j)-.5)*.18);
-      const center=cx*w + (rnd(2300+j)-.5)*w*.012 + Math.sin(t*.10+j*.61)*w*m.sway*(.25+.75*rq);
+      const center=cx*w + (rnd(2300+j)-.5)*w*.012 + Math.sin(t*.72+j*.61)*w*m.sway*(.25+.75*rq);
       const pieces=2+Math.floor(m.fragment*5)+(j%8===0?1:0);
       const block=half*2/pieces;
       for(let p=0;p<pieces;p++){
@@ -236,7 +236,7 @@
         const trimL=block*(.05+.20*rnd(2500+j*13+p));
         const trimR=block*(.06+.22*rnd(2600+j*13+p));
         const x1=left+trimL,x2=left+block-trimR; if(x2<=x1) continue;
-        const flicker=.88+.12*Math.sin(t*.16+j*.83+p*1.6);
+        const flicker=.86+.14*Math.sin(t*.92+j*.83+p*1.6);
         const alpha=(.24+.10*(1-rq))*(.88+.18*rnd(2700+j*7+p))*m.shine*flicker;
         const width=.88+1.00*(1-rq)+rnd(2800+j*7+p)*.40;
         const mid=(x1+x2)/2;
@@ -265,5 +265,5 @@
     }));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-  window.FocusWaveVisualEngine={reseed,drawField:drawFieldV11,get seed(){return sessionSeed;},version:'v11'};
+  window.FocusWaveVisualEngine={reseed,drawField:drawFieldV11,get seed(){return sessionSeed;},version:'v12'};
 })();

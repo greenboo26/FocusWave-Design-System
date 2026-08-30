@@ -5,6 +5,17 @@
     {"id":"zh-tao-002","text":"山气日夕佳，飞鸟相与还。","author":"陶渊明","work":"饮酒·其五","theme":["mountain","dusk"],"state":["stable","refocus"],"function":"return","rights":"public-domain","verified":true},
     {"id":"zh-su-001","text":"何妨吟啸且徐行。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["drift","refocus"],"function":"accept-and-return","rights":"public-domain","verified":true},
     {"id":"zh-su-002","text":"山头斜照却相迎。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["mountain","dusk"],"state":["refocus"],"function":"recovery","rights":"public-domain","verified":true},
-    {"id":"zh-su-003","text":"也无风雨也无晴。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["stable","refocus"],"function":"equanimity","rights":"public-domain","verified":true}
+    {"id":"zh-su-003","text":"也无风雨也无晴。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["stable","refocus"],"function":"equanimity","rights":"public-domain","verified":true},
+    {"id":"zh-wang-001","text":"行到水穷处，坐看云起时。","author":"王维","work":"终南别业","theme":["mountain","ocean"],"state":["drift","refocus"],"function":"allow-and-return","rights":"public-domain","verified":true},
+    {"id":"zh-wang-002","text":"人闲桂花落，夜静春山空。","author":"王维","work":"鸟鸣涧","theme":["mountain","incense"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},
+    {"id":"zh-wang-003","text":"明月松间照，清泉石上流。","author":"王维","work":"山居秋暝","theme":["mountain","ocean"],"state":["stable"],"function":"clear-attention","rights":"public-domain","verified":true},
+    {"id":"zh-tao-003","text":"心远地自偏。","author":"陶渊明","work":"饮酒·其五","theme":["mountain","dusk"],"state":["stable","refocus"],"function":"return-inward","rights":"public-domain","verified":true},
+    {"id":"zh-tao-004","text":"久在樊笼里，复得返自然。","author":"陶渊明","work":"归园田居·其一","theme":["mountain","dusk"],"state":["refocus"],"function":"return","rights":"public-domain","verified":true},
+    {"id":"zh-zhuge-001","text":"静以修身，俭以养德。","author":"诸葛亮","work":"诫子书","theme":["incense","mountain"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},
+    {"id":"zh-liu-001","text":"无丝竹之乱耳，无案牍之劳形。","author":"刘禹锡","work":"陋室铭","theme":["incense","mountain"],"state":["dispersed","refocus"],"function":"reduce-distraction","rights":"public-domain","verified":true},
+    {"id":"zh-li-001","text":"相看两不厌，只有敬亭山。","author":"李白","work":"独坐敬亭山","theme":["mountain"],"state":["stable"],"function":"sustain-attention","rights":"public-domain","verified":true},
+    {"id":"zh-du-001","text":"清江一曲抱村流，长夏江村事事幽。","author":"杜甫","work":"江村","theme":["ocean","mountain"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},
+    {"id":"zh-xin-001","text":"明月别枝惊鹊，清风半夜鸣蝉。","author":"辛弃疾","work":"西江月·夜行黄沙道中","theme":["dusk","mountain"],"state":["drift"],"function":"notice","rights":"public-domain","verified":true},
+    {"id":"zh-su-004","text":"回首向来萧瑟处，归去。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["refocus"],"function":"return","rights":"public-domain","verified":true}
   ]
 }

@@ -9,6 +9,20 @@
     { value: 'reflection', label: '会话回顾' },
     { value: 'guidance', label: '回顾 + 建议' },
   ];
+  const CONTENT_DRAFTS = [
+    { text:'水面恢复同一方向，下一行也重新变得清楚。', theme:'ocean', state:'refocus' },
+    { text:'远浪保持自己的节拍，你只需要完成眼前这一拍。', theme:'ocean', state:'stable' },
+    { text:'云影暂时越过峰线，你已经察觉到目光的移动。', theme:'mountain', state:'drift' },
+    { text:'最近的一道山脊先显现出来，从这里重新开始。', theme:'mountain', state:'refocus' },
+    { text:'烟线细而连贯，手边的节奏也没有中断。', theme:'incense', state:'stable' },
+    { text:'散开的烟留下许多方向，先不急着追随任何一条。', theme:'incense', state:'dispersed' },
+    { text:'暮色收回窗边，注意也回到桌面中央。', theme:'dusk', state:'refocus' },
+    { text:'余光分成许多细片，你看见思绪也正在外散。', theme:'dusk', state:'dispersed' },
+    { text:'一小段潮声带走了目光，岸线仍然留在近处。', theme:'ocean', state:'drift' },
+    { text:'雾气同时遮住几层山色，注意暂时失去了远近。', theme:'mountain', state:'dispersed' },
+    { text:'烟身轻轻转弯，思路也偏离了原来的位置。', theme:'incense', state:'drift' },
+    { text:'晚风没有打断这一段连续的光。', theme:'dusk', state:'stable' }
+  ];
 
   function mode() {
     const value = localStorage.getItem(MODE_KEY) || 'reflection';
@@ -56,6 +70,23 @@
           generated_at: new Date().toISOString(),
         },
       };
+    },
+    async generateContentBatch({ count = 8 } = {}) {
+      await new Promise((resolve) => setTimeout(resolve, 680));
+      const offset = Math.floor(Date.now() / 1000) % CONTENT_DRAFTS.length;
+      return Array.from({ length: Math.min(count, CONTENT_DRAFTS.length) }, (_, index) => {
+        const draft = CONTENT_DRAFTS[(offset + index) % CONTENT_DRAFTS.length];
+        return {
+          ...draft,
+          id: `draft-${Date.now()}-${index + 1}`,
+          provenance: {
+            provider: 'local-preview',
+            template: 'focuswave-content-batch-v1',
+            generated_at: new Date().toISOString(),
+            review_status: 'draft'
+          }
+        };
+      });
     },
   };
 

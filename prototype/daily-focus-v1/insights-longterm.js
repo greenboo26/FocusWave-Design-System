@@ -42,6 +42,8 @@
   let activeStroke = null;
   let rewardCount = 4;
   let strokes = [];
+  let historyRaf = 0;
+  let historyHoverIndex = -1;
 
   const stones = [
     {id:'s1',x:.17,y:.22,size:82,shape:0,rotation:-5},
@@ -107,14 +109,14 @@
       .fw-editing .fw-edit-tools{display:flex;flex-direction:column;gap:4px}.fw-tool{height:42px;border:0;border-radius:12px;background:transparent;cursor:pointer;font-size:11px;color:#777d78}.fw-tool.active,.fw-tool:hover{background:#ebece7;color:#414a45}.fw-tool svg{display:block;margin:0 auto 2px;width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.4}
       .fw-garden-help{text-align:center;height:31px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#8c908b;opacity:0;transition:opacity .2s}.fw-editing+.fw-garden-help{opacity:1}
       .fw-stats{margin:34px 0 0;border:1px solid rgba(48,51,47,.08);border-radius:17px;display:grid;grid-template-columns:repeat(4,1fr);min-height:104px;background:rgba(255,255,255,.15)}
-      .fw-stat{padding:20px 28px;display:grid;grid-template-columns:1fr auto;align-items:center;border-right:1px solid rgba(48,51,47,.075)}.fw-stat:last-child{border-right:0}.fw-stat-label{font-size:11px;color:#7f847f;margin-bottom:8px}.fw-stat-value{font-family:Georgia,var(--human),serif;font-size:29px;color:#313631;font-weight:400;font-variant-numeric:tabular-nums}.fw-stat-value small{font-family:var(--ui);font-size:11px;color:#747a75;margin-left:5px}.fw-stat-viz{width:76px;height:44px}.fw-stat-bars{display:flex;align-items:end;gap:5px;height:38px}.fw-stat-bars i{width:4px;background:#b9c1b8;display:block}.fw-stat-line svg{width:78px;height:42px;overflow:visible}.fw-stat-pebbles{display:flex;gap:3px;align-items:end}.fw-stat-pebbles i{width:15px;height:14px;background:linear-gradient(145deg,#a3a39f,#676b66);clip-path:polygon(28% 3%,70% 10%,95% 56%,72% 94%,18% 83%,4% 44%);filter:drop-shadow(0 3px 2px rgba(30,32,30,.12))}.fw-stat-pebbles i:nth-child(2){width:22px;height:22px}.fw-quality{display:flex;align-items:center;gap:10px}.fw-quality-ring{width:42px;height:42px;border-radius:50%;background:conic-gradient(#7d9880 0 82%,#e0e2dc 82%);position:relative}.fw-quality-ring:after{content:'';position:absolute;inset:5px;border-radius:50%;background:#f7f6f2}
+      .fw-stat{padding:20px 24px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;border-right:1px solid rgba(48,51,47,.075)}.fw-stat:last-child{border-right:0}.fw-stat-label{font-size:11px;color:#7f847f;margin-bottom:8px}.fw-stat-value{font-family:var(--ui);font-size:27px;line-height:1;color:#313b36;font-weight:430;letter-spacing:-.025em;font-variant-numeric:tabular-nums}.fw-stat-value small{font-family:var(--ui);font-size:11px;font-weight:400;letter-spacing:0;color:#747a75;margin-left:5px}.fw-stat-viz{width:92px;height:52px;position:relative}.fw-stat-viz:after{content:attr(data-note);position:absolute;right:0;bottom:-1px;font-size:9px;color:#8a908a;letter-spacing:.03em}.fw-stat-bars{display:flex;align-items:end;gap:5px;padding-bottom:12px}.fw-stat-bars i{width:5px;border-radius:4px 4px 1px 1px;background:linear-gradient(180deg,#789482,#bdc7bf);display:block;transform-origin:bottom;animation:fw-stat-grow .8s cubic-bezier(.22,.61,.36,1) both}.fw-stat-bars i:nth-child(2){animation-delay:.05s}.fw-stat-bars i:nth-child(3){animation-delay:.1s}.fw-stat-bars i:nth-child(4){animation-delay:.15s}.fw-stat-bars i:nth-child(5){animation-delay:.2s}.fw-stat-bars i:nth-child(6){animation-delay:.25s}.fw-stat-bars i:nth-child(7){animation-delay:.3s}@keyframes fw-stat-grow{from{transform:scaleY(.08);opacity:.25}to{transform:scaleY(1);opacity:1}}.fw-stat-line svg{width:92px;height:46px;overflow:visible}.fw-stat-line .area{fill:url(#fwStatArea)}.fw-stat-line .trace{fill:none;stroke:#789482;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.fw-stat-line .baseline{stroke:#b9bdb7;stroke-width:.7;stroke-dasharray:3 4}.fw-stat-pebbles{display:flex;gap:4px;align-items:end;padding:8px 0 11px}.fw-stat-pebbles i{width:18px;height:16px;background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.32),transparent 25%),linear-gradient(145deg,#a3a39f,#595f59);clip-path:polygon(28% 3%,70% 10%,95% 56%,72% 94%,18% 83%,4% 44%);filter:drop-shadow(0 5px 3px rgba(30,32,30,.18))}.fw-stat-pebbles i:nth-child(2){width:27px;height:25px}.fw-quality{display:flex;align-items:center;gap:9px}.fw-quality-ring{width:49px;height:49px;border-radius:50%;background:conic-gradient(#668b73 0 82%,#dfe3dc 82%);position:relative;box-shadow:0 0 0 1px rgba(72,90,79,.05)}.fw-quality-ring:after{content:'82';position:absolute;inset:6px;border-radius:50%;background:#f7f6f2;display:grid;place-items:center;font:10px var(--ui);color:#52645a}.fw-quality>span{font-size:10px!important}.fw-quality>span b{display:block;font-weight:400;color:#5c7064;margin-bottom:3px}
       .fw-i-quote{text-align:center;font-family:var(--human);font-size:14px;letter-spacing:.09em;color:#8d918c;margin-top:23px}
       .fw-deep{padding:82px 8vw 110px;border-top:1px solid rgba(48,51,47,.065);background:#f8f7f4}
       .fw-deep-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:45px}.fw-deep-title{font-family:var(--human);font-size:31px;font-weight:400;letter-spacing:.05em;margin:0 0 8px}.fw-deep-sub{font-size:12px;color:#888d88}.fw-range{display:flex;gap:7px}.fw-range button{border:1px solid rgba(48,51,47,.09);background:transparent;border-radius:999px;padding:7px 12px;color:#7b817c;font-size:11px;cursor:pointer}.fw-range button.active{background:#e9ebe6;color:#48534d}
-      .fw-analysis-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:66px}.fw-chart-block{border-top:1px solid rgba(48,51,47,.10);padding-top:20px}.fw-chart-label{font-size:11px;color:#818681;margin-bottom:16px}.fw-history-chart{width:100%;height:260px;display:block}.fw-pattern-list{border-top:1px solid rgba(48,51,47,.10)}.fw-pattern{padding:23px 30px 23px 0;border-bottom:1px solid rgba(48,51,47,.085);position:relative;cursor:pointer}.fw-pattern h3{font-family:var(--human);font-size:20px;font-weight:400;margin:0 0 8px}.fw-pattern p{font-size:12px;line-height:1.75;color:#818681;margin:0}.fw-pattern:after{content:'→';position:absolute;right:0;top:27px;color:#89908a}.fw-pattern:hover h3{color:#667a6d}
+      .fw-analysis-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:66px}.fw-chart-block{border-top:1px solid rgba(48,51,47,.10);padding-top:20px}.fw-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:9px}.fw-chart-label{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:#818681}.fw-chart-value{display:flex;align-items:baseline;gap:10px;margin-top:8px}.fw-chart-value b{font-family:Georgia,var(--human),serif;font-size:33px;font-weight:400;color:#35413a;font-variant-numeric:tabular-nums}.fw-chart-value span{font-size:11px;color:#728179}.fw-chart-legend{display:flex;align-items:center;gap:17px;padding-top:7px;font-size:10px;color:#808680;white-space:nowrap}.fw-chart-legend span{display:flex;align-items:center;gap:6px}.fw-chart-legend i{width:18px;height:2px;background:#789687;display:block}.fw-chart-legend span:last-child i{height:1px;background:repeating-linear-gradient(90deg,#a9a49a 0 5px,transparent 5px 8px)}.fw-chart-stage{position:relative}.fw-history-chart{width:100%;height:300px;display:block;cursor:crosshair;touch-action:pan-y}.fw-chart-tooltip{position:absolute;z-index:3;min-width:148px;padding:11px 13px;border:1px solid rgba(48,51,47,.10);border-radius:11px;background:rgba(248,247,244,.94);box-shadow:0 10px 26px rgba(48,48,44,.10);backdrop-filter:blur(10px);pointer-events:none;transform:translate(-50%,-112%);font-size:10px;line-height:1.65;color:#707772}.fw-chart-tooltip[hidden]{display:none}.fw-chart-tooltip b{display:block;font-family:var(--human);font-size:15px;font-weight:400;color:#39453e;margin-bottom:2px}.fw-chart-tooltip span{display:block}.fw-chart-caption{display:flex;justify-content:space-between;gap:20px;margin-top:8px;font-size:10px;color:#929690}.fw-pattern-list{border-top:1px solid rgba(48,51,47,.10)}.fw-pattern{padding:23px 30px 23px 0;border-bottom:1px solid rgba(48,51,47,.085);position:relative;cursor:pointer}.fw-pattern h3{font-family:var(--human);font-size:20px;font-weight:400;margin:0 0 8px}.fw-pattern p{font-size:12px;line-height:1.75;color:#818681;margin:0}.fw-pattern:after{content:'→';position:absolute;right:0;top:27px;color:#89908a}.fw-pattern:hover h3{color:#667a6d}
       .fw-detail{position:fixed;inset:0;z-index:80;background:rgba(247,246,242,.98);display:none;overflow:auto}.fw-detail.open{display:block}.fw-detail-shell{max-width:1100px;margin:0 auto;padding:42px 54px 90px}.fw-detail-top{display:flex;justify-content:space-between;align-items:center}.fw-detail-back{border:0;background:transparent;padding:8px 0;border-bottom:1px solid rgba(48,51,47,.16);cursor:pointer;color:#626b65}.fw-detail-hero{margin-top:76px;display:grid;grid-template-columns:.9fr 1.1fr;gap:80px}.fw-detail-hero h2{font-family:var(--human);font-size:40px;font-weight:400;line-height:1.4;margin:12px 0 19px}.fw-detail-summary{font-family:var(--human);font-size:19px;line-height:1.85;color:#58615c}.fw-compare{border-top:1px solid rgba(48,51,47,.10)}.fw-compare-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;padding:19px 0;border-bottom:1px solid rgba(48,51,47,.08);align-items:baseline}.fw-compare-row b{font-family:var(--human);font-size:17px;font-weight:400}.fw-compare-row span{font-size:12px;color:#747a75}.fw-detail-note{font-size:11px;line-height:1.8;color:#8a8e89;margin-top:17px}
-      @media(max-width:1050px){body.fw-insights-active .app{grid-template-columns:64px 1fr}.fw-i-top{padding:0 24px}.fw-i-hero{padding-left:4vw;padding-right:4vw}.fw-garden-frame{min-height:380px}.fw-edit-tools{right:10px}.fw-stats{grid-template-columns:1fr 1fr}.fw-stat:nth-child(2){border-right:0}.fw-stat:nth-child(-n+2){border-bottom:1px solid rgba(48,51,47,.075)}.fw-analysis-grid{grid-template-columns:1fr}.fw-detail-hero{grid-template-columns:1fr}.fw-reward-block{display:none}}
-      @media(max-width:720px){body.fw-insights-active .app{display:block}body.fw-insights-active .main{grid-column:1}.fw-i-top{grid-template-columns:1fr auto;height:76px}.fw-i-session{display:none}.fw-i-heading{grid-template-columns:1fr}.fw-i-title{font-size:32px}.fw-garden-frame{height:420px;min-height:0;padding:8px}.fw-stats{grid-template-columns:1fr}.fw-stat{border-right:0;border-bottom:1px solid rgba(48,51,47,.075)}.fw-stat:last-child{border-bottom:0}.fw-deep{padding:60px 24px}.fw-i-hero{padding:22px 20px 60px}.fw-detail-shell{padding:28px 24px 60px}}
+      @media(max-width:1050px){body.fw-insights-active .app{grid-template-columns:64px 1fr}.fw-i-top{padding:0 24px}.fw-i-hero{padding-left:4vw;padding-right:4vw}.fw-i-heading{grid-template-columns:1fr}.fw-reward-block{display:flex;align-items:center;margin-top:16px}.fw-reward-label,.fw-reward-tray{display:none}.fw-garden-frame{min-height:380px}.fw-edit-tools{right:10px}.fw-stats{grid-template-columns:1fr 1fr}.fw-stat:nth-child(2){border-right:0}.fw-stat:nth-child(-n+2){border-bottom:1px solid rgba(48,51,47,.075)}.fw-analysis-grid{grid-template-columns:1fr}.fw-detail-hero{grid-template-columns:1fr}}
+      @media(max-width:720px){body.fw-insights-active .app{display:block}body.fw-insights-active .main{grid-column:1}.fw-i-top{grid-template-columns:1fr auto;height:76px}.fw-i-session{display:none}.fw-i-heading{grid-template-columns:1fr}.fw-i-title{font-size:32px}.fw-garden-frame{height:420px;min-height:0;padding:8px}.fw-stats{grid-template-columns:1fr}.fw-stat{border-right:0;border-bottom:1px solid rgba(48,51,47,.075)}.fw-stat:last-child{border-bottom:0}.fw-deep{padding:60px 24px}.fw-i-hero{padding:22px 20px 60px}.fw-detail-shell{padding:28px 24px 60px}.fw-chart-head{display:block}.fw-chart-legend{padding-top:0;margin-top:8px}.fw-history-chart{height:270px}.fw-chart-caption{display:block;line-height:1.7}}
     `;
     document.head.appendChild(style);
   }
@@ -152,23 +154,23 @@
           </div>
           <div class="fw-garden-help">拖动石头改变庭院布局；切换“耙纹”后可以直接在沙面留下自己的纹路。</div>
           <div class="fw-stats">
-            <div class="fw-stat"><div><div class="fw-stat-label">总专注次数</div><div class="fw-stat-value">128 <small>次</small></div></div><div class="fw-stat-viz fw-stat-bars"><i style="height:9px"></i><i style="height:14px"></i><i style="height:19px"></i><i style="height:25px"></i><i style="height:31px"></i><i style="height:38px"></i></div></div>
-            <div class="fw-stat"><div><div class="fw-stat-label">连续进步</div><div class="fw-stat-value">18 <small>天</small></div></div><div class="fw-stat-viz fw-stat-line"><svg viewBox="0 0 80 44"><path d="M2 36 C12 29 17 24 25 27 S40 33 48 20 S61 13 68 18 S75 7 79 4" fill="none" stroke="#8da192" stroke-width="1.3"/><circle cx="79" cy="4" r="2" fill="#82988a"/></svg></div></div>
-            <div class="fw-stat"><div><div class="fw-stat-label">新增奖励</div><div class="fw-stat-value">3 <small>颗</small></div></div><div class="fw-stat-viz fw-stat-pebbles"><i></i><i></i><i></i></div></div>
-            <div class="fw-stat"><div><div class="fw-stat-label">专注时长（本周）</div><div class="fw-stat-value">14 <small>h</small> 32 <small>m</small></div></div><div class="fw-quality"><div class="fw-quality-ring"></div><span style="font-size:12px;color:#767d77">82%</span></div></div>
+            <div class="fw-stat"><div><div class="fw-stat-label">总专注次数</div><div class="fw-stat-value">128 <small>次</small></div></div><div class="fw-stat-viz fw-stat-bars" data-note="近 7 周"><i style="height:12px"></i><i style="height:18px"></i><i style="height:16px"></i><i style="height:25px"></i><i style="height:29px"></i><i style="height:35px"></i><i style="height:40px"></i></div></div>
+            <div class="fw-stat"><div><div class="fw-stat-label">连续进步</div><div class="fw-stat-value">18 <small>天</small></div></div><div class="fw-stat-viz fw-stat-line" data-note="基线 +9"><svg viewBox="0 0 92 46"><defs><linearGradient id="fwStatArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#789482" stop-opacity=".22"/><stop offset="1" stop-color="#789482" stop-opacity="0"/></linearGradient></defs><path class="baseline" d="M2 31 H90"/><path class="area" d="M2 37 C11 31 17 24 27 28 S42 35 51 21 S66 13 73 18 S84 8 90 5 V43 H2Z"/><path class="trace" d="M2 37 C11 31 17 24 27 28 S42 35 51 21 S66 13 73 18 S84 8 90 5"/><circle cx="90" cy="5" r="2.7" fill="#668b73"/></svg></div></div>
+            <div class="fw-stat"><div><div class="fw-stat-label">新增奖励</div><div class="fw-stat-value">3 <small>颗</small></div></div><div class="fw-stat-viz fw-stat-pebbles" data-note="本周获得"><i></i><i></i><i></i></div></div>
+            <div class="fw-stat"><div><div class="fw-stat-label">专注时长（本周）</div><div class="fw-stat-value">14 <small>h</small> 32 <small>m</small></div></div><div class="fw-quality"><div class="fw-quality-ring"></div><span style="color:#767d77"><b>目标</b>82%</span></div></div>
           </div>
           <div class="fw-i-quote">继续保持，让专注成为你的自然状态。</div>
         </main>
         <section class="fw-deep" id="fwDeepInsights">
           <div class="fw-deep-head"><div><h2 class="fw-deep-title">深入洞察</h2><div class="fw-deep-sub">把庭院背后的长期变化放到第二层查看。</div></div><div class="fw-range"><button class="active">近 14 次</button><button>近 30 天</button><button>全部时间</button></div></div>
-          <div class="fw-analysis-grid"><div class="fw-chart-block"><div class="fw-chart-label">个人基线 · Focus Index</div><canvas class="fw-history-chart" id="fwHistoryChart"></canvas></div><div class="fw-pattern-list"><article class="fw-pattern" data-pattern="evening"><h3>傍晚更容易进入稳定段</h3><p>过去两周，可比阅读 / 写作记录中的傍晚时段更稳定。</p></article><article class="fw-pattern" data-pattern="duration"><h3>45–60 分钟更适合你</h3><p>这个时长区间的后半程恢复表现更稳定。</p></article></div></div>
+          <div class="fw-analysis-grid"><div class="fw-chart-block"><div class="fw-chart-head"><div><div class="fw-chart-label">个人基线 · Focus Index</div><div class="fw-chart-value"><b>81</b><span>较第 1 次 +20</span></div></div><div class="fw-chart-legend"><span><i></i>专注指数</span><span><i></i>稳定片段</span></div></div><div class="fw-chart-stage"><canvas class="fw-history-chart" id="fwHistoryChart" tabindex="0" aria-label="最近 14 次专注指数和稳定片段趋势图"></canvas><div class="fw-chart-tooltip" id="fwChartTooltip" hidden></div></div><div class="fw-chart-caption"><span>阴影显示专注指数的整体走势</span><span>虚线为最近 14 次个人平均</span></div></div><div class="fw-pattern-list"><article class="fw-pattern" data-pattern="evening"><h3>傍晚更容易进入稳定段</h3><p>过去两周，可比阅读 / 写作记录中的傍晚时段更稳定。</p></article><article class="fw-pattern" data-pattern="duration"><h3>45–60 分钟更适合你</h3><p>这个时长区间的后半程恢复表现更稳定。</p></article></div></div>
         </section>
       </div>`;
     gardenCanvas = page.querySelector('#fwGardenCanvas');
     userCanvas = page.querySelector('#fwGardenUserCanvas');
     bindPage(page);
     renderStones();
-    requestAnimationFrame(() => { drawGarden(); drawUserRakes(); drawHistory(); });
+    requestAnimationFrame(() => { drawGarden(); drawUserRakes(); animateHistory(); });
   }
 
   function sizeCanvas(canvas) {
@@ -274,14 +276,108 @@
     });
   }
 
-  function drawHistory() {
+  function historyGeometry(w,h,d) {
+    const area={left:42*d,right:w-14*d,top:18*d,bottom:h-34*d};
+    const point=(value,index)=>({
+      x:area.left+(area.right-area.left)*index/(HISTORY.length-1),
+      y:area.bottom-(value-50)/40*(area.bottom-area.top)
+    });
+    return {area,focus:HISTORY.map((item,i)=>point(item.focus,i)),stable:HISTORY.map((item,i)=>point(item.stable,i))};
+  }
+
+  function smoothHistoryPath(ctx,points) {
+    if(!points.length)return;
+    ctx.moveTo(points[0].x,points[0].y);
+    for(let i=0;i<points.length-1;i++){
+      const current=points[i],next=points[i+1];
+      const previous=points[i-1]||current,after=points[i+2]||next;
+      const cp1x=current.x+(next.x-previous.x)/6;
+      const cp1y=current.y+(next.y-previous.y)/6;
+      const cp2x=next.x-(after.x-current.x)/6;
+      const cp2y=next.y-(after.y-current.y)/6;
+      ctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,next.x,next.y);
+    }
+  }
+
+  function drawHistory(progress=1) {
     const canvas=document.querySelector('#fwHistoryChart'); if(!canvas)return;
     const {w,h,d}=sizeCanvas(canvas),ctx=canvas.getContext('2d');ctx.clearRect(0,0,w,h);
-    const pad=24*d;
-    ctx.strokeStyle='rgba(48,51,47,.07)';ctx.lineWidth=1;
-    for(let i=0;i<4;i++){const y=pad+(h-pad*2)*i/3;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}
-    ctx.beginPath();HISTORY.forEach((item,i)=>{const x=pad+(w-pad*2)*i/(HISTORY.length-1),y=h-pad-(item.focus-50)/40*(h-pad*2);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle='rgba(112,139,124,.75)';ctx.lineWidth=1.45*d;ctx.stroke();
-    HISTORY.forEach((item,i)=>{const x=pad+(w-pad*2)*i/(HISTORY.length-1),y=h-pad-(item.focus-50)/40*(h-pad*2);ctx.beginPath();ctx.arc(x,y,2.1*d,0,Math.PI*2);ctx.fillStyle='#819689';ctx.fill()});
+    const {area,focus,stable}=historyGeometry(w,h,d);
+    const revealX=area.left+(area.right-area.left)*progress;
+    const average=HISTORY.reduce((sum,item)=>sum+item.focus,0)/HISTORY.length;
+    const yFor=value=>area.bottom-(value-50)/40*(area.bottom-area.top);
+
+    ctx.save();
+    ctx.font=`${9*d}px Inter, sans-serif`;
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    [50,60,70,80,90].forEach(value=>{
+      const y=yFor(value);
+      ctx.beginPath();ctx.moveTo(area.left,y);ctx.lineTo(area.right,y);
+      ctx.strokeStyle=value===70?'rgba(48,51,47,.11)':'rgba(48,51,47,.065)';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='rgba(87,94,89,.46)';ctx.fillText(String(value),area.left-9*d,y);
+    });
+    ctx.textAlign='center';ctx.textBaseline='top';
+    HISTORY.forEach((item,i)=>{
+      if(i%3!==0&&i!==HISTORY.length-1)return;
+      ctx.fillStyle='rgba(87,94,89,.48)';ctx.fillText(item.date,focus[i].x,area.bottom+11*d);
+    });
+
+    const averageY=yFor(average);
+    ctx.setLineDash([5*d,6*d]);ctx.beginPath();ctx.moveTo(area.left,averageY);ctx.lineTo(area.right,averageY);
+    ctx.strokeStyle='rgba(111,119,112,.35)';ctx.lineWidth=1*d;ctx.stroke();ctx.setLineDash([]);
+
+    ctx.save();ctx.beginPath();ctx.rect(area.left,area.top,Math.max(0,revealX-area.left),area.bottom-area.top);ctx.clip();
+    const areaGradient=ctx.createLinearGradient(0,area.top,0,area.bottom);
+    areaGradient.addColorStop(0,'rgba(116,151,132,.22)');areaGradient.addColorStop(.64,'rgba(116,151,132,.07)');areaGradient.addColorStop(1,'rgba(116,151,132,0)');
+    ctx.beginPath();smoothHistoryPath(ctx,focus);ctx.lineTo(focus[focus.length-1].x,area.bottom);ctx.lineTo(focus[0].x,area.bottom);ctx.closePath();ctx.fillStyle=areaGradient;ctx.fill();
+
+    ctx.beginPath();smoothHistoryPath(ctx,stable);ctx.setLineDash([4*d,5*d]);ctx.strokeStyle='rgba(155,151,140,.62)';ctx.lineWidth=1.15*d;ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();smoothHistoryPath(ctx,focus);ctx.strokeStyle='rgba(103,139,121,.92)';ctx.lineWidth=2.25*d;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(94,132,112,.16)';ctx.shadowBlur=7*d;ctx.stroke();ctx.shadowBlur=0;
+    focus.forEach((point,i)=>{
+      if(point.x>revealX+1)return;
+      ctx.beginPath();ctx.arc(point.x,point.y,(i===HISTORY.length-1?3.4:2.2)*d,0,Math.PI*2);
+      ctx.fillStyle=i===HISTORY.length-1?'#637f70':'#f8f7f4';ctx.fill();ctx.strokeStyle='rgba(99,131,114,.88)';ctx.lineWidth=1.15*d;ctx.stroke();
+    });
+    ctx.restore();
+
+    if(historyHoverIndex>=0){
+      const point=focus[historyHoverIndex];
+      ctx.beginPath();ctx.moveTo(point.x,area.top);ctx.lineTo(point.x,area.bottom);ctx.strokeStyle='rgba(71,88,78,.18)';ctx.lineWidth=1;ctx.stroke();
+      ctx.beginPath();ctx.arc(point.x,point.y,5.2*d,0,Math.PI*2);ctx.fillStyle='#f8f7f4';ctx.fill();ctx.strokeStyle='#5f7f6d';ctx.lineWidth=1.5*d;ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function animateHistory() {
+    cancelAnimationFrame(historyRaf);
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){drawHistory(1);return}
+    const start=performance.now(),duration=1150;
+    const frame=now=>{
+      const raw=Math.min(1,(now-start)/duration),progress=1-Math.pow(1-raw,3);
+      drawHistory(progress);
+      if(raw<1)historyRaf=requestAnimationFrame(frame);
+    };
+    historyRaf=requestAnimationFrame(frame);
+  }
+
+  function updateHistoryHover(event) {
+    const canvas=document.querySelector('#fwHistoryChart'),tooltip=document.querySelector('#fwChartTooltip');
+    if(!canvas||!tooltip)return;
+    const rect=canvas.getBoundingClientRect();
+    const x=event.clientX-rect.left;
+    historyHoverIndex=Math.max(0,Math.min(HISTORY.length-1,Math.round((x-42)/(rect.width-56)*(HISTORY.length-1))));
+    const item=HISTORY[historyHoverIndex];
+    const pointX=42+(rect.width-56)*historyHoverIndex/(HISTORY.length-1);
+    const pointY=18+(90-item.focus)/40*(rect.height-52);
+    tooltip.innerHTML=`<b>${item.date} · ${item.task}</b><span>专注指数 ${item.focus} · 稳定片段 ${item.stable}%</span><span>${item.duration} 分钟 · 恢复表现 ${item.recovery}%</span>`;
+    tooltip.style.left=`${pointX}px`;tooltip.style.top=`${Math.max(70,pointY)}px`;tooltip.hidden=false;
+    drawHistory(1);
+  }
+
+  function clearHistoryHover() {
+    historyHoverIndex=-1;
+    const tooltip=document.querySelector('#fwChartTooltip');if(tooltip)tooltip.hidden=true;
+    drawHistory(1);
   }
 
   function bindPage(page) {
@@ -296,6 +392,11 @@
     });
     page.querySelector('#fwClearRake')?.addEventListener('click',()=>{strokes=[];drawUserRakes()});
     page.querySelectorAll('.fw-pattern').forEach(el=>el.addEventListener('click',()=>openPattern(el.dataset.pattern)));
+    const historyCanvas=page.querySelector('#fwHistoryChart');
+    historyCanvas?.addEventListener('pointermove',updateHistoryHover);
+    historyCanvas?.addEventListener('pointerleave',clearHistoryHover);
+    historyCanvas?.addEventListener('focus',()=>{historyHoverIndex=HISTORY.length-1;drawHistory(1)});
+    historyCanvas?.addEventListener('blur',clearHistoryHover);
 
     const inner=page.querySelector('#fwGardenInner');
     inner.addEventListener('pointerdown',startStoneDrag);
@@ -304,7 +405,7 @@
     userCanvas.addEventListener('pointerdown',startRake);
     userCanvas.addEventListener('pointermove',moveRake);
     window.addEventListener('pointerup',endRake);
-    window.addEventListener('resize',()=>requestAnimationFrame(()=>{drawGarden();drawUserRakes();drawHistory()}));
+    window.addEventListener('resize',()=>requestAnimationFrame(()=>{drawGarden();drawUserRakes();drawHistory(1)}));
   }
 
   function toggleEdit() {
@@ -360,7 +461,7 @@
   function syncImmersiveState() {
     const page=document.querySelector('#page-insights');
     document.body.classList.toggle('fw-insights-active',!!page?.classList.contains('active'));
-    if(page?.classList.contains('active'))requestAnimationFrame(()=>{drawGarden();drawUserRakes();drawHistory()});
+    if(page?.classList.contains('active'))requestAnimationFrame(()=>{drawGarden();drawUserRakes();animateHistory()});
   }
 
   function init() {

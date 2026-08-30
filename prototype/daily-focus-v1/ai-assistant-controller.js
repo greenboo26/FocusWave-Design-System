@@ -174,6 +174,19 @@
       event.currentTarget.textContent = detail.hidden ? '接入说明' : '收起说明';
       event.currentTarget.setAttribute('aria-expanded', String(!detail.hidden));
     });
+    panel.querySelector('.content-library-entry')?.addEventListener('click', async () => {
+      if (window.FocusWaveContentEngine?.openLibrary) {
+        window.FocusWaveContentEngine.openLibrary();
+        return;
+      }
+      for (let attempt = 0; attempt < 40; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        if (window.FocusWaveContentEngine?.openLibrary) {
+          window.FocusWaveContentEngine.openLibrary();
+          return;
+        }
+      }
+    });
   }
 
   function ensureSummaryCard() {

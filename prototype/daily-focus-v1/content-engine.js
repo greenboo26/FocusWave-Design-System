@@ -13,6 +13,7 @@
 
   let libraries={original:null,generated:null,global:null,classical:null},lastKey='';
   let libraryCategory='original',libraryItemIndex=0;
+  let librariesReady=null;
 
   async function loadLibraries(){
     try{
@@ -225,7 +226,11 @@
     }
   }
 
-  function openLibrary(){renderLibrary();document.querySelector('#contentLibraryOverlay').classList.add('open');}
+  async function openLibrary(){
+    if(!librariesReady)librariesReady=loadLibraries();
+    await librariesReady;
+    renderLibrary();document.querySelector('#contentLibraryOverlay').classList.add('open');
+  }
   function bindLibraryEntry(){
     const panel=document.querySelector('#setting-ai');if(!panel)return;
     const target=panel.querySelector('.content-library-entry')||[...panel.querySelectorAll('.pill')].find(x=>x.textContent.trim()==='内容库');
@@ -236,7 +241,7 @@
   function bind(){
     patchApplyState();
     document.querySelector('#textGroup')?.addEventListener('click',()=>setTimeout(refresh,0));
-    loadLibraries();
+    librariesReady=loadLibraries();
     setTimeout(bindLibraryEntry,80);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();

@@ -43,7 +43,7 @@
     const tiny=document.querySelector('.tiny-stat');
     if(!page||!canvas||!art||!copy||!title||!body||typeof window.drawField!=='function')return;
 
-    const conceptRenderer=window.drawField.bind(window);
+    let conceptRenderer=window.drawField.bind(window);
     const fallbackLiterature=[
       {text:'行到水穷处，坐看云起时。',sub:'王维 · 《终南别业》',theme:'mountain'},
       {text:'永恒，由一个个此刻组成。',sub:'Emily Dickinson · Forever – is composed of Nows –',theme:'dusk'},
@@ -168,6 +168,11 @@
     document.addEventListener('visibilitychange',()=>document.hidden?stop():(repaint(),start()));
     refillBag(-1);
     loadLiterature().finally(()=>{show(nextRandom(),false);start();});
+    import('./generative-visual-engine.js?v=12').then(()=>{
+      if(typeof window.FocusWaveVisualEngine?.drawField!=='function')return;
+      conceptRenderer=window.FocusWaveVisualEngine.drawField.bind(window.FocusWaveVisualEngine);
+      repaint();
+    }).catch(()=>{/* The tiny renderer remains available if the visual runtime cannot load. */});
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});

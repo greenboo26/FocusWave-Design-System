@@ -33,10 +33,10 @@
   ];
 
   const STATE_META = {
-    stable:{label:'稳定',color:'rgba(103,139,120,.58)',line:'#688f79',wash:'rgba(103,139,120,.055)'},
-    drift:{label:'游移',color:'rgba(142,151,140,.52)',line:'#8b9589',wash:'rgba(142,151,140,.052)'},
-    dispersed:{label:'分散',color:'rgba(174,145,113,.56)',line:'#aa8d6d',wash:'rgba(174,145,113,.065)'},
-    refocus:{label:'回收',color:'rgba(89,137,135,.62)',line:'#5b8986',wash:'rgba(89,137,135,.065)'}
+    stable:{label:'稳定',color:'rgba(78,132,96,.72)',line:'#4f8661',wash:'rgba(78,132,96,.105)'},
+    drift:{label:'游移',color:'rgba(125,132,145,.68)',line:'#78808e',wash:'rgba(125,132,145,.095)'},
+    dispersed:{label:'分散',color:'rgba(182,123,70,.74)',line:'#b1733d',wash:'rgba(182,123,70,.115)'},
+    refocus:{label:'回收',color:'rgba(53,135,145,.74)',line:'#388a93',wash:'rgba(53,135,145,.11)'}
   };
 
   let detailPage=null,currentIndex=-1,chartMetric='focus',chartRaf=0;
@@ -181,7 +181,7 @@
     if(engine?.drawField) engine.drawField(canvas,{theme:session.theme,state,t:session.seed*.73});
   }
 
-  function renderChart(progress=1){
+  function renderChart(progress=1,phase=0){
     if(currentIndex<0)return;
     const session=SESSION_DATA[currentIndex],series=session._series||(session._series=buildSeries(session));
     const values=series[chartMetric],canvas=detailPage.querySelector('#pdChart'),{w,h,d}=resizeCanvas(canvas),ctx=canvas.getContext('2d');
@@ -206,7 +206,7 @@
       minute:i/(values.length-1)*session.duration
     }));
     const revealIndex=Math.max(1,Math.floor((points.length-1)*progress));
-    ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=1.8*d;
+    ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=2.15*d;
     for(let i=1;i<=revealIndex;i++){
       const previous=points[i-1],point=points[i],state=segmentAt(session,(previous.minute+point.minute)/2);
       ctx.beginPath();ctx.moveTo(previous.x,previous.y);ctx.lineTo(point.x,point.y);
@@ -217,6 +217,12 @@
       const i=Math.min(points.length-1,Math.round(seg.s/session.duration*(points.length-1))),point=points[i];
       ctx.beginPath();ctx.arc(point.x,point.y,2.25*d,0,Math.PI*2);ctx.fillStyle=STATE_META[seg.state].line;ctx.fill();
     });
+    if(progress>=1&&phase>0){
+      const position=(phase*.16)%(points.length-1),index=Math.floor(position),mix=position-index,a=points[index],b=points[index+1];
+      const x=a.x+(b.x-a.x)*mix,y=a.y+(b.y-a.y)*mix,state=segmentAt(session,a.minute+(b.minute-a.minute)*mix);
+      ctx.beginPath();ctx.arc(x,y,(4.8+Math.sin(phase*3)*1.1)*d,0,Math.PI*2);ctx.fillStyle=STATE_META[state].wash;ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,2.2*d,0,Math.PI*2);ctx.fillStyle=STATE_META[state].line;ctx.fill();
+    }
     ctx.fillStyle='rgba(90,99,94,.58)';ctx.textAlign='center';ctx.textBaseline='top';
     [0,.25,.5,.75,1].forEach(p=>ctx.fillText(`${Math.round(session.duration*p)} min`,padL+plotW*p,h-padB+8*d));
   }
@@ -227,7 +233,12 @@
     const start=performance.now();
     const frame=now=>{
       const raw=Math.min(1,(now-start)/780),progress=1-Math.pow(1-raw,3);
-      renderChart(progress);if(raw<1)chartRaf=requestAnimationFrame(frame);
+      renderChart(progress,raw>=1?(now-start)/1000:0);
+      if(raw<1)chartRaf=requestAnimationFrame(frame);
+      else {
+        const idle=idleNow=>{if(!detailPage?.classList.contains('open')||document.hidden)return;renderChart(1,(idleNow-start)/1000);chartRaf=requestAnimationFrame(idle)};
+        chartRaf=requestAnimationFrame(idle);
+      }
     };
     chartRaf=requestAnimationFrame(frame);
   }

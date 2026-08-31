@@ -116,8 +116,8 @@
   function categoryLabel(category){return category==='original'?'原创短句':category==='generated'?'新创短句':category==='global'?'世界文学':'中文古典';}
   function categoryMode(category){return category==='original'||category==='generated'?'original':category==='global'?'global':'classical';}
   function categoryCoverage(category){
-    if(category==='original'||category==='generated')return '16 组';
-    return `${entriesFor(category).length} 条`;
+    if(category==='original'||category==='generated')return '16 情境';
+    return `${entriesFor(category).length} 篇`;
   }
 
   function ensureLibraryStyles(){
@@ -202,8 +202,8 @@
     const heading=overlay.querySelector('#libraryHeading'),hint=overlay.querySelector('#libraryHint'),list=overlay.querySelector('#libraryList'),detail=overlay.querySelector('#libraryDetail'),generate=overlay.querySelector('#generateLibraryBatch');
     heading.textContent=`${categoryLabel(libraryCategory)} · 预览 (${entries.length} 条)`;
     hint.textContent=libraryCategory==='generated'?'生成不必发生在专注过程中；草稿保存在当前浏览器，筛选后再进入正式内容库。':'点击任一条目查看完整内容与来源信息。';
-    generate.hidden=libraryCategory!=='generated';generate.disabled=false;generate.textContent='生成一组草稿';generate.onclick=generateContentBatch;
-    list.innerHTML=entries.slice(0,64).map((item,i)=>`<button class="library-item ${i===libraryItemIndex?'active':''}" data-index="${i}"><b>${item.meta||categoryLabel(libraryCategory)}</b><span>${item.text}</span></button>`).join('') || '<p>内容加载中。</p>';
+    generate.hidden=libraryCategory!=='generated';generate.disabled=false;generate.textContent='扩写一组草稿';generate.onclick=generateContentBatch;
+    list.innerHTML=entries.map((item,i)=>`<button class="library-item ${i===libraryItemIndex?'active':''}" data-index="${i}"><b>${item.meta||categoryLabel(libraryCategory)}</b><span>${item.text}</span></button>`).join('') || '<p>内容加载中。</p>';
     list.querySelectorAll('[data-index]').forEach(btn=>btn.onclick=()=>{libraryItemIndex=Number(btn.dataset.index);renderLibrary();});
     const item=entries[libraryItemIndex]||entries[0];
     if(item){

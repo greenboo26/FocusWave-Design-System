@@ -93,19 +93,19 @@ function ensurePracticeSignatureRuntime() {
 }
 
 function ensurePortraitDetailsRuntime() {
-  return appendRuntime('./portrait-details.js?v=2', 'portrait-details');
+  return appendRuntime('./portrait-details.js?v=3', 'portrait-details');
 }
 
 async function ensureInsightsRuntime() {
-  await appendRuntime('./insights-longterm.js?v=3', 'insights-longterm');
-  await appendRuntime('./garden-tools-v3.js?v=5', 'garden-tools-v3');
+  await appendRuntime('./insights-longterm.js?v=4', 'insights-longterm');
+  await appendRuntime('./garden-tools-v3.js?v=6', 'garden-tools-v3');
 }
 
 function ensureLiveEngines() {
   if (liveEnginePromise) return liveEnginePromise;
   liveEnginePromise = Promise.all([
     appendRuntime('./generative-visual-engine.js?v=12', 'generative-visual-engine'),
-    appendRuntime('./content-engine.js?v=3', 'content-engine')
+    appendRuntime('./content-engine.js?v=4', 'content-engine')
   ]).then(() => {
     liveReady = true;
     window.FocusWaveContentEngine?.refresh?.();
@@ -271,7 +271,7 @@ function loadForPage(page) {
   }
   if (page === 'insights') return ensureInsightsRuntime();
   if (page === 'practice') return ensurePracticeSignatureRuntime();
-  if (page === 'settings') return appendRuntime('./content-engine.js?v=3', 'content-engine');
+  if (page === 'settings') return appendRuntime('./content-engine.js?v=4', 'content-engine');
   return Promise.resolve();
 }
 
@@ -279,7 +279,7 @@ function bindLazyRuntimeLoading() {
   document.addEventListener('click', event => {
     const libraryEntry = event.target?.closest?.('.content-library-entry');
     if (libraryEntry) {
-      appendRuntime('./content-engine.js?v=3', 'content-engine')
+      appendRuntime('./content-engine.js?v=4', 'content-engine')
         .then(() => window.FocusWaveContentEngine?.openLibrary?.());
     }
 
@@ -307,6 +307,11 @@ function bindLazyRuntimeLoading() {
 
 function init() {
   ensureLayoutStyles();
+  const motionGroup = document.querySelector('#motionSetting');
+  if (motionGroup) {
+    motionGroup.querySelectorAll('[data-value]').forEach(button => button.classList.toggle('selected', button.dataset.value === 'normal'));
+    if (typeof motionMode !== 'undefined') motionMode = 'normal';
+  }
   renderSettingsPanel();
   bindSessionEntry();
   bindExport();

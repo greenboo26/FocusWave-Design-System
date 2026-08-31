@@ -99,13 +99,13 @@
       <div class="settings-row">
         <div>
           <b>AI 服务</b>
-          <p>原型已采用可替换 provider 的适配层；当前没有连接外部模型，离线内容与本地回顾仍可使用。</p>
+          <p>离线 AI 内容批次已经进入新创短句库；外部模型未连接时，仍可继续筛选内容并在本机扩写草稿。</p>
           <div class="ai-integration-detail" id="aiIntegrationDetail" hidden>
             正式接入时，浏览器只调用 FocusWave AI Adapter。provider、模型、模板版本、输入摘要与生成时间写入每条结果的来源记录；密钥留在本地运行时或服务端，不进入网页。
           </div>
         </div>
         <div>
-          <span class="pill">本地预览 · 未连接</span>
+          <span class="pill">离线内容包 · 已接入</span>
           <button class="ghost" id="aiIntegrationDetails" type="button" style="margin-left:8px">接入说明</button>
         </div>
       </div>

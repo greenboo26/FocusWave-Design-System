@@ -19,6 +19,24 @@
     {date:'8/24',task:'写作',duration:58,focus:83,stable:79,recovery:85},
     {date:'8/25',task:'阅读',duration:42,focus:81,stable:77,recovery:83}
   ];
+  let historyData = HISTORY;
+
+  function expandedHistory(length) {
+    return Array.from({length}, (_, index) => {
+      const base = HISTORY[index % HISTORY.length];
+      const cycle = Math.floor(index / HISTORY.length);
+      const shift = Math.sin(index * .83 + cycle) * 3 - cycle;
+      const dayOffset = 25 - (length - 1 - index);
+      const date = dayOffset > 0 ? `8/${dayOffset}` : `7/${31 + dayOffset}`;
+      return {
+        ...base,
+        date,
+        focus: Math.max(52, Math.min(88, Math.round(base.focus + shift))),
+        stable: Math.max(48, Math.min(84, Math.round(base.stable + shift * .8))),
+        recovery: Math.max(52, Math.min(89, Math.round(base.recovery + shift * .65)))
+      };
+    });
+  }
 
   const PATTERNS = {
     evening: {
@@ -114,6 +132,9 @@
       .fw-deep{padding:82px 8vw 110px;border-top:1px solid rgba(48,51,47,.065);background:#f8f7f4}
       .fw-deep-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:45px}.fw-deep-title{font-family:var(--human);font-size:31px;font-weight:400;letter-spacing:.05em;margin:0 0 8px}.fw-deep-sub{font-size:12px;color:#888d88}.fw-range{display:flex;gap:7px}.fw-range button{border:1px solid rgba(48,51,47,.09);background:transparent;border-radius:999px;padding:7px 12px;color:#7b817c;font-size:11px;cursor:pointer}.fw-range button.active{background:#e9ebe6;color:#48534d}
       .fw-analysis-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:66px}.fw-chart-block{border-top:1px solid rgba(48,51,47,.10);padding-top:20px}.fw-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:9px}.fw-chart-label{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:#818681}.fw-chart-value{display:flex;align-items:baseline;gap:10px;margin-top:8px}.fw-chart-value b{font-family:Georgia,var(--human),serif;font-size:33px;font-weight:400;color:#35413a;font-variant-numeric:tabular-nums}.fw-chart-value span{font-size:11px;color:#728179}.fw-chart-legend{display:flex;align-items:center;gap:17px;padding-top:7px;font-size:10px;color:#808680;white-space:nowrap}.fw-chart-legend span{display:flex;align-items:center;gap:6px}.fw-chart-legend i{width:18px;height:2px;background:#789687;display:block}.fw-chart-legend span:last-child i{height:1px;background:repeating-linear-gradient(90deg,#a9a49a 0 5px,transparent 5px 8px)}.fw-chart-stage{position:relative}.fw-history-chart{width:100%;height:300px;display:block;cursor:crosshair;touch-action:pan-y}.fw-chart-tooltip{position:absolute;z-index:3;min-width:148px;padding:11px 13px;border:1px solid rgba(48,51,47,.10);border-radius:11px;background:rgba(248,247,244,.94);box-shadow:0 10px 26px rgba(48,48,44,.10);backdrop-filter:blur(10px);pointer-events:none;transform:translate(-50%,-112%);font-size:10px;line-height:1.65;color:#707772}.fw-chart-tooltip[hidden]{display:none}.fw-chart-tooltip b{display:block;font-family:var(--human);font-size:15px;font-weight:400;color:#39453e;margin-bottom:2px}.fw-chart-tooltip span{display:block}.fw-chart-caption{display:flex;justify-content:space-between;gap:20px;margin-top:8px;font-size:10px;color:#929690}.fw-pattern-list{border-top:1px solid rgba(48,51,47,.10)}.fw-pattern{padding:23px 30px 23px 0;border-bottom:1px solid rgba(48,51,47,.085);position:relative;cursor:pointer}.fw-pattern h3{font-family:var(--human);font-size:20px;font-weight:400;margin:0 0 8px}.fw-pattern p{font-size:12px;line-height:1.75;color:#818681;margin:0}.fw-pattern:after{content:'→';position:absolute;right:0;top:27px;color:#89908a}.fw-pattern:hover h3{color:#667a6d}
+      .fw-chart-value b{font-family:var(--ui);font-size:31px;font-weight:430;letter-spacing:-.025em}.fw-chart-legend{flex-wrap:wrap;justify-content:flex-end;max-width:310px}.fw-chart-legend span:nth-child(2) i{background:#a58a69}.fw-chart-legend span:nth-child(3) i{background:#568b8a}.fw-chart-legend span:nth-child(4) i{height:1px;background:repeating-linear-gradient(90deg,#8e928b 0 5px,transparent 5px 8px)}
+      .fw-pattern{display:grid;grid-template-columns:minmax(0,1fr) 142px;gap:18px;align-items:center;padding-right:0}.fw-pattern:after{display:none}.fw-pattern-viz{height:70px;border-left:1px solid rgba(48,51,47,.08);padding-left:16px;display:flex;align-items:center}.fw-pattern-viz svg{width:100%;height:60px;overflow:visible}.fw-pattern-viz text{font:8px var(--ui);fill:#858b86}.fw-pattern-viz .axis{stroke:rgba(62,70,65,.12);stroke-width:1}.fw-pattern-viz .primary{fill:#6f927f}.fw-pattern-viz .secondary{fill:#c2c7c0}.fw-pattern-viz .focus-zone{fill:rgba(174,145,113,.16)}.fw-pattern-viz .trace{fill:none;stroke:#668e7a;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.fw-pattern-viz .dot{fill:#f8f7f4;stroke:#668e7a;stroke-width:1.5}
+      .fw-stat-viz{width:118px;height:62px}.fw-stat-bars{gap:6px}.fw-stat-bars i{width:6px}.fw-stat-line svg{width:118px;height:54px}.fw-stat-pebbles{gap:7px}.fw-quality-ring{width:58px;height:58px}.fw-quality-ring:after{inset:7px}
       .fw-detail{position:fixed;inset:0;z-index:80;background:rgba(247,246,242,.98);display:none;overflow:auto}.fw-detail.open{display:block}.fw-detail-shell{max-width:1100px;margin:0 auto;padding:42px 54px 90px}.fw-detail-top{display:flex;justify-content:space-between;align-items:center}.fw-detail-back{border:0;background:transparent;padding:8px 0;border-bottom:1px solid rgba(48,51,47,.16);cursor:pointer;color:#626b65}.fw-detail-hero{margin-top:76px;display:grid;grid-template-columns:.9fr 1.1fr;gap:80px}.fw-detail-hero h2{font-family:var(--human);font-size:40px;font-weight:400;line-height:1.4;margin:12px 0 19px}.fw-detail-summary{font-family:var(--human);font-size:19px;line-height:1.85;color:#58615c}.fw-compare{border-top:1px solid rgba(48,51,47,.10)}.fw-compare-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;padding:19px 0;border-bottom:1px solid rgba(48,51,47,.08);align-items:baseline}.fw-compare-row b{font-family:var(--human);font-size:17px;font-weight:400}.fw-compare-row span{font-size:12px;color:#747a75}.fw-detail-note{font-size:11px;line-height:1.8;color:#8a8e89;margin-top:17px}
       @media(max-width:1050px){body.fw-insights-active .app{grid-template-columns:64px 1fr}.fw-i-top{padding:0 24px}.fw-i-hero{padding-left:4vw;padding-right:4vw}.fw-i-heading{grid-template-columns:1fr}.fw-reward-block{display:flex;align-items:center;margin-top:16px}.fw-reward-label,.fw-reward-tray{display:none}.fw-garden-frame{min-height:380px}.fw-edit-tools{right:10px}.fw-stats{grid-template-columns:1fr 1fr}.fw-stat:nth-child(2){border-right:0}.fw-stat:nth-child(-n+2){border-bottom:1px solid rgba(48,51,47,.075)}.fw-analysis-grid{grid-template-columns:1fr}.fw-detail-hero{grid-template-columns:1fr}}
       @media(max-width:720px){body.fw-insights-active .app{display:block}body.fw-insights-active .main{grid-column:1}.fw-i-top{grid-template-columns:1fr auto;height:76px}.fw-i-session{display:none}.fw-i-heading{grid-template-columns:1fr}.fw-i-title{font-size:32px}.fw-garden-frame{height:420px;min-height:0;padding:8px}.fw-stats{grid-template-columns:1fr}.fw-stat{border-right:0;border-bottom:1px solid rgba(48,51,47,.075)}.fw-stat:last-child{border-bottom:0}.fw-deep{padding:60px 24px}.fw-i-hero{padding:22px 20px 60px}.fw-detail-shell{padding:28px 24px 60px}.fw-chart-head{display:block}.fw-chart-legend{padding-top:0;margin-top:8px}.fw-history-chart{height:270px}.fw-chart-caption{display:block;line-height:1.7}}
@@ -162,8 +183,8 @@
           <div class="fw-i-quote">继续保持，让专注成为你的自然状态。</div>
         </main>
         <section class="fw-deep" id="fwDeepInsights">
-          <div class="fw-deep-head"><div><h2 class="fw-deep-title">深入洞察</h2><div class="fw-deep-sub">把庭院背后的长期变化放到第二层查看。</div></div><div class="fw-range"><button class="active">近 14 次</button><button>近 30 天</button><button>全部时间</button></div></div>
-          <div class="fw-analysis-grid"><div class="fw-chart-block"><div class="fw-chart-head"><div><div class="fw-chart-label">个人基线 · Focus Index</div><div class="fw-chart-value"><b>81</b><span>较第 1 次 +20</span></div></div><div class="fw-chart-legend"><span><i></i>专注指数</span><span><i></i>稳定片段</span></div></div><div class="fw-chart-stage"><canvas class="fw-history-chart" id="fwHistoryChart" tabindex="0" aria-label="最近 14 次专注指数和稳定片段趋势图"></canvas><div class="fw-chart-tooltip" id="fwChartTooltip" hidden></div></div><div class="fw-chart-caption"><span>阴影显示专注指数的整体走势</span><span>虚线为最近 14 次个人平均</span></div></div><div class="fw-pattern-list"><article class="fw-pattern" data-pattern="evening"><h3>傍晚更容易进入稳定段</h3><p>过去两周，可比阅读 / 写作记录中的傍晚时段更稳定。</p></article><article class="fw-pattern" data-pattern="duration"><h3>45–60 分钟更适合你</h3><p>这个时长区间的后半程恢复表现更稳定。</p></article></div></div>
+          <div class="fw-deep-head"><div><h2 class="fw-deep-title">深入洞察</h2><div class="fw-deep-sub">把庭院背后的长期变化放到第二层查看。</div></div><div class="fw-range"><button class="active" data-history-range="14">近 14 次</button><button data-history-range="30">近 30 天</button><button data-history-range="all">全部时间</button></div></div>
+          <div class="fw-analysis-grid"><div class="fw-chart-block"><div class="fw-chart-head"><div><div class="fw-chart-label">个人基线 · Focus Index</div><div class="fw-chart-value"><b>81</b><span>较第 1 次 +20</span></div></div><div class="fw-chart-legend"><span><i></i>专注指数</span><span><i></i>稳定片段</span><span><i></i>恢复表现</span><span><i></i>个人均值</span></div></div><div class="fw-chart-stage"><canvas class="fw-history-chart" id="fwHistoryChart" tabindex="0" aria-label="专注指数、稳定片段与恢复表现趋势图"></canvas><div class="fw-chart-tooltip" id="fwChartTooltip" hidden></div></div><div class="fw-chart-caption"><span>背景短柱表示单次时长，三条曲线表示三个可比指标</span><span>灰色虚线仅表示当前范围的个人均值</span></div></div><div class="fw-pattern-list"><article class="fw-pattern" data-pattern="evening"><div><h3>傍晚更容易进入稳定段</h3><p>过去两周，可比阅读 / 写作记录中的傍晚时段更稳定。</p></div><div class="fw-pattern-viz" aria-label="傍晚和其它时段稳定片段对比"><svg viewBox="0 0 130 60"><line class="axis" x1="6" y1="49" x2="124" y2="49"/><rect class="primary" x="18" y="12" width="28" height="37" rx="3"/><rect class="secondary" x="76" y="20" width="28" height="29" rx="3"/><text x="22" y="9">74%</text><text x="80" y="17">62%</text><text x="12" y="59">傍晚</text><text x="72" y="59">其它</text></svg></div></article><article class="fw-pattern" data-pattern="duration"><div><h3>45–60 分钟更适合你</h3><p>这个时长区间的后半程恢复表现更稳定。</p></div><div class="fw-pattern-viz" aria-label="不同专注时长的恢复趋势"><svg viewBox="0 0 130 60"><rect class="focus-zone" x="55" y="5" width="38" height="45" rx="4"/><line class="axis" x1="5" y1="50" x2="125" y2="50"/><path class="trace" d="M8 42 C25 38 33 29 48 28 S68 13 82 15 S105 25 122 31"/><circle class="dot" cx="74" cy="14" r="4"/><text x="56" y="59">45–60 min</text></svg></div></article></div></div>
         </section>
       </div>`;
     gardenCanvas = page.querySelector('#fwGardenCanvas');
@@ -279,10 +300,10 @@
   function historyGeometry(w,h,d) {
     const area={left:42*d,right:w-14*d,top:18*d,bottom:h-34*d};
     const point=(value,index)=>({
-      x:area.left+(area.right-area.left)*index/(HISTORY.length-1),
+      x:area.left+(area.right-area.left)*index/(historyData.length-1),
       y:area.bottom-(value-50)/40*(area.bottom-area.top)
     });
-    return {area,focus:HISTORY.map((item,i)=>point(item.focus,i)),stable:HISTORY.map((item,i)=>point(item.stable,i))};
+    return {area,focus:historyData.map((item,i)=>point(item.focus,i)),stable:historyData.map((item,i)=>point(item.stable,i)),recovery:historyData.map((item,i)=>point(item.recovery,i))};
   }
 
   function smoothHistoryPath(ctx,points) {
@@ -299,12 +320,12 @@
     }
   }
 
-  function drawHistory(progress=1) {
+  function drawHistory(progress=1,phase=0) {
     const canvas=document.querySelector('#fwHistoryChart'); if(!canvas)return;
     const {w,h,d}=sizeCanvas(canvas),ctx=canvas.getContext('2d');ctx.clearRect(0,0,w,h);
-    const {area,focus,stable}=historyGeometry(w,h,d);
+    const {area,focus,stable,recovery}=historyGeometry(w,h,d);
     const revealX=area.left+(area.right-area.left)*progress;
-    const average=HISTORY.reduce((sum,item)=>sum+item.focus,0)/HISTORY.length;
+    const average=historyData.reduce((sum,item)=>sum+item.focus,0)/historyData.length;
     const yFor=value=>area.bottom-(value-50)/40*(area.bottom-area.top);
 
     ctx.save();
@@ -317,9 +338,16 @@
       ctx.fillStyle='rgba(87,94,89,.46)';ctx.fillText(String(value),area.left-9*d,y);
     });
     ctx.textAlign='center';ctx.textBaseline='top';
-    HISTORY.forEach((item,i)=>{
-      if(i%3!==0&&i!==HISTORY.length-1)return;
+    historyData.forEach((item,i)=>{
+      const labelStep=Math.max(1,Math.ceil(historyData.length/6));
+      if(i%labelStep!==0&&i!==historyData.length-1)return;
       ctx.fillStyle='rgba(87,94,89,.48)';ctx.fillText(item.date,focus[i].x,area.bottom+11*d);
+    });
+
+    const barWidth=Math.max(2*d,(area.right-area.left)/historyData.length*.42);
+    historyData.forEach((item,i)=>{
+      const height=(item.duration/65)*(area.bottom-area.top)*.28;
+      ctx.fillStyle='rgba(112,121,114,.075)';ctx.fillRect(focus[i].x-barWidth/2,area.bottom-height,barWidth,height);
     });
 
     const averageY=yFor(average);
@@ -331,12 +359,13 @@
     areaGradient.addColorStop(0,'rgba(116,151,132,.22)');areaGradient.addColorStop(.64,'rgba(116,151,132,.07)');areaGradient.addColorStop(1,'rgba(116,151,132,0)');
     ctx.beginPath();smoothHistoryPath(ctx,focus);ctx.lineTo(focus[focus.length-1].x,area.bottom);ctx.lineTo(focus[0].x,area.bottom);ctx.closePath();ctx.fillStyle=areaGradient;ctx.fill();
 
-    ctx.beginPath();smoothHistoryPath(ctx,stable);ctx.setLineDash([4*d,5*d]);ctx.strokeStyle='rgba(155,151,140,.62)';ctx.lineWidth=1.15*d;ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();smoothHistoryPath(ctx,stable);ctx.strokeStyle='rgba(165,138,105,.78)';ctx.lineWidth=1.45*d;ctx.stroke();
+    ctx.beginPath();smoothHistoryPath(ctx,recovery);ctx.strokeStyle='rgba(86,139,138,.80)';ctx.lineWidth=1.45*d;ctx.stroke();
     ctx.beginPath();smoothHistoryPath(ctx,focus);ctx.strokeStyle='rgba(103,139,121,.92)';ctx.lineWidth=2.25*d;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(94,132,112,.16)';ctx.shadowBlur=7*d;ctx.stroke();ctx.shadowBlur=0;
     focus.forEach((point,i)=>{
       if(point.x>revealX+1)return;
-      ctx.beginPath();ctx.arc(point.x,point.y,(i===HISTORY.length-1?3.4:2.2)*d,0,Math.PI*2);
-      ctx.fillStyle=i===HISTORY.length-1?'#637f70':'#f8f7f4';ctx.fill();ctx.strokeStyle='rgba(99,131,114,.88)';ctx.lineWidth=1.15*d;ctx.stroke();
+      ctx.beginPath();ctx.arc(point.x,point.y,(i===historyData.length-1?3.4:2.2)*d,0,Math.PI*2);
+      ctx.fillStyle=i===historyData.length-1?'#637f70':'#f8f7f4';ctx.fill();ctx.strokeStyle='rgba(99,131,114,.88)';ctx.lineWidth=1.15*d;ctx.stroke();
     });
     ctx.restore();
 
@@ -344,6 +373,12 @@
       const point=focus[historyHoverIndex];
       ctx.beginPath();ctx.moveTo(point.x,area.top);ctx.lineTo(point.x,area.bottom);ctx.strokeStyle='rgba(71,88,78,.18)';ctx.lineWidth=1;ctx.stroke();
       ctx.beginPath();ctx.arc(point.x,point.y,5.2*d,0,Math.PI*2);ctx.fillStyle='#f8f7f4';ctx.fill();ctx.strokeStyle='#5f7f6d';ctx.lineWidth=1.5*d;ctx.stroke();
+    } else if(progress>=1&&phase>0) {
+      const position=(phase*.12)%(focus.length-1),index=Math.floor(position),mix=position-index;
+      const a=focus[index],b=focus[index+1],x=a.x+(b.x-a.x)*mix,y=a.y+(b.y-a.y)*mix;
+      const pulse=4.4+Math.sin(phase*3.2)*1.1;
+      ctx.beginPath();ctx.arc(x,y,pulse*d,0,Math.PI*2);ctx.fillStyle='rgba(103,139,121,.12)';ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,2.15*d,0,Math.PI*2);ctx.fillStyle='#668b76';ctx.fill();
     }
     ctx.restore();
   }
@@ -354,8 +389,15 @@
     const start=performance.now(),duration=1150;
     const frame=now=>{
       const raw=Math.min(1,(now-start)/duration),progress=1-Math.pow(1-raw,3);
-      drawHistory(progress);
+      drawHistory(progress,raw>=1?(now-start)/1000:0);
       if(raw<1)historyRaf=requestAnimationFrame(frame);
+      else {
+        const idle=idleNow=>{
+          if(document.hidden||!document.querySelector('#page-insights')?.classList.contains('active'))return;
+          drawHistory(1,(idleNow-start)/1000);historyRaf=requestAnimationFrame(idle);
+        };
+        historyRaf=requestAnimationFrame(idle);
+      }
     };
     historyRaf=requestAnimationFrame(frame);
   }
@@ -365,9 +407,9 @@
     if(!canvas||!tooltip)return;
     const rect=canvas.getBoundingClientRect();
     const x=event.clientX-rect.left;
-    historyHoverIndex=Math.max(0,Math.min(HISTORY.length-1,Math.round((x-42)/(rect.width-56)*(HISTORY.length-1))));
-    const item=HISTORY[historyHoverIndex];
-    const pointX=42+(rect.width-56)*historyHoverIndex/(HISTORY.length-1);
+    historyHoverIndex=Math.max(0,Math.min(historyData.length-1,Math.round((x-42)/(rect.width-56)*(historyData.length-1))));
+    const item=historyData[historyHoverIndex];
+    const pointX=42+(rect.width-56)*historyHoverIndex/(historyData.length-1);
     const pointY=18+(90-item.focus)/40*(rect.height-52);
     tooltip.innerHTML=`<b>${item.date} · ${item.task}</b><span>专注指数 ${item.focus} · 稳定片段 ${item.stable}%</span><span>${item.duration} 分钟 · 恢复表现 ${item.recovery}%</span>`;
     tooltip.style.left=`${pointX}px`;tooltip.style.top=`${Math.max(70,pointY)}px`;tooltip.hidden=false;
@@ -392,10 +434,15 @@
     });
     page.querySelector('#fwClearRake')?.addEventListener('click',()=>{strokes=[];drawUserRakes()});
     page.querySelectorAll('.fw-pattern').forEach(el=>el.addEventListener('click',()=>openPattern(el.dataset.pattern)));
+    page.querySelectorAll('[data-history-range]').forEach(button=>button.addEventListener('click',()=>{
+      page.querySelectorAll('[data-history-range]').forEach(item=>item.classList.toggle('active',item===button));
+      historyData=button.dataset.historyRange==='14'?HISTORY:expandedHistory(button.dataset.historyRange==='30'?22:36);
+      historyHoverIndex=-1;clearHistoryHover();animateHistory();
+    }));
     const historyCanvas=page.querySelector('#fwHistoryChart');
     historyCanvas?.addEventListener('pointermove',updateHistoryHover);
     historyCanvas?.addEventListener('pointerleave',clearHistoryHover);
-    historyCanvas?.addEventListener('focus',()=>{historyHoverIndex=HISTORY.length-1;drawHistory(1)});
+    historyCanvas?.addEventListener('focus',()=>{historyHoverIndex=historyData.length-1;drawHistory(1)});
     historyCanvas?.addEventListener('blur',clearHistoryHover);
 
     const inner=page.querySelector('#fwGardenInner');

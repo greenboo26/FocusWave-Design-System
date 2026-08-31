@@ -6,6 +6,7 @@
   const slides = [
     {
       key:'stable',
+      theme:'ocean',
       title:'专注维持',
       body:'状态较稳定。注意停留在手边这件事上，线条保持连续、舒展而有秩序。',
       stat:'概念状态 · 专注维持',
@@ -14,6 +15,7 @@
     },
     {
       key:'dispersed',
+      theme:'incense',
       title:'明显分散',
       body:'注意正在外散。局部流向彼此竞争，原本连续的秩序出现更多卷曲与扰动。',
       stat:'概念状态 · 明显分散',
@@ -22,6 +24,7 @@
     },
     {
       key:'refocus',
+      theme:'mountain',
       title:'重新聚焦',
       body:'注意正在回来。复杂的局部扰动逐渐收束，线条重新汇入更清楚的共同方向。',
       stat:'概念状态 · 重新聚焦',
@@ -72,9 +75,15 @@
     });
     art.appendChild(dots);
 
-    let index=0,timer=0,transition=0,motionRaf=0,motionStart=performance.now();
+    let index=0,timer=0,transition=0,motionRaf=0,motionStart=performance.now(),bag=[];
+    function refillBag(previous=-1){
+      bag=slides.map((_,i)=>i);
+      for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]]}
+      if(bag.length>1&&bag[0]===previous)[bag[0],bag[1]]=[bag[1],bag[0]];
+    }
+    function nextRandom(){if(!bag.length)refillBag(index);return bag.shift()}
     function drawSlide(slide,t=slide.t){
-      conceptRenderer(canvas,{theme:'ocean',state:slide.state,lines:slide.lines,alpha:slide.alpha,t});
+      conceptRenderer(canvas,{theme:slide.theme,state:slide.state,lines:slide.lines,alpha:slide.alpha,t});
     }
     function paint(slide){
       drawSlide(slide);
@@ -112,7 +121,7 @@
       motionRaf=requestAnimationFrame(motion);
       timer=setInterval(()=>{
         if(document.hidden||!page.classList.contains('active'))return;
-        show(index+1,true);
+        show(nextRandom(),true);
       },7600);
     }
     function stop(){clearInterval(timer);cancelAnimationFrame(motionRaf);timer=0;motionRaf=0}
@@ -125,7 +134,8 @@
       else stop();
     }).observe(page,{attributes:true,attributeFilter:['class']});
     document.addEventListener('visibilitychange',()=>document.hidden?stop():(repaint(),start()));
-    show(0,false);
+    refillBag(-1);
+    show(nextRandom(),false);
     start();
   }
 

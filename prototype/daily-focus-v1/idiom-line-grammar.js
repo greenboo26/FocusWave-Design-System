@@ -50,7 +50,7 @@ window.FocusWaveIdiomGrammar = (() => {
 // Keep homepage boot deliberately small. Heavy page runtimes are loaded on demand
 // by settings-controller.js only after the user enters the corresponding flow.
 import('./theme-rain-controller.js?v=3');
-const settingsReady = import('./settings-controller.js?v=6');
-settingsReady.then(() => import('./ai-assistant-controller.js?v=3'));
+const settingsReady = import('./settings-controller.js?v=7');
+settingsReady.then(() => import('./ai-assistant-controller.js?v=4'));
 import('./navigation-controller.js?v=2');
-import('./home-concept-carousel.js?v=4');
+import('./home-concept-carousel.js?v=5');

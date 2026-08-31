@@ -277,6 +277,12 @@ function loadForPage(page) {
 
 function bindLazyRuntimeLoading() {
   document.addEventListener('click', event => {
+    const libraryEntry = event.target?.closest?.('.content-library-entry');
+    if (libraryEntry) {
+      appendRuntime('./content-engine.js?v=3', 'content-engine')
+        .then(() => window.FocusWaveContentEngine?.openLibrary?.());
+    }
+
     const page = pageTargetFromClick(event.target);
     if (page) loadForPage(page);
   }, {capture:true, passive:true});

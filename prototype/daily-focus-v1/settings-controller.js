@@ -93,12 +93,12 @@ function ensurePracticeSignatureRuntime() {
 }
 
 function ensurePortraitDetailsRuntime() {
-  return appendRuntime('./portrait-details.js?v=3', 'portrait-details');
+  return appendRuntime('./portrait-details.js?v=4', 'portrait-details');
 }
 
 async function ensureInsightsRuntime() {
   await appendRuntime('./insights-longterm.js?v=4', 'insights-longterm');
-  await appendRuntime('./garden-tools-v3.js?v=6', 'garden-tools-v3');
+  await appendRuntime('./garden-tools-v3.js?v=7', 'garden-tools-v3');
 }
 
 function ensureLiveEngines() {
@@ -126,7 +126,7 @@ function setSelected(group, value) {
 
 function renderSettingsPanel() {
   const navButton = document.querySelector('[data-setting="ai"]');
-  if (navButton) navButton.textContent = '文字';
+  if (navButton) navButton.textContent = 'AI 与文字';
   const panel = document.querySelector('#setting-ai');
   if (!panel) return;
 
@@ -157,6 +157,23 @@ function renderSettingsPanel() {
       setSelected(group, next);
     });
   });
+}
+
+function renderInformationPanel() {
+  const nav = document.querySelector('#page-settings .settings-nav');
+  const modelButton = document.querySelector('[data-setting="model"]');
+  const privacyButton = document.querySelector('[data-setting="privacy"]');
+  if (nav && privacyButton && modelButton) {
+    nav.append(privacyButton, modelButton);
+    modelButton.textContent = '声明与信息';
+  }
+  const panel = document.querySelector('#setting-model');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="settings-row"><div><b>设备与检查</b><p>每次开始专注前，系统都会完成目标、距离与输入质量检查；这不是可关闭的偏好设置。</p></div></div>
+    <div class="settings-row"><div><b>模型范围</b><p>FocusWave v1.0 面向普通坐姿学习 / 工作场景；状态解释来自本地运行的已发布模型。</p></div></div>
+    <div class="settings-row"><div><b>AI 使用声明</b><p>AI 只处理已选择的文字表达与画像生成，不参与毫米波测量、注意状态推断或分数计算。</p></div></div>
+    <div class="settings-row"><div><b>数据边界</b><p>当前原型默认将选择保存在本机；历史记录仅用于个人基线、画像与长期趋势。</p></div></div>`;
 }
 
 function inheritDefaultForNewSession() { setSelected(document.querySelector('#textGroup'), getDefaultMode()); }
@@ -275,6 +292,40 @@ function loadForPage(page) {
   return Promise.resolve();
 }
 
+function bindPortraitDecision() {
+  const create = document.querySelector('#generatePortrait');
+  const skip = document.querySelector('#skipPortrait');
+  const note = document.querySelector('#portraitDecisionNote');
+  if (!create || !skip || !note) return;
+  create.addEventListener('click', () => {
+    if (create.disabled) return;
+    create.disabled = true;
+    const duration = Number.parseInt(document.querySelector('#summaryDuration')?.textContent, 10) || 1;
+    const task = document.querySelector('#liveTask')?.textContent || '专注';
+    const theme = document.querySelector('#themeGroup .selected')?.dataset.value || 'mountain';
+    note.textContent = '正在整理这段时间的画像…';
+    ensurePortraitDetailsRuntime().then(() => {
+      window.FocusWavePortraitDetails?.createFromSession({duration, task, theme});
+      note.textContent = '画像已生成，已加入你的画像册。';
+      create.textContent = '已生成';
+      skip.hidden = true;
+      setTimeout(() => { if (typeof showPage === 'function') showPage('portraits'); }, 450);
+    });
+  });
+  skip.addEventListener('click', () => {
+    create.hidden = true;
+    skip.hidden = true;
+    note.textContent = '这次不生成画像。你仍可以查看已有画像与长期趋势。';
+  });
+  document.querySelector('#finishBtn')?.addEventListener('click', () => {
+    create.disabled = false;
+    create.hidden = false;
+    create.textContent = '生成画像';
+    skip.hidden = false;
+    note.textContent = '';
+  });
+}
+
 function bindLazyRuntimeLoading() {
   document.addEventListener('click', event => {
     const libraryEntry = event.target?.closest?.('.content-library-entry');
@@ -313,7 +364,9 @@ function init() {
     if (typeof motionMode !== 'undefined') motionMode = 'normal';
   }
   renderSettingsPanel();
+  renderInformationPanel();
   bindSessionEntry();
+  bindPortraitDecision();
   bindExport();
   bindLazyRuntimeLoading();
 }

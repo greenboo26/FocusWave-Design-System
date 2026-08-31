@@ -210,7 +210,7 @@
         <p></p>
         <div class="ai-provenance"></div>
       </div>`;
-    const actions = summary.querySelector('.actions');
+    const actions = summary.querySelector(':scope > .actions');
     summary.insertBefore(card, actions || null);
     card.querySelector('#generateAIReflection').addEventListener('click', generateReflection);
     syncSummaryAvailability();

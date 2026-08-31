@@ -44,6 +44,37 @@
     if(!page||!canvas||!art||!copy||!title||!body||typeof window.drawField!=='function')return;
 
     const conceptRenderer=window.drawField.bind(window);
+    const fallbackLiterature=[
+      {text:'行到水穷处，坐看云起时。',sub:'王维 · 《终南别业》',theme:'mountain'},
+      {text:'永恒，由一个个此刻组成。',sub:'Emily Dickinson · Forever – is composed of Nows –',theme:'dusk'},
+      {text:'在此刻，把手边之事做好就已经足够。',sub:'Marcus Aurelius · Meditations',theme:'incense'},
+      {text:'我走进树林，因为我想有意识地生活。',sub:'Henry David Thoreau · Walden',theme:'ocean'}
+    ];
+    let literature=fallbackLiterature.slice(),lastLiteratureId='';
+    function normalizedLiterature(world,classical){
+      return [
+        ...(world?.items||[]).map(item=>({id:item.id,text:item.translation_zh||item.original,sub:`${item.author} · ${item.work}`,theme:item.theme?.[0]})),
+        ...(classical?.items||[]).map(item=>({id:item.id,text:item.text,sub:`${item.author} · 《${item.work}》`,theme:item.theme?.[0]}))
+      ].filter(item=>item.text&&item.sub);
+    }
+    async function loadLiterature(){
+      try{
+        const [world,classical]=await Promise.all([
+          fetch('./content/world-public-domain.json').then(response=>response.ok?response.json():null),
+          fetch('./content/classical-zh.json').then(response=>response.ok?response.json():null)
+        ]);
+        const items=normalizedLiterature(world,classical);
+        if(items.length)literature=items;
+      }catch(_){/* Use the small built-in literary fallback when offline. */}
+    }
+    function takeLiterature(theme){
+      const themed=literature.filter(item=>item.theme===theme);
+      const pool=themed.length?themed:literature;
+      let item=pool[Math.floor(Math.random()*pool.length)]||fallbackLiterature[0];
+      if(pool.length>1&&item.id===lastLiteratureId)item=pool[(pool.indexOf(item)+1)%pool.length];
+      lastLiteratureId=item.id||item.text;
+      return item;
+    }
     const style=document.createElement('style');
     style.textContent=`
       .today-art{overflow:hidden;background:radial-gradient(ellipse at 58% 54%,rgba(123,153,139,.075),transparent 54%)}
@@ -86,10 +117,11 @@
       conceptRenderer(canvas,{theme:slide.theme,state:slide.state,lines:slide.lines,alpha:slide.alpha,t});
     }
     function paint(slide){
+      const quote=takeLiterature(slide.theme);
       drawSlide(slide);
-      title.textContent=slide.title;
-      body.textContent=slide.body;
-      if(tiny)tiny.textContent=slide.stat;
+      title.textContent=quote.text;
+      body.textContent=quote.sub;
+      if(tiny)tiny.textContent='随机文学库';
       [...dots.children].forEach((d,i)=>d.classList.toggle('active',i===index));
     }
     function repaint(){requestAnimationFrame(()=>paint(slides[index]));}
@@ -135,8 +167,7 @@
     }).observe(page,{attributes:true,attributeFilter:['class']});
     document.addEventListener('visibilitychange',()=>document.hidden?stop():(repaint(),start()));
     refillBag(-1);
-    show(nextRandom(),false);
-    start();
+    loadLiterature().finally(()=>{show(nextRandom(),false);start();});
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});

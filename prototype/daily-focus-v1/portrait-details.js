@@ -286,9 +286,47 @@
   function bindCards(){
     document.querySelectorAll('#page-portraits .portrait-card').forEach((card,index)=>{
       card.dataset.sessionIndex=index;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',`查看第 ${index+1} 次专注详情`);
-      card.addEventListener('click',()=>openDetail(index,true));
-      card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail(index,true)}});
+      card.onclick=()=>openDetail(Number(card.dataset.sessionIndex),true);
+      card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail(Number(card.dataset.sessionIndex),true)}};
     });
+  }
+
+  function createFromSession(input={}){
+    const duration=Math.max(1,Math.round(Number(input.duration)||1));
+    const task=(input.task||'专注').trim();
+    const theme=['ocean','mountain','incense','dusk'].includes(input.theme)?input.theme:'mountain';
+    const seed=Math.floor(Date.now()%100000)+duration*17;
+    const stableEnd=Math.max(4,Math.round(duration*.35));
+    const driftEnd=Math.max(stableEnd+1,Math.round(duration*.49));
+    const refocusEnd=Math.max(driftEnd+1,Math.round(duration*.64));
+    const dispersedEnd=Math.max(refocusEnd+1,Math.round(duration*.72));
+    const segments=[
+      {s:0,e:stableEnd,state:'stable'},
+      {s:stableEnd,e:driftEnd,state:'drift'},
+      {s:driftEnd,e:refocusEnd,state:'refocus'},
+      {s:refocusEnd,e:Math.min(duration,dispersedEnd),state:'dispersed'},
+      {s:Math.min(duration,dispersedEnd),e:duration,state:'stable'}
+    ].filter(segment=>segment.e>segment.s);
+    const session={
+      id:`session-${seed}`,task,title:task,date:new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}),duration,theme,seed,
+      focus:72,confidence:.81,quality:94,stable:68,recoveries:2,longest:`${Math.max(1,Math.round(duration*.28))} min`,
+      summary:'这张画像由本次已保存的时序摘要生成，可在此后回看它的状态变化与恢复节点。',segments
+    };
+    SESSION_DATA.unshift(session);
+    const grid=document.querySelector('#page-portraits .portrait-grid');
+    if(grid){
+      const card=document.createElement('div');
+      card.className='portrait-card';
+      card.innerHTML=`<canvas class="portraitMini" data-seed="${seed}" data-theme="${theme}"></canvas><div class="meta"><span>${task} · ${duration} min</span><span>刚刚生成</span></div>`;
+      grid.prepend(card);
+      requestAnimationFrame(()=>{
+        const canvas=card.querySelector('canvas');
+        const state=(typeof states!=='undefined'?states.find(item=>item.key==='refocus'):null)||{key:'refocus',amp:.7,disorder:.22};
+        if(typeof window.drawField==='function')window.drawField(canvas,{theme,state,lines:44,alpha:.34,t:seed*.01});
+      });
+      bindCards();
+    }
+    return 0;
   }
 
   function init(){
@@ -302,5 +340,5 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-  window.FocusWavePortraitDetails={open:index=>openDetail(index,true),sessions:SESSION_DATA};
+  window.FocusWavePortraitDetails={open:index=>openDetail(index,true),createFromSession,sessions:SESSION_DATA};
 })();

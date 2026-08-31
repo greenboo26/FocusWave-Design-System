@@ -33,10 +33,10 @@
   ];
 
   const STATE_META = {
-    stable:{label:'稳定',color:'rgba(78,132,96,.72)',line:'#4f8661',wash:'rgba(78,132,96,.105)'},
-    drift:{label:'游移',color:'rgba(125,132,145,.68)',line:'#78808e',wash:'rgba(125,132,145,.095)'},
-    dispersed:{label:'分散',color:'rgba(182,123,70,.74)',line:'#b1733d',wash:'rgba(182,123,70,.115)'},
-    refocus:{label:'回收',color:'rgba(53,135,145,.74)',line:'#388a93',wash:'rgba(53,135,145,.11)'}
+    stable:{label:'稳定',color:'rgba(103,139,119,.76)',line:'#638675',wash:'rgba(103,139,119,.045)'},
+    drift:{label:'游移',color:'rgba(145,146,142,.72)',line:'#92938e',wash:'rgba(145,146,142,.038)'},
+    dispersed:{label:'分散',color:'rgba(168,132,101,.74)',line:'#a67f5f',wash:'rgba(168,132,101,.045)'},
+    refocus:{label:'回收',color:'rgba(103,145,151,.74)',line:'#679198',wash:'rgba(103,145,151,.042)'}
   };
 
   let detailPage=null,currentIndex=-1,chartMetric='focus',chartRaf=0;
@@ -191,6 +191,7 @@
     session.segments.forEach(seg=>{
       const x=padL+seg.s/session.duration*plotW,width=(seg.e-seg.s)/session.duration*plotW;
       ctx.fillStyle=STATE_META[seg.state].wash;ctx.fillRect(x,padT,width,plotH);
+      ctx.fillStyle=STATE_META[seg.state].color;ctx.fillRect(x,padT,width,2*d);
     });
     ctx.strokeStyle='rgba(41,51,47,.08)';ctx.lineWidth=1;
     for(let k=0;k<4;k++){const y=padT+plotH*k/3;ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(w-padR,y);ctx.stroke()}
@@ -206,7 +207,7 @@
       minute:i/(values.length-1)*session.duration
     }));
     const revealIndex=Math.max(1,Math.floor((points.length-1)*progress));
-    ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=2.15*d;
+    ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=1.85*d;
     for(let i=1;i<=revealIndex;i++){
       const previous=points[i-1],point=points[i],state=segmentAt(session,(previous.minute+point.minute)/2);
       ctx.beginPath();ctx.moveTo(previous.x,previous.y);ctx.lineTo(point.x,point.y);

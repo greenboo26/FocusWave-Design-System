@@ -93,7 +93,7 @@ function ensurePracticeSignatureRuntime() {
 }
 
 function ensurePortraitDetailsRuntime() {
-  return appendRuntime('./portrait-details.js?v=4', 'portrait-details');
+  return appendRuntime('./portrait-details.js?v=5', 'portrait-details');
 }
 
 async function ensureInsightsRuntime() {

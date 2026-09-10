@@ -4,6 +4,7 @@
   const minimal={stable:'稳',drift:'游',dispersed:'散',refocus:'归'};
   const themeLabels={ocean:'海',mountain:'山',incense:'线香',dusk:'夕照'};
   const GENERATED_DRAFTS_KEY='focuswave.generatedContentDrafts';
+  const DEFAULT_TEXT_MODE_KEY='focuswave.defaultTextMode';
   const fallbackOriginal={
     ocean:{stable:['潮声很远，手边的事很近。'],drift:['远潮带走一小段目光。'],dispersed:['水面起了碎浪，注意失去了一处落点。'],refocus:['浪声退后，眼前这一处重新显出来。']},
     mountain:{stable:['云影很慢，峰线很清楚。'],drift:['山还在，目光先随云去了。'],dispersed:['山色被雾分成几层，注意也散开了。'],refocus:['雾气渐薄，山脊又连成一线。']},
@@ -11,46 +12,35 @@
     dusk:{stable:['暮光铺平，注意安静地落了下来。'],drift:['晚风带走一点余光，目光跟着远了。'],dispersed:['余晖碎在云间，注意也失去了同一方向。'],refocus:['散开的余光慢慢收回桌面。']}
   };
 
-  const curatedLibrary=[
-    {text:'非淡泊无以明志，非宁静无以致远。',source:'——诸葛亮《诫子书》（三国·蜀汉）'},
-    {text:'夫君子之行，静以修身，俭以养德。',source:'——诸葛亮《诫子书》（三国·蜀汉）'},
-    {text:'淫慢则不能励精，险躁则不能治性。',source:'——诸葛亮《诫子书》（三国·蜀汉）'},
-    {text:'竹影扫阶尘不动，月轮穿沼水无痕。',source:'——洪应明《菜根谭》（明）'},
-    {text:'本来无一物，何处惹尘埃。',source:'——惠能《菩提偈》（唐，录于《六祖坛经》）'},
-    {text:'结庐在人境，而无车马喧。问君何能尔？心远地自偏。',source:'——陶渊明《饮酒·其五》（东晋）'},
-    {text:'读书不觉已春深，一寸光阴一寸金。',source:'——王贞白《白鹿洞二首·其一》（唐末五代）'},
-    {text:'不是道人来引笑，周情孔思正追寻。',source:'——王贞白《白鹿洞二首·其二》（唐末五代）'},
-    {text:'重为轻根，静为躁君。',source:'——老子《道德经》第二十六章（春秋）'},
-    {text:'致虚极，守静笃。万物并作，吾以观复。',source:'——老子《道德经》第十六章（春秋）'},
-    {text:'夫物芸芸，各复归其根。归根曰静，静曰复命。',source:'——老子《道德经》第十六章（春秋）'},
-    {text:'水静则明烛须眉，平中准，大匠取法焉。',source:'——《庄子·天道》（战国）'},
-    {text:'圣人之静也，非曰静也善，故静也。',source:'——《庄子·天道》（战国）'},
-    {text:'正则静，静则明，明则虚，虚则无为而无不为也。',source:'——《庄子·庚桑楚》（战国）'},
-    {text:'山静似太古，日长如小年。',source:'——唐庚《醉眠》（北宋）'},
-    {text:'目不能两视而明，耳不能两听而聪。',source:'——《荀子·劝学》（战国）'},
-    {text:'用志不分，乃凝于神。',source:'——《庄子·达生》（战国）'},
-    {text:'虽天地之大，万物之多，而唯蜩翼之知。',source:'——《庄子·达生》（战国）'},
-    {text:'惟精惟一，允执厥中。',source:'——《尚书·大禹谟》（上古）'},
-    {text:'躁胜寒，静胜热，清静为天下正。',source:'——老子《道德经》第四十五章（春秋）'}
-  ];
-
-  let libraries={original:null,generated:null,global:null,classical:null},lastKey='';
+  let libraries={original:null,generated:null,global:null,classical:null};
+  let curatedLibrary=[];
+  let lastKey='';
   let librariesReady=null;
 
   async function loadLibraries(){
     try{
-      const [o,n,g,c]=await Promise.all([
+      const [o,n,g,c,q]=await Promise.all([
         fetch('./content/original-state-lines.json').then(r=>r.ok?r.json():null),
         fetch('./content/generated-state-lines.json').then(r=>r.ok?r.json():null),
         fetch('./content/world-public-domain.json').then(r=>r.ok?r.json():null),
-        fetch('./content/classical-zh.json').then(r=>r.ok?r.json():null)
+        fetch('./content/classical-zh.json').then(r=>r.ok?r.json():null),
+        fetch('./content/curated-quotes.json').then(r=>r.ok?r.json():null)
       ]);
       libraries={original:o,generated:n,global:g,classical:c};
-      refresh();bindLibraryEntry();
-    }catch(e){console.warn('FocusWave content libraries unavailable',e);}
+      curatedLibrary=(q?.items||[]).filter(item=>item?.text&&item?.source);
+      refresh();
+      bindLibraryEntry();
+    }catch(e){
+      console.warn('FocusWave content libraries unavailable',e);
+    }
   }
 
-  function selectedMode(){return document.querySelector('#textGroup .selected')?.dataset.value||'original';}
+  function selectedMode(){
+    const sessionMode=document.querySelector('#textGroup .selected')?.dataset.value;
+    if(sessionMode)return sessionMode;
+    const saved=localStorage.getItem(DEFAULT_TEXT_MODE_KEY);
+    return ['minimal','original','global','classical'].includes(saved)?saved:'original';
+  }
   function randPick(arr,key){
     if(!arr?.length)return null;
     let idx=Math.floor(Math.random()*arr.length);
@@ -152,11 +142,13 @@
       <article class="library-item">
         <div class="library-text">${item.text}</div>
         <span class="library-source">${item.source}</span>
-      </article>`).join('');
+      </article>`).join('')||'<p class="library-source">内容加载中。</p>';
     list.scrollTop=0;
   }
 
-  function openLibrary(){
+  async function openLibrary(){
+    if(!librariesReady)librariesReady=loadLibraries();
+    await librariesReady;
     renderLibrary();
     document.querySelector('#contentLibraryOverlay')?.classList.add('open');
   }
@@ -164,14 +156,18 @@
     const panel=document.querySelector('#setting-ai');if(!panel)return;
     const target=panel.querySelector('.content-library-entry')||[...panel.querySelectorAll('.pill')].find(x=>x.textContent.trim()==='内容库');
     if(!target||target.dataset.bound)return;
-    target.dataset.bound='1';target.style.cursor='pointer';target.onclick=openLibrary;
+    target.dataset.bound='1';
+    target.style.cursor='pointer';
+    target.onclick=openLibrary;
+  }
+  function removeSessionTextMode(){
+    document.querySelector('#textGroup')?.closest('.setup-block')?.remove();
   }
 
   function bind(){
+    removeSessionTextMode();
     patchApplyState();
-    document.querySelector('#textGroup')?.addEventListener('click',()=>setTimeout(refresh,0));
     librariesReady=loadLibraries();
-    void librariesReady;
     setTimeout(bindLibraryEntry,80);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();

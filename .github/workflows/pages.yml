@@ -22,7 +22,7 @@ concurrency:
 jobs:
   deploy:
     environment:
-      name: github-pages
+      name: github-pages-li
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:

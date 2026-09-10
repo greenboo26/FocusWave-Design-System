@@ -1,4 +1,4 @@
-/* FocusWave live text + interactive content library */
+/* FocusWave live text + curated content library */
 (() => {
   const stateNames={stable:'专注维持',drift:'轻度游移',dispersed:'状态起伏',refocus:'重新聚焦'};
   const minimal={stable:'稳',drift:'游',dispersed:'散',refocus:'归'};
@@ -11,8 +11,30 @@
     dusk:{stable:['暮光铺平，注意安静地落了下来。'],drift:['晚风带走一点余光，目光跟着远了。'],dispersed:['余晖碎在云间，注意也失去了同一方向。'],refocus:['散开的余光慢慢收回桌面。']}
   };
 
+  const curatedLibrary=[
+    {text:'非淡泊无以明志，非宁静无以致远。',source:'——诸葛亮《诫子书》（三国·蜀汉）'},
+    {text:'夫君子之行，静以修身，俭以养德。',source:'——诸葛亮《诫子书》（三国·蜀汉）'},
+    {text:'淫慢则不能励精，险躁则不能治性。',source:'——诸葛亮《诫子书》（三国·蜀汉）'},
+    {text:'竹影扫阶尘不动，月轮穿沼水无痕。',source:'——洪应明《菜根谭》（明）'},
+    {text:'本来无一物，何处惹尘埃。',source:'——惠能《菩提偈》（唐，录于《六祖坛经》）'},
+    {text:'结庐在人境，而无车马喧。问君何能尔？心远地自偏。',source:'——陶渊明《饮酒·其五》（东晋）'},
+    {text:'读书不觉已春深，一寸光阴一寸金。',source:'——王贞白《白鹿洞二首·其一》（唐末五代）'},
+    {text:'不是道人来引笑，周情孔思正追寻。',source:'——王贞白《白鹿洞二首·其二》（唐末五代）'},
+    {text:'重为轻根，静为躁君。',source:'——老子《道德经》第二十六章（春秋）'},
+    {text:'致虚极，守静笃。万物并作，吾以观复。',source:'——老子《道德经》第十六章（春秋）'},
+    {text:'夫物芸芸，各复归其根。归根曰静，静曰复命。',source:'——老子《道德经》第十六章（春秋）'},
+    {text:'水静则明烛须眉，平中准，大匠取法焉。',source:'——《庄子·天道》（战国）'},
+    {text:'圣人之静也，非曰静也善，故静也。',source:'——《庄子·天道》（战国）'},
+    {text:'正则静，静则明，明则虚，虚则无为而无不为也。',source:'——《庄子·庚桑楚》（战国）'},
+    {text:'山静似太古，日长如小年。',source:'——唐庚《醉眠》（北宋）'},
+    {text:'目不能两视而明，耳不能两听而聪。',source:'——《荀子·劝学》（战国）'},
+    {text:'用志不分，乃凝于神。',source:'——《庄子·达生》（战国）'},
+    {text:'虽天地之大，万物之多，而唯蜩翼之知。',source:'——《庄子·达生》（战国）'},
+    {text:'惟精惟一，允执厥中。',source:'——《尚书·大禹谟》（上古）'},
+    {text:'躁胜寒，静胜热，清静为天下正。',source:'——老子《道德经》第四十五章（春秋）'}
+  ];
+
   let libraries={original:null,generated:null,global:null,classical:null},lastKey='';
-  let libraryCategory='original',libraryItemIndex=0;
   let librariesReady=null;
 
   async function loadLibraries(){
@@ -24,42 +46,45 @@
         fetch('./content/classical-zh.json').then(r=>r.ok?r.json():null)
       ]);
       libraries={original:o,generated:n,global:g,classical:c};
-      refresh(); bindLibraryEntry();
-    } catch(e) { console.warn('FocusWave content libraries unavailable',e); }
+      refresh();bindLibraryEntry();
+    }catch(e){console.warn('FocusWave content libraries unavailable',e);}
   }
 
-  function selectedMode(){ return document.querySelector('#textGroup .selected')?.dataset.value || 'original'; }
+  function selectedMode(){return document.querySelector('#textGroup .selected')?.dataset.value||'original';}
   function randPick(arr,key){
     if(!arr?.length)return null;
     let idx=Math.floor(Math.random()*arr.length);
-    if(arr.length>1&&`${key}:${idx}`===lastKey) idx=(idx+1)%arr.length;
+    if(arr.length>1&&`${key}:${idx}`===lastKey)idx=(idx+1)%arr.length;
     lastKey=`${key}:${idx}`;
     return arr[idx];
   }
   function poolItems(items,theme,state){
     if(!items?.length)return[];
     let pool=items.filter(x=>x.verified!==false&&x.theme?.includes(theme)&&x.state?.includes(state));
-    if(!pool.length) pool=items.filter(x=>x.verified!==false&&x.state?.includes(state));
-    if(!pool.length) pool=items.filter(x=>x.verified!==false&&x.theme?.includes(theme));
+    if(!pool.length)pool=items.filter(x=>x.verified!==false&&x.state?.includes(state));
+    if(!pool.length)pool=items.filter(x=>x.verified!==false&&x.theme?.includes(theme));
     return pool.length?pool:items.filter(x=>x.verified!==false);
   }
+  function localGeneratedEntries(){
+    try{return JSON.parse(localStorage.getItem(GENERATED_DRAFTS_KEY)||'[]')}catch{return[]}
+  }
   function renderFor(mode,theme,state){
-    if(mode==='minimal') return {q:minimal[state]||'·',meta:`${themeLabels[theme]} · ${stateNames[state]}`};
+    if(mode==='minimal')return{q:minimal[state]||'·',meta:`${themeLabels[theme]} · ${stateNames[state]}`};
     if(mode==='original'){
       const reviewed=libraries.original?.themes?.[theme]?.[state]||fallbackOriginal[theme]?.[state]||[];
       const generated=libraries.generated?.themes?.[theme]?.[state]||[];
       const local=localGeneratedEntries().filter(item=>item.theme===theme&&item.state===state).map(item=>item.text);
       const pool=[...reviewed,...generated,...local];
-      return {q:randPick(pool,`o:${theme}:${state}`)||'',meta:`新创 · ${themeLabels[theme]}`};
+      return{q:randPick(pool,`o:${theme}:${state}`)||'',meta:`新创 · ${themeLabels[theme]}`};
     }
     if(mode==='global'){
       const item=randPick(poolItems(libraries.global?.items||[],theme,state),`g:${theme}:${state}`);
-      if(item) return {q:item.original,meta:`${item.author} · ${item.work}`,translation:item.translation_zh||''};
-      return {q:'Look within.',meta:'Marcus Aurelius · Meditations',translation:'向内看。'};
+      if(item)return{q:item.original,meta:`${item.author} · ${item.work}`,translation:item.translation_zh||''};
+      return{q:'Look within.',meta:'Marcus Aurelius · Meditations',translation:'向内看。'};
     }
     const item=randPick(poolItems(libraries.classical?.items||[],theme,state),`c:${theme}:${state}`);
-    if(item) return {q:item.text,meta:`${item.author} · ${item.work}`};
-    return {q:'山气日夕佳，飞鸟相与还。',meta:'陶渊明 · 饮酒·其五'};
+    if(item)return{q:item.text,meta:`${item.author} · ${item.work}`};
+    return{q:'山气日夕佳，飞鸟相与还。',meta:'陶渊明 · 饮酒·其五'};
   }
 
   function refresh(){
@@ -71,7 +96,7 @@
     if(!quote||!meta)return;
     if(mode==='global'&&out.translation){
       quote.innerHTML=`<span>${out.q}</span><small style="display:block;margin-top:10px;font-family:var(--ui);font-size:12px;letter-spacing:0;color:var(--muted)">${out.translation}</small>`;
-    } else quote.textContent=out.q;
+    }else quote.textContent=out.q;
     meta.textContent=out.meta;
   }
   function patchApplyState(){
@@ -80,71 +105,24 @@
     window.applyState=function(){base();refresh();};
   }
 
-  function originalEntries(){
-    const out=[];
-    const themes=libraries.original?.themes||{};
-    Object.entries(themes).forEach(([theme,statesObj])=>{
-      Object.entries(statesObj||{}).forEach(([state,arr])=>{
-        (arr||[]).forEach(text=>out.push({text,meta:`${themeLabels[theme]||theme} · ${stateNames[state]||state}`,theme,state}));
-      });
-    });
-    return out;
-  }
-  function localGeneratedEntries(){
-    try{return JSON.parse(localStorage.getItem(GENERATED_DRAFTS_KEY)||'[]')}catch{return[]}
-  }
-  function generatedEntries(){
-    const out=[];
-    const themes=libraries.generated?.themes||{};
-    Object.entries(themes).forEach(([theme,statesObj])=>{
-      Object.entries(statesObj||{}).forEach(([state,arr])=>{
-        (arr||[]).forEach((text,index)=>out.push({text,meta:`${themeLabels[theme]||theme} · ${stateNames[state]||state}`,theme,state,source:`内容批次 ${libraries.generated?.version||'0.2'} · ${index+1}`}));
-      });
-    });
-    return [...out,...localGeneratedEntries()];
-  }
-  function entriesFor(category){
-    if(category==='original') return originalEntries();
-    if(category==='generated') return generatedEntries();
-    if(category==='global') return (libraries.global?.items||[]).filter(x=>x.verified!==false).map(x=>({
-      text:x.original||'', translation:x.translation_zh||'', meta:[x.author,x.work].filter(Boolean).join(' · '), source:x.verified_source||x.source||'', raw:x
-    }));
-    return (libraries.classical?.items||[]).filter(x=>x.verified!==false).map(x=>({
-      text:x.text||'', translation:'', meta:[x.author,x.work].filter(Boolean).join(' · '), source:x.verified_source||x.source||'', raw:x
-    }));
-  }
-  function categoryLabel(category){return category==='original'?'原创短句':category==='generated'?'新创短句':category==='global'?'世界文学':'中文古典';}
-  function categoryMode(category){return category==='original'||category==='generated'?'original':category==='global'?'global':'classical';}
-  function categoryCoverage(category){
-    if(category==='original'||category==='generated')return '16 情境';
-    return `${entriesFor(category).length} 篇`;
-  }
-
   function ensureLibraryStyles(){
     if(document.querySelector('style[data-focuswave-library-ui]'))return;
     const style=document.createElement('style');
     style.dataset.focuswaveLibraryUi='true';
     style.textContent=`
-      #contentLibraryOverlay .library-modal{width:min(980px,92vw);max-height:84vh;overflow:hidden;padding:34px 38px 28px}
-      #contentLibraryOverlay .library-grid{display:grid;grid-template-columns:290px 1fr;gap:34px;border-top:1px solid var(--hair);margin-top:18px;padding-top:18px;min-height:430px}
-      #contentLibraryOverlay .library-cats{border-right:1px solid var(--hair);padding-right:28px}
-      #contentLibraryOverlay .library-cat{width:100%;border:0;border-bottom:1px solid var(--hair);background:transparent;text-align:left;padding:16px 4px;cursor:pointer;color:var(--ink);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
-      #contentLibraryOverlay .library-cat b{font-size:15px;font-weight:450}.library-cat small{display:block;color:var(--muted);font-size:11px;margin-top:5px;line-height:1.5}
-      #contentLibraryOverlay .library-cat.active{background:rgba(41,51,47,.035)}
-      #contentLibraryOverlay .library-count{border:1px solid var(--hair);border-radius:999px;padding:5px 9px;font-size:10px;color:var(--muted)}
-      #contentLibraryOverlay .library-right{min-width:0;display:grid;grid-template-rows:auto 1fr auto;gap:14px}
-      #contentLibraryOverlay .library-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
-      #contentLibraryOverlay .library-generate{white-space:nowrap;height:34px;padding:0 12px}
-      #contentLibraryOverlay .library-list{overflow:auto;max-height:300px;padding-right:5px}
-      #contentLibraryOverlay .library-item{width:100%;display:block;border:1px solid var(--hair);border-radius:14px;background:transparent;text-align:left;padding:13px 14px;margin-bottom:9px;cursor:pointer;color:var(--ink)}
-      #contentLibraryOverlay .library-item.active{border-color:#8a9d93;background:rgba(127,149,138,.045)}
-      #contentLibraryOverlay .library-item b{font-size:13px;font-weight:450;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      #contentLibraryOverlay .library-item span{font-family:var(--human);font-size:15px;line-height:1.55;display:block;margin-top:6px;color:#45504b}
-      #contentLibraryOverlay .library-detail{border-top:1px solid var(--hair);padding-top:15px;min-height:98px}
-      #contentLibraryOverlay .library-detail .detail-text{font-family:var(--human);font-size:18px;line-height:1.65;margin:0 0 7px}
-      #contentLibraryOverlay .library-detail .detail-meta{font-size:11px;color:var(--muted);line-height:1.65}
-      #contentLibraryOverlay .library-actions{display:flex;gap:10px;align-items:center;justify-content:space-between}
-      @media(max-width:760px){#contentLibraryOverlay .library-grid{grid-template-columns:1fr}.library-cats{border-right:0!important;padding-right:0!important}.library-right{min-height:360px}}
+      #contentLibraryOverlay .library-modal{position:relative;width:min(900px,92vw);max-height:84vh;overflow:hidden;padding:34px 38px 30px}
+      #contentLibraryOverlay .library-close{position:absolute;right:27px;top:22px;width:34px;height:34px;border:0;background:transparent;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#6f7772;font-size:25px;font-weight:300;line-height:1}
+      #contentLibraryOverlay .library-close:hover{background:rgba(41,51,47,.05);color:var(--ink)}
+      #contentLibraryOverlay .library-list{border-top:1px solid var(--hair);margin-top:20px;padding:18px 6px 0 0;overflow:auto;max-height:calc(84vh - 145px)}
+      #contentLibraryOverlay .library-item{border:1px solid var(--hair);border-radius:16px;background:rgba(255,255,255,.04);padding:16px 18px;margin-bottom:10px;color:var(--ink)}
+      #contentLibraryOverlay .library-text{font-family:var(--human);font-size:18px;line-height:1.7;letter-spacing:.025em;color:#39443f}
+      #contentLibraryOverlay .library-source{display:block;margin-top:7px;font-family:var(--ui);font-size:11px;line-height:1.65;color:var(--muted)}
+      @media(max-width:760px){
+        #contentLibraryOverlay .library-modal{width:calc(100vw - 24px);max-height:calc(100vh - 24px);padding:30px 24px 24px}
+        #contentLibraryOverlay .library-close{right:17px;top:17px}
+        #contentLibraryOverlay .library-list{max-height:calc(100vh - 145px)}
+        #contentLibraryOverlay .library-text{font-size:17px}
+      }
     `;
     document.head.appendChild(style);
   }
@@ -153,83 +131,34 @@
     if(document.querySelector('#contentLibraryOverlay'))return;
     ensureLibraryStyles();
     const overlay=document.createElement('div');
-    overlay.id='contentLibraryOverlay';overlay.className='overlay';
+    overlay.id='contentLibraryOverlay';
+    overlay.className='overlay';
     overlay.innerHTML=`
-      <div class="modal library-modal">
+      <div class="modal library-modal" role="dialog" aria-modal="true" aria-labelledby="contentLibraryTitle">
+        <button class="library-close" id="closeLibrary" type="button" aria-label="关闭文字库">×</button>
         <div class="eyebrow">CONTENT LIBRARY</div>
-        <h2>文字内容库</h2>
-        <p>查看当前原型实际加载的内容，并按类别进入条目详情。</p>
-        <div class="library-grid">
-          <div class="library-cats" id="libraryCategories"></div>
-          <div class="library-right">
-            <div class="library-head"><div><b id="libraryHeading" style="font-size:15px;font-weight:450"></b><p id="libraryHint" style="margin:5px 0 0"></p></div><button class="ghost library-generate" id="generateLibraryBatch" type="button" hidden>生成一组草稿</button></div>
-            <div class="library-list" id="libraryList"></div>
-            <div class="library-detail" id="libraryDetail"></div>
-          </div>
-        </div>
-        <div class="library-actions">
-          <button class="ghost" id="closeLibrary">关闭</button>
-          <button class="ghost" id="useLibraryMode">本次使用此模式</button>
-        </div>
+        <h2 id="contentLibraryTitle">文字库</h2>
+        <div class="library-list" id="libraryList"></div>
       </div>`;
     document.body.appendChild(overlay);
-    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.remove('open')});
     overlay.querySelector('#closeLibrary').onclick=()=>overlay.classList.remove('open');
-    overlay.querySelector('#useLibraryMode').onclick=()=>{
-      const mode=categoryMode(libraryCategory);
-      const group=document.querySelector('#textGroup');
-      group?.querySelectorAll('[data-value]').forEach(b=>b.classList.toggle('selected',b.dataset.value===mode));
-      refresh();
-    };
   }
 
   function renderLibrary(){
     ensureLibraryModal();
-    const overlay=document.querySelector('#contentLibraryOverlay');
-    const categories=overlay.querySelector('#libraryCategories');
-    const data=[
-      {key:'original',label:'原创短句',desc:'按主题 × 注意状态组织。'},
-      {key:'generated',label:'新创短句',desc:'可离线批量生成并继续筛选。'},
-      {key:'global',label:'世界文学',desc:'公版或已核验可用条目。'},
-      {key:'classical',label:'中文古典',desc:'核验原文与作者作品。'}
-    ];
-    categories.innerHTML=data.map(d=>{
-      return `<button class="library-cat ${libraryCategory===d.key?'active':''}" data-cat="${d.key}"><span><b>${d.label}</b><small>${d.desc}</small></span><span class="library-count">${categoryCoverage(d.key)}</span></button>`;
-    }).join('');
-    categories.querySelectorAll('[data-cat]').forEach(btn=>btn.onclick=()=>{libraryCategory=btn.dataset.cat;libraryItemIndex=0;renderLibrary();});
-
-    const entries=entriesFor(libraryCategory);
-    const heading=overlay.querySelector('#libraryHeading'),hint=overlay.querySelector('#libraryHint'),list=overlay.querySelector('#libraryList'),detail=overlay.querySelector('#libraryDetail'),generate=overlay.querySelector('#generateLibraryBatch');
-    heading.textContent=`${categoryLabel(libraryCategory)} · 预览 (${entries.length} 条)`;
-    hint.textContent=libraryCategory==='generated'?'生成不必发生在专注过程中；草稿保存在当前浏览器，筛选后再进入正式内容库。':'点击任一条目查看完整内容与来源信息。';
-    generate.hidden=libraryCategory!=='generated';generate.disabled=false;generate.textContent='扩写一组草稿';generate.onclick=generateContentBatch;
-    list.innerHTML=entries.map((item,i)=>`<button class="library-item ${i===libraryItemIndex?'active':''}" data-index="${i}"><b>${item.meta||categoryLabel(libraryCategory)}</b><span>${item.text}</span></button>`).join('') || '<p>内容加载中。</p>';
-    list.querySelectorAll('[data-index]').forEach(btn=>btn.onclick=()=>{libraryItemIndex=Number(btn.dataset.index);renderLibrary();});
-    const item=entries[libraryItemIndex]||entries[0];
-    if(item){
-      detail.innerHTML=`<div class="detail-text">${item.text}</div>${item.translation?`<div class="detail-meta">${item.translation}</div>`:''}<div class="detail-meta">${item.meta||''}${item.source?`<br>来源：${item.source}`:''}</div>`;
-    } else detail.innerHTML='<div class="detail-meta">暂无可用条目。</div>';
+    const list=document.querySelector('#libraryList');
+    if(!list)return;
+    list.innerHTML=curatedLibrary.map(item=>`
+      <article class="library-item">
+        <div class="library-text">${item.text}</div>
+        <span class="library-source">${item.source}</span>
+      </article>`).join('');
+    list.scrollTop=0;
   }
 
-  async function generateContentBatch(){
-    const button=document.querySelector('#generateLibraryBatch');if(!button)return;
-    const adapter=window.FocusWaveAIAdapter;
-    if(!adapter?.generateContentBatch){button.textContent='生成器尚未就绪';return}
-    button.disabled=true;button.textContent='正在生成';
-    try{
-      const drafts=await adapter.generateContentBatch({count:8});
-      const existing=localGeneratedEntries();
-      localStorage.setItem(GENERATED_DRAFTS_KEY,JSON.stringify([...drafts,...existing].slice(0,80)));
-      libraryItemIndex=0;renderLibrary();
-    } catch(error){
-      button.disabled=false;button.textContent='重试生成';
-    }
-  }
-
-  async function openLibrary(){
-    if(!librariesReady)librariesReady=loadLibraries();
-    await librariesReady;
-    renderLibrary();document.querySelector('#contentLibraryOverlay').classList.add('open');
+  function openLibrary(){
+    renderLibrary();
+    document.querySelector('#contentLibraryOverlay')?.classList.add('open');
   }
   function bindLibraryEntry(){
     const panel=document.querySelector('#setting-ai');if(!panel)return;
@@ -242,6 +171,7 @@
     patchApplyState();
     document.querySelector('#textGroup')?.addEventListener('click',()=>setTimeout(refresh,0));
     librariesReady=loadLibraries();
+    void librariesReady;
     setTimeout(bindLibraryEntry,80);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();

@@ -4,7 +4,7 @@ name: Deploy FocusWave Preview
 # Deployment revision: karesansui-inset-drawer-v2
 on:
   push:
-    branches: [main]
+    branches: [main, li]
     paths:
       - 'prototype/daily-focus-v1/**'
       - '.github/workflows/pages.yml'

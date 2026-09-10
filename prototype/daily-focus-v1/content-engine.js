@@ -1,30 +1,17 @@
-/* FocusWave live text + curated content library + focus-session regulation */
+/* FocusWave curated content library + focus-session regulation */
 (() => {
-  const stateNames={stable:'凝神',drift:'分神',dispersed:'神驰',refocus:'凝神'};
-  const minimal={stable:'稳',drift:'游',dispersed:'散',refocus:'归'};
-  const themeLabels={ocean:'海',mountain:'山',incense:'线香',dusk:'夕照'};
-  const GENERATED_DRAFTS_KEY='focuswave.generatedContentDrafts';
-  const DEFAULT_TEXT_MODE_KEY='focuswave.defaultTextMode';
   const MIND_WANDER_THRESHOLD_MS=60_000;
   const PROMPT_TIMEOUT_MS=15_000;
   const FOCUS_PRACTICE_MS=60_000;
   const TRANSITION_MS=5_000;
-  const fallbackOriginal={
-    ocean:{stable:['潮声很远，手边的事很近。'],drift:['远潮带走一小段目光。'],dispersed:['水面起了碎浪，注意失去了一处落点。'],refocus:['浪声退后，眼前这一处重新显出来。']},
-    mountain:{stable:['云影很慢，峰线很清楚。'],drift:['山还在，目光先随云去了。'],dispersed:['山色被雾分成几层，注意也散开了。'],refocus:['雾气渐薄，山脊又连成一线。']},
-    incense:{stable:['烟直而轻，注意停留得很安静。'],drift:['烟身轻轻一折，目光随之偏了半步。'],dispersed:['烟在半空散成薄雾，思绪也变得松散。'],refocus:['散开的烟慢慢并回一缕。']},
-    dusk:{stable:['暮光铺平，注意安静地落了下来。'],drift:['晚风带走一点余光，目光跟着远了。'],dispersed:['余晖碎在云间，注意也失去了同一方向。'],refocus:['散开的余光慢慢收回桌面。']}
-  };
   const focusStates=[
     {key:'stable',title:'凝神',sub:'心无旁骛，继续保持',index:78,conf:.82,amp:.42,disorder:.10,speed:.14},
     {key:'drift',title:'分神',sub:'略有分心，及时调整',index:66,conf:.76,amp:.72,disorder:.36,speed:.42},
     {key:'dispersed',title:'神驰',sub:'走神已久，重新专注',index:53,conf:.78,amp:1.0,disorder:.72,speed:.86}
   ];
 
-  let libraries={original:null,generated:null,global:null,classical:null};
   let curatedLibrary=[];
-  let lastKey='';
-  let librariesReady=null;
+  let libraryReady=null;
   let reminderEnabled=true;
   let wanderSince=0;
   let wanderTimer=0;
@@ -39,98 +26,39 @@
   let noiseGain=null;
   const regulationEvents=[];
 
-  async function loadLibraries(){
+  async function loadLibrary(){
     try{
-      const [o,n,g,c,q]=await Promise.all([
-        fetch('./content/original-state-lines.json').then(r=>r.ok?r.json():null),
-        fetch('./content/generated-state-lines.json').then(r=>r.ok?r.json():null),
-        fetch('./content/world-public-domain.json').then(r=>r.ok?r.json():null),
-        fetch('./content/classical-zh.json').then(r=>r.ok?r.json():null),
-        fetch('./content/curated-quotes.json').then(r=>r.ok?r.json():null)
-      ]);
-      libraries={original:o,generated:n,global:g,classical:c};
-      curatedLibrary=(q?.items||[]).filter(item=>item?.text&&item?.source);
-      refresh();
-      bindLibraryEntry();
-    }catch(e){
-      console.warn('FocusWave content libraries unavailable',e);
+      const data=await fetch('./content/curated-quotes.json').then(response=>response.ok?response.json():null);
+      curatedLibrary=(data?.items||[]).filter(item=>item?.text&&item?.source);
+    }catch(error){
+      console.warn('FocusWave curated library unavailable',error);
     }
-  }
-
-  function selectedMode(){
-    const sessionMode=document.querySelector('#textGroup .selected')?.dataset.value;
-    if(sessionMode)return sessionMode;
-    const saved=localStorage.getItem(DEFAULT_TEXT_MODE_KEY);
-    return ['minimal','original','global','classical'].includes(saved)?saved:'original';
-  }
-  function randPick(arr,key){
-    if(!arr?.length)return null;
-    let idx=Math.floor(Math.random()*arr.length);
-    if(arr.length>1&&`${key}:${idx}`===lastKey)idx=(idx+1)%arr.length;
-    lastKey=`${key}:${idx}`;
-    return arr[idx];
-  }
-  function poolItems(items,theme,state){
-    if(!items?.length)return[];
-    let pool=items.filter(x=>x.verified!==false&&x.theme?.includes(theme)&&x.state?.includes(state));
-    if(!pool.length)pool=items.filter(x=>x.verified!==false&&x.state?.includes(state));
-    if(!pool.length)pool=items.filter(x=>x.verified!==false&&x.theme?.includes(theme));
-    return pool.length?pool:items.filter(x=>x.verified!==false);
-  }
-  function localGeneratedEntries(){
-    try{return JSON.parse(localStorage.getItem(GENERATED_DRAFTS_KEY)||'[]')}catch{return[]}
-  }
-  function renderFor(mode,theme,state){
-    if(mode==='minimal')return{q:minimal[state]||'·',meta:`${themeLabels[theme]} · ${stateNames[state]}`};
-    if(mode==='original'){
-      const reviewed=libraries.original?.themes?.[theme]?.[state]||fallbackOriginal[theme]?.[state]||[];
-      const generated=libraries.generated?.themes?.[theme]?.[state]||[];
-      const local=localGeneratedEntries().filter(item=>item.theme===theme&&item.state===state).map(item=>item.text);
-      const pool=[...reviewed,...generated,...local];
-      return{q:randPick(pool,`o:${theme}:${state}`)||'',meta:`新创 · ${themeLabels[theme]}`};
-    }
-    if(mode==='global'){
-      const item=randPick(poolItems(libraries.global?.items||[],theme,state),`g:${theme}:${state}`);
-      if(item)return{q:item.original,meta:`${item.author} · ${item.work}`,translation:item.translation_zh||''};
-      return{q:'Look within.',meta:'Marcus Aurelius · Meditations',translation:'向内看。'};
-    }
-    const item=randPick(poolItems(libraries.classical?.items||[],theme,state),`c:${theme}:${state}`);
-    if(item)return{q:item.text,meta:`${item.author} · ${item.work}`};
-    return{q:'山气日夕佳，飞鸟相与还。',meta:'陶渊明 · 饮酒·其五'};
-  }
-
-  function refresh(){
-    if(typeof stateIndex==='undefined'||typeof states==='undefined')return;
-    const state=states[stateIndex]?.key||'stable';
-    const theme=typeof activeTheme!=='undefined'?activeTheme:'ocean';
-    const mode=selectedMode(),out=renderFor(mode,theme,state);
-    const quote=document.querySelector('#stateQuote'),meta=document.querySelector('#stateImagery');
-    if(!quote||!meta)return;
-    if(mode==='global'&&out.translation){
-      quote.innerHTML=`<span>${out.q}</span><small style="display:block;margin-top:10px;font-family:var(--ui);font-size:12px;letter-spacing:0;color:var(--muted)">${out.translation}</small>`;
-    }else quote.textContent=out.q;
-    meta.textContent=out.meta;
   }
 
   function recordRegulation(action,extra={}){
     regulationEvents.push({action,at:Date.now(),...extra});
   }
+
   function currentFocusState(){
     if(typeof states==='undefined'||typeof stateIndex==='undefined')return null;
     return states[stateIndex]||states[0]||null;
   }
+
   function isMindWandering(){
     const state=currentFocusState();
     return state?.key==='dispersed'||state?.title==='神驰';
   }
+
   function clearWanderTimer(){
     clearTimeout(wanderTimer);
     wanderTimer=0;
   }
+
   function resetWanderWindow(){
     clearWanderTimer();
     wanderSince=0;
   }
+
   function scheduleMindWanderWatch(){
     clearWanderTimer();
     if(!reminderEnabled||practiceRunning||typeof currentPage==='undefined'||currentPage!=='live'){
@@ -155,6 +83,7 @@
     states.splice(0,states.length,...focusStates.map(state=>({...state})));
     if(typeof stateIndex!=='undefined'&&stateIndex>=states.length)stateIndex=0;
   }
+
   function renderLiveState(){
     const state=currentFocusState();
     if(!state)return;
@@ -165,6 +94,12 @@
     if(sub)sub.textContent=state.sub;
     if(index)index.textContent=String(state.index);
   }
+
+  function refresh(){
+    renderLiveState();
+    scheduleMindWanderWatch();
+  }
+
   function patchApplyState(){
     if(typeof window.applyState!=='function')return;
     window.applyState=function focusWaveThreeStateApply(){
@@ -185,10 +120,24 @@
       #page-live .live-focus-index span{font-size:12px;color:var(--muted)}
       #page-live .live-focus-index strong{font-family:var(--ui);font-variant-numeric:tabular-nums;font-size:30px;font-weight:430;letter-spacing:-.03em;color:var(--ink)}
       #page-live .live-focus-index small{font-size:11px;color:var(--muted)}
-      #page-setup .wander-reminder-card{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--hair);border-radius:18px;padding:15px 16px;background:rgba(255,255,255,.08);cursor:pointer}
-      #page-setup .wander-reminder-card input{width:17px;height:17px;margin:2px 0 0;accent-color:#71887c;flex:0 0 auto}
+
+      #page-setup .setup-wrap>.section-sub{display:none}
+      #page-setup .actions{justify-content:flex-end;margin-top:44px}
+      #page-setup .actions .link-btn{display:none}
+      #page-setup .wander-reminder-card{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--hair);border-radius:18px;padding:15px 16px;background:rgba(255,255,255,.08);cursor:pointer;position:relative}
+      #page-setup .wander-reminder-card input{position:absolute;opacity:0;pointer-events:none}
+      #page-setup .wander-check{width:19px;height:19px;border-radius:50%;border:1px solid #9baaa2;display:grid;place-items:center;flex:0 0 19px;margin-top:1px;color:transparent;background:transparent;transition:.16s}
+      #page-setup .wander-check:after{content:'✓';font-size:11px;line-height:1}
+      #page-setup .wander-reminder-card input:checked + .wander-check{background:#71887c;border-color:#71887c;color:var(--paper)}
       #page-setup .wander-reminder-card b{display:block;font-family:var(--ui);font-size:14px;font-weight:450}
       #page-setup .wander-reminder-card small{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.6}
+      #page-setup .custom-duration{display:none;margin-top:12px;align-items:center;gap:10px}
+      #page-setup .custom-duration.open{display:flex}
+      #page-setup .custom-duration input{width:118px;height:38px;border:1px solid var(--hair);border-radius:999px;background:rgba(255,255,255,.12);outline:0;padding:0 14px;font-family:var(--ui);font-size:13px;color:var(--ink)}
+      #page-setup .custom-duration input:focus{border-color:#7f958a;box-shadow:0 0 0 2px rgba(127,149,138,.08)}
+      #page-setup .custom-duration span{font-size:12px;color:var(--muted)}
+      #page-setup .custom-duration-error{min-height:16px;margin-top:7px;font-size:11px;color:#9b705f}
+
       #regOverlay .mind-wander-modal{width:min(560px,90vw)}
       #regOverlay .prompt-timeout{margin-top:14px;color:#929893;font-size:11px}
       #focusCountPracticeOverlay{z-index:80}
@@ -211,6 +160,8 @@
       @keyframes fw-count-breath{0%{transform:scale(.72);opacity:.62}40%{transform:scale(1.16);opacity:1}100%{transform:scale(.72);opacity:.62}}
       @media(max-width:720px){
         #page-live .live-focus-index{margin-top:24px}
+        #page-setup .actions{justify-content:stretch}
+        #page-setup .actions .primary{width:100%}
         #focusCountPracticeOverlay .focus-practice-modal{padding:34px 22px 28px}
         #focusCountPracticeOverlay .breath-ring-wrap{width:220px;height:220px}
         #focusCountPracticeOverlay .breath-ring{width:132px;height:132px}
@@ -246,17 +197,85 @@
       closeMindWanderPrompt('reminder-disabled',false);
     }else scheduleMindWanderWatch();
   }
-  function patchSetupReminder(){
-    const block=document.querySelector('#regulationGroup')?.closest('.setup-block');
-    if(block){
-      block.innerHTML=`
+
+  function patchSetupPage(){
+    const page=document.querySelector('#page-setup');
+    if(!page)return;
+    const title=page.querySelector('.section-title');
+    if(title)title.textContent='设置任务，开始专注';
+    page.querySelector('.setup-wrap>.section-sub')?.remove();
+    page.querySelector('.actions .link-btn')?.remove();
+
+    const regulationBlock=document.querySelector('#regulationGroup')?.closest('.setup-block');
+    if(regulationBlock){
+      regulationBlock.innerHTML=`
         <span class="choice-label">专注提醒</span>
         <label class="wander-reminder-card">
           <input id="wanderReminderToggle" type="checkbox" checked />
-          <span><b>走神时允许提醒</b><small>默认开启。连续检测到神驰 ≥ 1 分钟时，询问是否开始专注练习。</small></span>
+          <span class="wander-check" aria-hidden="true"></span>
+          <span><b>严重走神时允许提醒</b><small>默认开启。连续检测到严重走神 ≥ 1 分钟时，询问是否开始专注练习。</small></span>
         </label>`;
-      block.querySelector('#wanderReminderToggle')?.addEventListener('change',event=>setReminderEnabled(event.target.checked));
+      regulationBlock.querySelector('#wanderReminderToggle')?.addEventListener('change',event=>setReminderEnabled(event.target.checked));
     }
+
+    const durationGroup=document.querySelector('#durationGroup');
+    if(durationGroup&&!document.querySelector('#customDurationWrap')){
+      const wrap=document.createElement('div');
+      wrap.id='customDurationWrap';
+      wrap.className='custom-duration';
+      wrap.innerHTML='<input id="customDurationInput" type="number" min="1" max="480" step="1" inputmode="numeric" placeholder="例如 90" aria-label="自定义专注时长（分钟）" /><span>分钟</span>';
+      durationGroup.insertAdjacentElement('afterend',wrap);
+      const error=document.createElement('div');
+      error.id='customDurationError';
+      error.className='custom-duration-error';
+      wrap.insertAdjacentElement('afterend',error);
+
+      const syncCustomDuration=()=>{
+        const free=durationGroup.querySelector('[data-value="0"]')?.classList.contains('selected');
+        wrap.classList.toggle('open',!!free);
+        if(free)setTimeout(()=>document.querySelector('#customDurationInput')?.focus(),0);
+        else if(error)error.textContent='';
+      };
+      durationGroup.addEventListener('click',event=>{
+        if(event.target.closest('[data-value]'))setTimeout(syncCustomDuration,0);
+      });
+      syncCustomDuration();
+    }
+
+    const toDevice=document.querySelector('#toDevice');
+    if(toDevice){
+      toDevice.onclick=()=>{
+        const selected=document.querySelector('#durationGroup .selected')?.dataset.value||'45';
+        let minutes=Number(selected);
+        const error=document.querySelector('#customDurationError');
+        if(selected==='0'){
+          const input=document.querySelector('#customDurationInput');
+          minutes=Number(input?.value);
+          if(!Number.isFinite(minutes)||minutes<1||minutes>480){
+            if(error)error.textContent='请输入 1–480 分钟的专注时长。';
+            input?.focus();
+            return;
+          }
+        }
+        if(error)error.textContent='';
+        if(typeof activeTheme!=='undefined')activeTheme=document.querySelector('#themeGroup .selected')?.dataset.value||'ocean';
+        const liveTask=document.querySelector('#liveTask');
+        const taskInput=document.querySelector('#taskInput');
+        const planned=document.querySelector('#plannedTime');
+        if(liveTask)liveTask.textContent=taskInput?.value||'专注';
+        if(planned)planned.textContent=`${String(Math.floor(minutes)).padStart(2,'0')}:00`;
+        if(typeof showPage==='function')showPage('device');
+        const quality=document.querySelector('#qualityReady');
+        const begin=document.querySelector('#beginLive');
+        if(quality){quality.textContent='正在确认';quality.className='waiting';}
+        if(begin)begin.disabled=true;
+        setTimeout(()=>{
+          if(quality){quality.textContent='良好 · 94%';quality.className='ready';}
+          if(begin)begin.disabled=false;
+        },1300);
+      };
+    }
+
     [document.querySelector('#startFocus'),document.querySelector('#practiceToSetup')].filter(Boolean).forEach(button=>{
       button.addEventListener('click',()=>setReminderEnabled(true));
     });
@@ -268,8 +287,8 @@
     overlay.innerHTML=`
       <div class="modal mind-wander-modal">
         <div class="eyebrow">ATTENTION CHECK</div>
-        <h2>已经神驰了一会儿。</h2>
-        <p>连续检测到神驰已超过 1 分钟。要用一小段数息练习重新专注吗？</p>
+        <h2>已经严重走神了一会儿。</h2>
+        <p>连续检测到严重走神已超过 1 分钟。要用一小段数息练习重新专注吗？</p>
         <div class="modal-actions">
           <button class="primary" id="mindWanderPractice" type="button">开始练习</button>
           <button class="ghost" id="mindWanderContinue" type="button">继续任务</button>
@@ -286,6 +305,7 @@
       closeMindWanderPrompt('declined',true);
     };
   }
+
   function openMindWanderPrompt(){
     if(!reminderEnabled||practiceRunning||typeof currentPage==='undefined'||currentPage!=='live'||!isMindWandering())return;
     const overlay=document.querySelector('#regOverlay');
@@ -298,6 +318,7 @@
       closeMindWanderPrompt('timeout',true);
     },PROMPT_TIMEOUT_MS);
   }
+
   function closeMindWanderPrompt(reason='closed',rearm=false){
     clearTimeout(promptTimer);
     promptTimer=0;
@@ -341,9 +362,10 @@
 
   function formatRemaining(ms){
     const seconds=Math.max(0,Math.ceil(ms/1000));
-    const m=Math.floor(seconds/60),s=seconds%60;
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const minutes=Math.floor(seconds/60),rest=seconds%60;
+    return `${String(minutes).padStart(2,'0')}:${String(rest).padStart(2,'0')}`;
   }
+
   function updatePracticeCue(){
     if(!practiceRunning)return;
     const elapsed=Date.now()-practiceStartedAt;
@@ -355,6 +377,7 @@
     if(cue)cue.textContent=within<4_000?`吸 ${count}`:`呼 ${count}`;
     if(remaining)remaining.textContent=formatRemaining(FOCUS_PRACTICE_MS-elapsed);
   }
+
   function resetBreathAnimation(){
     const ring=document.querySelector('#breathRing');
     if(!ring)return;
@@ -362,6 +385,7 @@
     void ring.offsetWidth;
     ring.style.animation='';
   }
+
   function startFocusPractice(trigger='manual'){
     ensureFocusPracticeOverlay();
     closeMindWanderPrompt('practice-start',false);
@@ -382,6 +406,7 @@
     clearTimeout(practiceEndTimer);
     practiceEndTimer=setTimeout(showPracticeTransition,FOCUS_PRACTICE_MS);
   }
+
   function showPracticeTransition(){
     if(!practiceRunning)return;
     clearInterval(practiceTicker);
@@ -393,6 +418,7 @@
     clearTimeout(transitionTimer);
     transitionTimer=setTimeout(()=>finishFocusPractice('auto-continued'),TRANSITION_MS);
   }
+
   function finishFocusPractice(reason='completed'){
     clearInterval(practiceTicker);
     clearTimeout(practiceEndTimer);
@@ -428,6 +454,7 @@
     noiseSource.connect(noiseGain).connect(audioContext.destination);
     noiseSource.start();
   }
+
   function stopWhiteNoise(){
     try{noiseSource?.stop();}catch(_){/* already stopped */}
     try{noiseSource?.disconnect();}catch(_){/* already disconnected */}
@@ -435,6 +462,7 @@
     noiseSource=null;
     noiseGain=null;
   }
+
   function toggleWhiteNoise(){
     const button=document.querySelector('#practiceNoiseToggle');
     if(noiseSource){
@@ -509,19 +537,22 @@
   }
 
   async function openLibrary(){
-    if(!librariesReady)librariesReady=loadLibraries();
-    await librariesReady;
+    if(!libraryReady)libraryReady=loadLibrary();
+    await libraryReady;
     renderLibrary();
     document.querySelector('#contentLibraryOverlay')?.classList.add('open');
   }
+
   function bindLibraryEntry(){
-    const panel=document.querySelector('#setting-ai');if(!panel)return;
-    const target=panel.querySelector('.content-library-entry')||[...panel.querySelectorAll('.pill')].find(x=>x.textContent.trim()==='内容库');
+    const panel=document.querySelector('#setting-ai');
+    if(!panel)return;
+    const target=panel.querySelector('.content-library-entry')||[...panel.querySelectorAll('.pill')].find(item=>item.textContent.trim()==='内容库');
     if(!target||target.dataset.bound)return;
     target.dataset.bound='1';
     target.style.cursor='pointer';
     target.onclick=openLibrary;
   }
+
   function removeSessionTextMode(){
     document.querySelector('#textGroup')?.closest('.setup-block')?.remove();
   }
@@ -530,7 +561,7 @@
     installFocusStates();
     ensureFocusSessionStyles();
     patchLiveLayout();
-    patchSetupReminder();
+    patchSetupPage();
     installMindWanderPrompt();
     ensureFocusPracticeOverlay();
     bindPracticeEntry();
@@ -540,9 +571,10 @@
   function bind(){
     removeSessionTextMode();
     installFocusSessionExperience();
-    librariesReady=loadLibraries();
+    libraryReady=loadLibrary();
     setTimeout(bindLibraryEntry,80);
   }
+
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
   window.FocusWaveContentEngine={refresh,openLibrary,startFocusPractice,regulationEvents};
 })();

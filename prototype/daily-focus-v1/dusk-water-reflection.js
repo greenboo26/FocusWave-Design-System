@@ -1,6 +1,6 @@
 /* FocusWave dusk visual — sunset reflected on water.
  * State is expressed only by horizontal motion of the reflection lines:
- * stable = still; drift and dispersed use the exact same lateral-shift grammar,
+ * stable = still; drift and dispersed use the exact same lateral-slide grammar,
  * differing only in motion amplitude and speed.
  * Dusk uses its own continuous motion clock so state changes never jump phase.
  * No MutationObserver and no global polling.
@@ -49,20 +49,20 @@
       horizonAlpha:.18
     };
     if(key==='drift') return {
-      // Clearly visible, but restrained: gentle lateral drift.
-      shift:.010,
-      speed:.28,
+      // Clearly visible side-to-side sliding, but still restrained.
+      shift:.012,
+      speed:.55,
       ...movingAppearance
     };
     if(key==='dispersed') return {
-      // Same grammar as drift, only moderately wider and faster.
-      shift:.016,
-      speed:.45,
+      // Same slide grammar; wider and faster than drift without becoming frantic.
+      shift:.020,
+      speed:.85,
       ...movingAppearance
     };
     return {
-      shift:.007,
-      speed:.22,
+      shift:.008,
+      speed:.40,
       ...movingAppearance
     };
   }
@@ -122,14 +122,13 @@
 
   function rowShift(row,q,m,phase,w){
     if(m.shift===0) return 0;
-    // Drift and dispersed share the exact formula. Speed is accumulated by the
-    // continuous motion clock, so changing state never re-phases the lines.
-    const amp=m.shift*w*(.68+.32*noise(3100+row))*(.52+.48*q);
-    const rowRate=.82+.36*noise(3200+row);
+    // Drift and dispersed share exactly the same movement: every reflection row
+    // slides horizontally left/right. Per-row amplitude, rate and phase vary only
+    // slightly, so the reflected light feels like water rather than one rigid block.
+    const amp=m.shift*w*(.78+.22*noise(3100+row))*(.68+.32*q);
+    const rowRate=.90+.20*noise(3200+row);
     const seedPhase=noise(3300+row)*Math.PI*2;
-    const primary=Math.sin(phase*rowRate+seedPhase);
-    const secondary=Math.sin(phase*rowRate*.53+seedPhase*1.67)*.18;
-    return amp*(primary+secondary);
+    return amp*Math.sin(phase*rowRate+seedPhase);
   }
 
   function drawReflection(ctx,w,h,c,m,phase,sun,water){

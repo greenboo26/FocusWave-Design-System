@@ -51,14 +51,14 @@
     };
     if(key==='drift') return {
       // Gentle, clearly visible repeated side-to-side sliding.
-      shift:.008,
-      speed:.87,
+      shift:.016,
+      speed:1.74,
       ...movingAppearance
     };
     if(key==='dispersed') return {
       // Same sliding grammar, moderately wider and faster than drift.
-      shift:.013,
-      speed:1.35,
+      shift:.026,
+      speed:2.70,
       ...movingAppearance
     };
     return {

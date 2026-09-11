@@ -52,10 +52,11 @@ window.FocusWaveIdiomGrammar = (() => {
 import('./theme-rain-controller.js?v=4');
 import('./dusk-water-reflection.js?v=15');
 import('./live-ui-refinements.js?v=1');
-import('./daily-garden-rewards.js?v=1');
+import('./daily-garden-rewards.js?v=2');
+import('./setup-focus-target.js?v=1');
 const settingsReady = import('./settings-controller.js?v=9');
 settingsReady
   .then(() => import('./ai-assistant-controller.js?v=5'))
-  .then(() => import('./summary-ui-refinements.js?v=1'));
+  .then(() => import('./summary-ui-refinements.js?v=2'));
 import('./navigation-controller.js?v=2');
 import('./home-concept-carousel.js?v=7');

@@ -46,10 +46,10 @@
       speed:1.74,
       ...movingAppearance
     },
-    // 神驰 = the prior/current visible drift animation.
+    // 神驰 = the prior/current visible drift animation, with a slightly calmer speed.
     dispersed:{
       shift:.064,
-      speed:3.48,
+      speed:3.00,
       ...movingAppearance
     }
   };
@@ -261,7 +261,7 @@
   document.querySelector('#startFocus')?.addEventListener('click',()=>setTimeout(installAndRefresh,120));
 
   window.FocusWaveDuskReflection={
-    revision:'dusk-state-map-v13',
+    revision:'dusk-state-map-v14',
     install,
     drawDusk,
     startDuskLiveLoop,

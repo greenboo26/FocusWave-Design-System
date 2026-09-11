@@ -50,15 +50,15 @@
       horizonAlpha:.18
     };
     if(key==='drift') return {
-      // Repeated side-to-side sliding; 4x amplitude and 2x speed from the prior deployed state.
-      shift:.064,
-      speed:3.48,
+      // Half of the prior drift amplitude and speed.
+      shift:.032,
+      speed:1.74,
       ...movingAppearance
     };
     if(key==='dispersed') return {
-      // Same sliding grammar, wider and faster than drift.
-      shift:.104,
-      speed:5.40,
+      // Uses the prior drift animation level.
+      shift:.064,
+      speed:3.48,
       ...movingAppearance
     };
     return {

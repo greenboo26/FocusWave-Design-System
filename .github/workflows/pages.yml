@@ -1,7 +1,8 @@
 name: Deploy FocusWave Preview
 
 # Publishes the interactive daily-focus prototype to GitHub Pages.
-# Deployment revision: karesansui-inset-drawer-v2
+# Every deployment rewrites versioned runtime URLs with the current commit SHA
+# so the preview cannot silently reuse stale JavaScript from an older run.
 on:
   push:
     branches: [main, li]
@@ -32,10 +33,18 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare cache-busted preview
+        shell: bash
+        run: |
+          rm -rf _site
+          cp -R prototype/daily-focus-v1 _site
+          find _site -type f \( -name '*.html' -o -name '*.js' \) -print0 \
+            | xargs -0 sed -E -i "s/\\?v=[0-9]+/?rev=${GITHUB_SHA}/g"
+
       - name: Upload FocusWave preview
         uses: actions/upload-pages-artifact@v3
         with:
-          path: prototype/daily-focus-v1
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment

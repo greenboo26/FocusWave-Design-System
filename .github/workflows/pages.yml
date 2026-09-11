@@ -40,6 +40,10 @@ jobs:
           cp -R prototype/daily-focus-v1 _site
           find _site -type f \( -name '*.html' -o -name '*.js' \) -print0 \
             | xargs -0 sed -E -i "s/\\?v=[0-9]+/?rev=${GITHUB_SHA}/g"
+          # Publish a commit-specific HTML entry as well. The normal root page can
+          # be cached briefly by the browser/CDN; this unique filename guarantees
+          # reviewers can open the exact deployment that belongs to this commit.
+          cp _site/index.html "_site/preview-${GITHUB_SHA}.html"
 
       - name: Upload FocusWave preview
         uses: actions/upload-pages-artifact@v3

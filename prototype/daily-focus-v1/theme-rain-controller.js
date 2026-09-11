@@ -1,22 +1,13 @@
-/* FocusWave product-language patch: internal key remains "ocean", UI theme is "rain". */
+/* FocusWave product-language patch: internal key remains "ocean", UI theme is "rain".
+ * Keep this controller deliberately passive: no global MutationObserver loops.
+ */
 (() => {
-  const rainCopy = {
-    '专注维持': ['细密雨纹有节律地一圈圈落定。','雨 · 细纹 · 静落'],
-    '轻度游移': ['几处大小不同的涟漪先后散开。','雨 · 游纹 · 轻落'],
-    '状态起伏': ['大圈小圈交错撞开，嘈嘈切切错杂弹。','雨 · 疾落 · 错纹'],
-    '重新聚焦': ['雨势渐匀，涟漪重新收回秩序。','雨 · 收纹 · 归静']
-  };
-
-  function isRainSelected(){
-    return !!document.querySelector('#themeGroup .theme-card.selected[data-value="ocean"]');
-  }
-
   function patchThemeCard(){
     const card=document.querySelector('#themeGroup .theme-card[data-value="ocean"]');
     if(!card)return;
-    const b=card.querySelector('b'),small=card.querySelector('small');
-    if(b && b.textContent!=='雨 · 青灰') b.textContent='雨 · 青灰';
-    if(small && small.textContent!=='落雨涟漪') small.textContent='落雨涟漪';
+    const b=card.querySelector('b');
+    if(b)b.textContent='雨 · 青灰';
+    card.querySelector('small')?.remove();
 
     const mini=card.querySelector('.theme-mini');
     if(mini && mini.dataset.rainPatched!=='true'){
@@ -31,58 +22,38 @@
     }
   }
 
-  function patchLiveCopy(){
-    if(!isRainSelected())return;
-    const title=document.querySelector('#stateTitle')?.textContent?.trim();
-    const copy=rainCopy[title];if(!copy)return;
-    const q=document.querySelector('#stateQuote'),i=document.querySelector('#stateImagery');
-    if(q && q.textContent!==copy[0]) q.textContent=copy[0];
-    if(i && i.textContent!==copy[1]) i.textContent=copy[1];
-  }
-
   function patchFocusPracticeCopy(){
     const overlay=document.querySelector('#focusCountPracticeOverlay');
-    if(!overlay)return false;
+    if(!overlay)return;
     const eyebrow=overlay.querySelector('.breath-stage .eyebrow');
     const title=overlay.querySelector('#focusPracticeTitle');
-    const reminder=overlay.querySelector('.practice-reminder');
     const guide=overlay.querySelector('.practice-guide');
-    const noise=overlay.querySelector('#practiceNoiseToggle');
-    if(eyebrow && eyebrow.textContent!=='60s 专注练习') eyebrow.textContent='60s 专注练习';
-    if(title && title.textContent!=='呼吸锚定') title.textContent='呼吸锚定';
-    reminder?.remove();
-    if(guide && guide.textContent!=='跟随圆环，吸气 4 秒，呼气 6 秒，循环6次') guide.textContent='跟随圆环，吸气 4 秒，呼气 6 秒，循环6次';
-    noise?.remove();
-    return true;
+    if(eyebrow)eyebrow.textContent='60s 专注练习';
+    if(title)title.textContent='呼吸锚定';
+    overlay.querySelector('.practice-reminder')?.remove();
+    if(guide)guide.textContent='跟随圆环，吸气 4 秒，呼气 6 秒，循环6次';
+    overlay.querySelector('#practiceNoiseToggle')?.remove();
   }
 
-  function patch(){patchThemeCard();patchLiveCopy();patchFocusPracticeCopy();}
+  function patchPracticeSoon(){
+    requestAnimationFrame(()=>{
+      patchFocusPracticeCopy();
+      setTimeout(patchFocusPracticeCopy,60);
+      setTimeout(patchFocusPracticeCopy,180);
+    });
+  }
 
   function install(){
-    patch();
-    const root=document.querySelector('#themeGroup');
-    if(root){
-      root.addEventListener('click',()=>requestAnimationFrame(patch));
-      // Observe only selection class changes. Watching childList here used to
-      // retrigger patchThemeCard's innerHTML write forever and freeze the page.
-      new MutationObserver(patchLiveCopy).observe(root,{subtree:true,attributes:true,attributeFilter:['class']});
-    }
-    const title=document.querySelector('#stateTitle');
-    if(title)new MutationObserver(patchLiveCopy).observe(title,{childList:true,characterData:true,subtree:true});
+    patchThemeCard();
+    patchFocusPracticeCopy();
 
-    // The practice overlay is created lazily after the user enters the focus flow.
-    // Watch only until it exists, disconnect first, then patch once. Keeping a
-    // body-wide observer alive while changing overlay text creates a self-triggering
-    // mutation loop that can lock the browser main thread.
-    if(!patchFocusPracticeCopy()){
-      const practiceObserver=new MutationObserver((_,observer)=>{
-        if(!document.querySelector('#focusCountPracticeOverlay'))return;
-        observer.disconnect();
-        patchFocusPracticeCopy();
-      });
-      practiceObserver.observe(document.body,{childList:true,subtree:true});
-    }
-    setTimeout(patch,50);
+    document.querySelector('#themeGroup')?.addEventListener('click',()=>requestAnimationFrame(patchThemeCard));
+
+    // The focus runtime is loaded lazily. Patch its practice overlay only after
+    // user actions that can create/open it instead of observing the whole DOM.
+    document.addEventListener('click',event=>{
+      if(event.target?.closest?.('#startFocus,#practiceToSetup,#regBtn,#mindWanderPractice')) patchPracticeSoon();
+    },{passive:true});
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});

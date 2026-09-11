@@ -1,7 +1,7 @@
 /* FocusWave dusk visual — sunset reflected on water.
  * State is expressed only by horizontal motion of the reflection lines:
- * stable = still, drift = clearly visible gentle lateral motion,
- * dispersed = stronger/faster lateral motion.
+ * stable = still; drift and dispersed use the exact same lateral-shift grammar,
+ * differing only in motion amplitude and speed.
  * No MutationObserver and no global polling.
  */
 (() => {
@@ -31,23 +31,35 @@
     return {w,h};
   }
 
+  const movingAppearance={
+    reflectionAlpha:.42,
+    waterAlpha:.10,
+    horizonAlpha:.19
+  };
+
   function modeFor(key){
     if(key==='stable') return {
-      shift:0, speed:0,
-      reflectionAlpha:.44, waterAlpha:.09, horizonAlpha:.18
+      shift:0,
+      speed:0,
+      reflectionAlpha:.44,
+      waterAlpha:.09,
+      horizonAlpha:.18
     };
     if(key==='drift') return {
-      // Deliberately large enough to be visible at a glance without looking restless.
-      shift:.030, speed:.95,
-      reflectionAlpha:.43, waterAlpha:.095, horizonAlpha:.18
+      // Same motion grammar as dispersed; only gentler and slower.
+      shift:.045,
+      speed:1.25,
+      ...movingAppearance
     };
     if(key==='dispersed') return {
-      shift:.075, speed:2.05,
-      reflectionAlpha:.42, waterAlpha:.105, horizonAlpha:.20
+      shift:.080,
+      speed:2.10,
+      ...movingAppearance
     };
     return {
-      shift:.014, speed:.55,
-      reflectionAlpha:.43, waterAlpha:.095, horizonAlpha:.18
+      shift:.028,
+      speed:.85,
+      ...movingAppearance
     };
   }
 
@@ -95,8 +107,8 @@
 
   function rowShift(row,q,m,t,w){
     if(m.shift===0) return 0;
-    // Each row has deterministic amplitude, speed and phase so it moves smoothly
-    // and independently instead of jittering frame-to-frame.
+    // Drift and dispersed both use this exact formula. Each row keeps its own
+    // deterministic amplitude, speed and phase so the reflection moves smoothly.
     const amp=m.shift*w*(.68+.32*noise(3100+row))*(.52+.48*q);
     const speed=m.speed*(.82+.36*noise(3200+row));
     const phase=noise(3300+row)*Math.PI*2;
@@ -146,7 +158,6 @@
     ctx.clearRect(0,0,w,h);
     const key=stateKey(opt.state);
     const m=modeFor(key);
-    // Stable ignores time entirely, so every reflection line is motionless.
     const t=key==='stable' ? 0 : (opt.t||0);
     const sun=drawSun(ctx,w,h,warm);
     const water=drawWater(ctx,w,h,warm,m);
@@ -155,8 +166,6 @@
 
   function patchLiveAnimation(){
     if(liveLoopPatched || typeof window.animateLive!=='function') return;
-    // The original live loop called the old lexical drawField directly, bypassing
-    // theme runtimes. Replace it once so every live frame uses the registered renderer.
     window.animateLive=function focusWaveLiveAnimation(){
       cancelAnimationFrame(raf);
       const start=performance.now();
@@ -164,10 +173,14 @@
         if(currentPage!=="live") return;
         const st=states[stateIndex];
         const speedScale=(typeof motionBase==='function' ? motionBase() : 1);
+        const elapsed=(now-start)/1000*speedScale;
+        // Dusk owns its state-dependent speed internally. Other themes preserve
+        // the original generic state-speed scaling.
+        const t=activeTheme==='dusk' ? elapsed : elapsed*st.speed;
         window.drawField(document.querySelector('#liveCanvas'),{
           theme:activeTheme,
           state:st,
-          t:(now-start)/1000*st.speed*speedScale,
+          t,
           alpha:.36
         });
         raf=requestAnimationFrame(loop);

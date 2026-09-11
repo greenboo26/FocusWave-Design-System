@@ -40,7 +40,22 @@
     if(i && i.textContent!==copy[1]) i.textContent=copy[1];
   }
 
-  function patch(){patchThemeCard();patchLiveCopy();}
+  function patchFocusPracticeCopy(){
+    const overlay=document.querySelector('#focusCountPracticeOverlay');
+    if(!overlay)return;
+    const eyebrow=overlay.querySelector('.breath-stage .eyebrow');
+    const title=overlay.querySelector('#focusPracticeTitle');
+    const reminder=overlay.querySelector('.practice-reminder');
+    const guide=overlay.querySelector('.practice-guide');
+    const noise=overlay.querySelector('#practiceNoiseToggle');
+    if(eyebrow)eyebrow.textContent='60s 专注练习';
+    if(title)title.textContent='呼吸锚定';
+    reminder?.remove();
+    if(guide)guide.textContent='跟随圆环，吸气 4 秒，呼气 6 秒，循环6次';
+    noise?.remove();
+  }
+
+  function patch(){patchThemeCard();patchLiveCopy();patchFocusPracticeCopy();}
 
   function install(){
     patch();
@@ -53,6 +68,7 @@
     }
     const title=document.querySelector('#stateTitle');
     if(title)new MutationObserver(patchLiveCopy).observe(title,{childList:true,characterData:true,subtree:true});
+    new MutationObserver(patchFocusPracticeCopy).observe(document.body,{childList:true,subtree:true});
     setTimeout(patch,50);
   }
 

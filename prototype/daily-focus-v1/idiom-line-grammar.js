@@ -52,6 +52,7 @@ window.FocusWaveIdiomGrammar = (() => {
 import('./theme-rain-controller.js?v=4');
 import('./dusk-water-reflection.js?v=15');
 import('./live-ui-refinements.js?v=1');
+import('./daily-garden-rewards.js?v=1');
 const settingsReady = import('./settings-controller.js?v=9');
 settingsReady
   .then(() => import('./ai-assistant-controller.js?v=5'))

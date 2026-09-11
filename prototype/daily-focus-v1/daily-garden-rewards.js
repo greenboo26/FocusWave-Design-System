@@ -1,15 +1,15 @@
-/* FocusWave daily garden rewards.
- * One completed focus task earns one stone for the current local calendar day.
- * The daily counter resets at local midnight. The insight garden renders exactly
- * the same number of stones as the reward counter.
+/* FocusWave weekly garden rewards.
+ * One completed focus task earns one stone. The accumulated reward stones reset
+ * once per week at Sunday 24:00 / Monday 00:00 local time. The insight garden
+ * renders exactly the same number of stones as the visible reward counter.
  * No MutationObserver and no global polling.
  */
 (() => {
   if (window.FocusWaveDailyGardenRewards) return;
 
-  const STORAGE_KEY = 'focuswave.dailyRewardStones.v1';
+  const STORAGE_KEY = 'focuswave.weeklyRewardStones.v1';
   let sessionActive = false;
-  let midnightTimer = 0;
+  let weeklyResetTimer = 0;
   let resizeRaf = 0;
 
   const STONE_SHAPES = [
@@ -25,19 +25,26 @@
     [.69,.57,34,2,-5], [.48,.25,50,1,3], [.90,.34,30,0,8], [.08,.36,36,3,-6]
   ];
 
-  function localDayKey(date = new Date()) {
+  function localDayKey(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   }
 
+  function localWeekKey(date = new Date()) {
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const daysSinceMonday = (start.getDay() + 6) % 7;
+    start.setDate(start.getDate() - daysSinceMonday);
+    return localDayKey(start);
+  }
+
   function readState() {
-    const today = localDayKey();
+    const week = localWeekKey();
     let state = null;
     try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) {}
-    if (!state || state.date !== today || !Number.isFinite(Number(state.count))) {
-      state = {date: today, count: 0};
+    if (!state || state.week !== week || !Number.isFinite(Number(state.count))) {
+      state = {week, count: 0};
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
     state.count = Math.max(0, Math.floor(Number(state.count) || 0));
@@ -45,25 +52,30 @@
   }
 
   function writeCount(count) {
-    const state = {date: localDayKey(), count: Math.max(0, Math.floor(Number(count) || 0))};
+    const state = {week: localWeekKey(), count: Math.max(0, Math.floor(Number(count) || 0))};
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     return state;
   }
 
-  function incrementToday() {
+  function incrementReward() {
     const state = readState();
     writeCount(state.count + 1);
     syncInsightsSoon();
   }
 
-  function scheduleMidnightReset() {
-    clearTimeout(midnightTimer);
-    const now = new Date();
-    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 40);
-    midnightTimer = setTimeout(() => {
+  function nextMondayMidnight(now = new Date()) {
+    const day = now.getDay();
+    const daysUntilMonday = ((8 - day) % 7) || 7;
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilMonday, 0, 0, 0, 40);
+  }
+
+  function scheduleWeeklyReset() {
+    clearTimeout(weeklyResetTimer);
+    const next = nextMondayMidnight();
+    weeklyResetTimer = setTimeout(() => {
       writeCount(0);
       patchInsights();
-      scheduleMidnightReset();
+      scheduleWeeklyReset();
     }, Math.max(1000, next.getTime() - Date.now()));
   }
 
@@ -98,8 +110,8 @@
     return {x,y,size,shape:index % STONE_SHAPES.length,rotation:(index * 7) % 19 - 9};
   }
 
-  function dailyStones(count) {
-    return Array.from({length: count}, (_, index) => ({id:`daily-${index + 1}`,...positionFor(index)}));
+  function rewardStones(count) {
+    return Array.from({length: count}, (_, index) => ({id:`reward-${index + 1}`,...positionFor(index)}));
   }
 
   function renderRewardHeader(count) {
@@ -117,7 +129,7 @@
     const layer = document.querySelector('#fwStoneLayer');
     if (!layer) return;
     layer.innerHTML = '';
-    stones.forEach((stone, index) => {
+    stones.forEach((stone) => {
       const el = document.createElement('div');
       el.className = 'fw-stone';
       el.dataset.stoneId = stone.id;
@@ -147,7 +159,7 @@
     return canvas;
   }
 
-  function drawDailyGarden(stones) {
+  function drawGardenForRewards(stones) {
     const canvas = ensureDailyCanvas();
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -211,10 +223,10 @@
     const shell = document.querySelector('#page-insights .fw-i-shell');
     if (!shell) return false;
     const count = readState().count;
-    const stones = dailyStones(count);
+    const stones = rewardStones(count);
     renderRewardHeader(count);
     renderStoneLayer(stones);
-    drawDailyGarden(stones);
+    drawGardenForRewards(stones);
     return true;
   }
 
@@ -225,7 +237,7 @@
 
   function bind() {
     ensureStyles();
-    scheduleMidnightReset();
+    scheduleWeeklyReset();
     syncInsightsSoon();
 
     document.addEventListener('click', event => {
@@ -240,7 +252,7 @@
       if (target.matches('#finishBtn')) {
         if (sessionActive) {
           sessionActive = false;
-          incrementToday();
+          incrementReward();
         }
         return;
       }
@@ -262,8 +274,9 @@
 
   window.FocusWaveDailyGardenRewards = {
     get count(){ return readState().count; },
+    get week(){ return readState().week; },
     patchInsights,
-    resetToday(){ writeCount(0); patchInsights(); }
+    resetWeek(){ writeCount(0); patchInsights(); }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, {once:true});

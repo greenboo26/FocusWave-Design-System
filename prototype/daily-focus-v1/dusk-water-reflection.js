@@ -50,15 +50,15 @@
       horizonAlpha:.18
     };
     if(key==='drift') return {
-      // Gentle, clearly visible repeated side-to-side sliding.
-      shift:.016,
-      speed:1.74,
+      // Repeated side-to-side sliding; 4x amplitude and 2x speed from the prior deployed state.
+      shift:.064,
+      speed:3.48,
       ...movingAppearance
     };
     if(key==='dispersed') return {
-      // Same sliding grammar, moderately wider and faster than drift.
-      shift:.026,
-      speed:2.70,
+      // Same sliding grammar, wider and faster than drift.
+      shift:.104,
+      speed:5.40,
       ...movingAppearance
     };
     return {

@@ -52,13 +52,13 @@
     if(key==='drift') return {
       // Gentle, clearly visible repeated side-to-side sliding.
       shift:.008,
-      speed:.58,
+      speed:.87,
       ...movingAppearance
     };
     if(key==='dispersed') return {
       // Same sliding grammar, moderately wider and faster than drift.
       shift:.013,
-      speed:.90,
+      speed:1.35,
       ...movingAppearance
     };
     return {

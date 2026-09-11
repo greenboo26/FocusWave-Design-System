@@ -1,6 +1,7 @@
 /* FocusWave dusk visual — sunset reflected on water.
  * State is expressed only by horizontal motion of the reflection lines:
- * stable = still, drift = gentle lateral motion, dispersed = stronger/faster motion.
+ * stable = still, drift = clearly visible gentle lateral motion,
+ * dispersed = stronger/faster lateral motion.
  * No MutationObserver and no global polling.
  */
 (() => {
@@ -9,6 +10,7 @@
   const warm = [181,119,102];
   let installed = false;
   let baseDrawField = null;
+  let liveLoopPatched = false;
 
   function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
   function clamp01(x){ return Math.max(0,Math.min(1,x)); }
@@ -31,19 +33,20 @@
 
   function modeFor(key){
     if(key==='stable') return {
-      shift:.000, speed:0,
+      shift:0, speed:0,
       reflectionAlpha:.44, waterAlpha:.09, horizonAlpha:.18
     };
     if(key==='drift') return {
-      shift:.010, speed:.48,
+      // Deliberately large enough to be visible at a glance without looking restless.
+      shift:.030, speed:.95,
       reflectionAlpha:.43, waterAlpha:.095, horizonAlpha:.18
     };
     if(key==='dispersed') return {
-      shift:.038, speed:1.35,
+      shift:.075, speed:2.05,
       reflectionAlpha:.42, waterAlpha:.105, horizonAlpha:.20
     };
     return {
-      shift:.006, speed:.30,
+      shift:.014, speed:.55,
       reflectionAlpha:.43, waterAlpha:.095, horizonAlpha:.18
     };
   }
@@ -74,8 +77,7 @@
     ctx.lineWidth=Math.max(.75,w*.0007);
     ctx.beginPath(); ctx.moveTo(w*.07,horizon); ctx.lineTo(w*.94,horizon); ctx.stroke();
 
-    // Keep the water grammar quiet and horizontal. Motion belongs to the
-    // reflected light, so the attention-state difference is visually legible.
+    // Water stays horizontal. Attention state is encoded by reflection motion only.
     for(let row=0;row<rowCount;row++){
       const q=row/(rowCount-1);
       const y=lerp(horizon+h*.014,bottom,q);
@@ -93,13 +95,13 @@
 
   function rowShift(row,q,m,t,w){
     if(m.shift===0) return 0;
-    // Each reflection row has its own deterministic amplitude, speed and phase.
-    // This looks random, but remains smooth rather than jittering frame-to-frame.
-    const amp=m.shift*w*(.42+.58*noise(3100+row))*(.30+.70*q);
-    const speed=m.speed*(.72+.62*noise(3200+row));
+    // Each row has deterministic amplitude, speed and phase so it moves smoothly
+    // and independently instead of jittering frame-to-frame.
+    const amp=m.shift*w*(.68+.32*noise(3100+row))*(.52+.48*q);
+    const speed=m.speed*(.82+.36*noise(3200+row));
     const phase=noise(3300+row)*Math.PI*2;
     const primary=Math.sin(t*speed+phase);
-    const secondary=Math.sin(t*speed*.47+phase*1.73)*.22;
+    const secondary=Math.sin(t*speed*.53+phase*1.67)*.18;
     return amp*(primary+secondary);
   }
 
@@ -112,11 +114,9 @@
       const y=lerp(horizon+h*.010,bottom,q);
       const widen=smooth01(q);
       const half=w*lerp(.022,.120,widen)*(.88+.24*noise(500+row));
-      const shift=rowShift(row,q,m,t,w);
-      const center=centerX+shift;
+      const center=centerX+rowShift(row,q,m,t,w);
 
-      // Reflection stays a set of straight horizontal line fragments. Their
-      // only time-dependent property is lateral position.
+      // Straight horizontal fragments; lateral position is the only animated property.
       const pieces=q<.22 ? 1 : (q<.62 ? 2 : 3);
       const block=(half*2)/pieces;
       for(let p=0;p<pieces;p++){
@@ -146,15 +146,39 @@
     ctx.clearRect(0,0,w,h);
     const key=stateKey(opt.state);
     const m=modeFor(key);
-    // Stable deliberately ignores time: every reflection line is motionless.
+    // Stable ignores time entirely, so every reflection line is motionless.
     const t=key==='stable' ? 0 : (opt.t||0);
     const sun=drawSun(ctx,w,h,warm);
     const water=drawWater(ctx,w,h,warm,m);
     drawReflection(ctx,w,h,warm,m,t,sun,water);
   }
 
+  function patchLiveAnimation(){
+    if(liveLoopPatched || typeof window.animateLive!=='function') return;
+    // The original live loop called the old lexical drawField directly, bypassing
+    // theme runtimes. Replace it once so every live frame uses the registered renderer.
+    window.animateLive=function focusWaveLiveAnimation(){
+      cancelAnimationFrame(raf);
+      const start=performance.now();
+      const loop=now=>{
+        if(currentPage!=="live") return;
+        const st=states[stateIndex];
+        const speedScale=(typeof motionBase==='function' ? motionBase() : 1);
+        window.drawField(document.querySelector('#liveCanvas'),{
+          theme:activeTheme,
+          state:st,
+          t:(now-start)/1000*st.speed*speedScale,
+          alpha:.36
+        });
+        raf=requestAnimationFrame(loop);
+      };
+      raf=requestAnimationFrame(loop);
+    };
+    liveLoopPatched=true;
+  }
+
   function install(){
-    if(installed) return true;
+    if(installed){ patchLiveAnimation(); return true; }
     const engine=window.FocusWaveVisualEngine;
     if(!engine?.drawField || typeof window.drawField!=='function') return false;
     baseDrawField=engine.drawField.bind(engine);
@@ -166,6 +190,7 @@
     engine.drawField=wrapped;
     window.drawField=wrapped;
     installed=true;
+    patchLiveAnimation();
     return true;
   }
 

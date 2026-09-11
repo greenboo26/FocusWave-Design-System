@@ -23,6 +23,16 @@
     summary.querySelector(':scope > .lead')?.remove();
 
     const stats = [...summary.querySelectorAll('.summary-stats .stat')];
+
+    const effectiveFocusStat = stats.find((stat) => {
+      const label = stat.querySelector('span')?.textContent?.trim();
+      return label === '稳定片段' || label === '有效专注比例';
+    });
+    if (effectiveFocusStat) {
+      const label = effectiveFocusStat.querySelector('span');
+      if (label) label.textContent = '有效专注比例';
+    }
+
     const practiceStat = stats.find((stat) => stat.querySelector('span')?.textContent?.trim() === '恢复次数')
       || stats.find((stat) => stat.querySelector('span')?.textContent?.trim() === '练习次数');
     if (practiceStat) {

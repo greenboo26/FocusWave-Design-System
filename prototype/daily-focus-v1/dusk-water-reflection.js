@@ -24,7 +24,53 @@
     const x=Math.sin(n*12.9898+78.233)*43758.5453123;
     return x-Math.floor(x);
   }
-  function stateKey(st){ return st?.key || 'stable'; }
+
+  const movingAppearance={
+    reflectionAlpha:.42,
+    waterAlpha:.10,
+    horizonAlpha:.19
+  };
+
+  // Canonical dusk state table. These are the only live motion levels.
+  const duskModes={
+    stable:{
+      shift:0,
+      speed:0,
+      reflectionAlpha:.44,
+      waterAlpha:.09,
+      horizonAlpha:.18
+    },
+    // 分神 = half of the prior/current visible drift animation.
+    drift:{
+      shift:.032,
+      speed:1.74,
+      ...movingAppearance
+    },
+    // 神驰 = the prior/current visible drift animation.
+    dispersed:{
+      shift:.064,
+      speed:3.48,
+      ...movingAppearance
+    }
+  };
+
+  function stateKey(st){
+    const key=st?.key;
+    const title=(st?.title||document.querySelector('#stateTitle')?.textContent||'').trim();
+    if(key==='stable' || title==='凝神') return 'stable';
+    if(key==='drift' || title==='分神') return 'drift';
+    if(key==='dispersed' || title==='神驰') return 'dispersed';
+    if(typeof stateIndex==='number'){
+      if(stateIndex===0) return 'stable';
+      if(stateIndex===1) return 'drift';
+      if(stateIndex===2) return 'dispersed';
+    }
+    return 'stable';
+  }
+
+  function modeFor(key){
+    return duskModes[key] || duskModes.stable;
+  }
 
   function canvasSize(canvas){
     const d=Math.min(window.devicePixelRatio||1,2);
@@ -33,39 +79,6 @@
     const h=Math.max(10,Math.floor(r.height*d));
     if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; }
     return {w,h};
-  }
-
-  const movingAppearance={
-    reflectionAlpha:.42,
-    waterAlpha:.10,
-    horizonAlpha:.19
-  };
-
-  function modeFor(key){
-    if(key==='stable') return {
-      shift:0,
-      speed:0,
-      reflectionAlpha:.44,
-      waterAlpha:.09,
-      horizonAlpha:.18
-    };
-    if(key==='drift') return {
-      // Half of the prior drift amplitude and speed.
-      shift:.032,
-      speed:1.74,
-      ...movingAppearance
-    };
-    if(key==='dispersed') return {
-      // Uses the prior drift animation level.
-      shift:.064,
-      speed:3.48,
-      ...movingAppearance
-    };
-    return {
-      shift:.006,
-      speed:.42,
-      ...movingAppearance
-    };
   }
 
   function advanceMotionClock(t,speed){
@@ -105,7 +118,6 @@
     ctx.lineWidth=Math.max(.75,w*.0007);
     ctx.beginPath(); ctx.moveTo(w*.07,horizon); ctx.lineTo(w*.94,horizon); ctx.stroke();
 
-    // The water guide lines stay horizontal; only the reflected-light fragments move.
     for(let row=0;row<rowCount;row++){
       const q=row/(rowCount-1);
       const y=lerp(horizon+h*.014,bottom,q);
@@ -123,8 +135,6 @@
 
   function rowShift(row,q,m,phase,w){
     if(m.shift===0) return 0;
-    // Every reflection row repeatedly slides left/right. Rows keep small phase/rate
-    // differences so the reflection feels like water without adding vertical motion.
     const amp=m.shift*w*(.82+.18*noise(3100+row))*(.72+.28*q);
     const rowRate=.94+.12*noise(3200+row);
     const seedPhase=noise(3300+row)*Math.PI*2;
@@ -192,9 +202,6 @@
     if(typeof activeTheme==='undefined' || activeTheme!=='dusk') return;
     if(typeof currentPage==='undefined' || currentPage!=='live') return;
 
-    // startLive() has already scheduled the generic live loop by the time this
-    // zero-delay callback runs. Cancel that loop so only the dusk renderer owns
-    // #liveCanvas while the dusk theme is active.
     try{ cancelAnimationFrame(raf); }catch(_){ }
 
     motionPhase=0;
@@ -207,14 +214,15 @@
         return;
       }
 
-      const st=states[stateIndex];
-      const m=modeFor(stateKey(st));
+      const sourceState=states[stateIndex]||{};
+      const resolvedKey=stateKey(sourceState);
+      const m=modeFor(resolvedKey);
       const dt=Math.min(.05,Math.max(0,(now-lastNow)/1000));
       lastNow=now;
       if(m.speed>0) motionPhase+=dt*m.speed;
 
       drawDusk(document.querySelector('#liveCanvas'),{
-        state:st,
+        state:{...sourceState,key:resolvedKey},
         phase:motionPhase
       });
       duskRaf=requestAnimationFrame(loop);
@@ -246,8 +254,6 @@
 
   document.querySelector('#beginLive')?.addEventListener('click',()=>{
     install();
-    // Run after the page's onclick=startLive handler so we can take ownership of
-    // the actual live canvas animation rather than only patching a function name.
     setTimeout(startDuskLiveLoop,0);
   },{capture:true});
 
@@ -255,6 +261,7 @@
   document.querySelector('#startFocus')?.addEventListener('click',()=>setTimeout(installAndRefresh,120));
 
   window.FocusWaveDuskReflection={
+    revision:'dusk-state-map-v13',
     install,
     drawDusk,
     startDuskLiveLoop,

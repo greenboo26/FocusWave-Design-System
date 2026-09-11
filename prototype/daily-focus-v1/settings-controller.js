@@ -105,7 +105,7 @@ function ensureLiveEngines() {
   if (liveEnginePromise) return liveEnginePromise;
   liveEnginePromise = Promise.all([
     appendRuntime('./generative-visual-engine.js?v=12', 'generative-visual-engine'),
-    appendRuntime('./content-engine.js?v=4', 'content-engine')
+    appendRuntime('./content-engine.js?v=5', 'content-engine')
   ]).then(() => {
     liveReady = true;
     window.FocusWaveContentEngine?.refresh?.();
@@ -288,7 +288,7 @@ function loadForPage(page) {
   }
   if (page === 'insights') return ensureInsightsRuntime();
   if (page === 'practice') return ensurePracticeSignatureRuntime();
-  if (page === 'settings') return appendRuntime('./content-engine.js?v=4', 'content-engine');
+  if (page === 'settings') return appendRuntime('./content-engine.js?v=5', 'content-engine');
   return Promise.resolve();
 }
 
@@ -330,7 +330,7 @@ function bindLazyRuntimeLoading() {
   document.addEventListener('click', event => {
     const libraryEntry = event.target?.closest?.('.content-library-entry');
     if (libraryEntry) {
-      appendRuntime('./content-engine.js?v=4', 'content-engine')
+      appendRuntime('./content-engine.js?v=5', 'content-engine')
         .then(() => window.FocusWaveContentEngine?.openLibrary?.());
     }
 

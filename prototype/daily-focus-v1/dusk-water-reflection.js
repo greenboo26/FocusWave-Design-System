@@ -49,19 +49,20 @@
       horizonAlpha:.18
     };
     if(key==='drift') return {
-      // Same grammar as dispersed; visibly gentler and much slower.
-      shift:.008,
-      speed:.10,
+      // Clearly visible, but restrained: gentle lateral drift.
+      shift:.010,
+      speed:.28,
       ...movingAppearance
     };
     if(key==='dispersed') return {
-      shift:.014,
-      speed:.18,
+      // Same grammar as drift, only moderately wider and faster.
+      shift:.016,
+      speed:.45,
       ...movingAppearance
     };
     return {
-      shift:.006,
-      speed:.075,
+      shift:.007,
+      speed:.22,
       ...movingAppearance
     };
   }

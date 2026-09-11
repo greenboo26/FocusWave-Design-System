@@ -47,13 +47,13 @@
     };
     if(key==='drift') return {
       // Same motion grammar as dispersed; only gentler and slower.
-      shift:.0225,
-      speed:.625,
+      shift:.01125,
+      speed:.3125,
       ...movingAppearance
     };
     if(key==='dispersed') return {
-      shift:.040,
-      speed:1.05,
+      shift:.020,
+      speed:.525,
       ...movingAppearance
     };
     return {

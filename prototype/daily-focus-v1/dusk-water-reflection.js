@@ -2,6 +2,7 @@
  * State is expressed only by horizontal motion of the reflection lines:
  * stable = still; drift and dispersed use the exact same lateral-shift grammar,
  * differing only in motion amplitude and speed.
+ * Dusk uses its own continuous motion clock so state changes never jump phase.
  * No MutationObserver and no global polling.
  */
 (() => {
@@ -11,6 +12,8 @@
   let installed = false;
   let baseDrawField = null;
   let liveLoopPatched = false;
+  let motionPhase = 0;
+  let lastMotionT = null;
 
   function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
   function clamp01(x){ return Math.max(0,Math.min(1,x)); }
@@ -46,21 +49,32 @@
       horizonAlpha:.18
     };
     if(key==='drift') return {
-      // Same motion grammar as dispersed; only gentler and slower.
-      shift:.01125,
-      speed:.3125,
+      // Same grammar as dispersed; visibly gentler and much slower.
+      shift:.008,
+      speed:.10,
       ...movingAppearance
     };
     if(key==='dispersed') return {
-      shift:.020,
-      speed:.525,
+      shift:.014,
+      speed:.18,
       ...movingAppearance
     };
     return {
-      shift:.028,
-      speed:.85,
+      shift:.006,
+      speed:.075,
       ...movingAppearance
     };
+  }
+
+  function advanceMotionClock(t,speed){
+    if(lastMotionT===null || t<lastMotionT){
+      lastMotionT=t;
+      return motionPhase;
+    }
+    const dt=Math.min(.05,Math.max(0,t-lastMotionT));
+    lastMotionT=t;
+    motionPhase+=dt*speed;
+    return motionPhase;
   }
 
   function drawSun(ctx,w,h,c){
@@ -105,19 +119,19 @@
     return {horizon,bottom,rowCount};
   }
 
-  function rowShift(row,q,m,t,w){
+  function rowShift(row,q,m,phase,w){
     if(m.shift===0) return 0;
-    // Drift and dispersed both use this exact formula. Each row keeps its own
-    // deterministic amplitude, speed and phase so the reflection moves smoothly.
+    // Drift and dispersed share the exact formula. Speed is accumulated by the
+    // continuous motion clock, so changing state never re-phases the lines.
     const amp=m.shift*w*(.68+.32*noise(3100+row))*(.52+.48*q);
-    const speed=m.speed*(.82+.36*noise(3200+row));
-    const phase=noise(3300+row)*Math.PI*2;
-    const primary=Math.sin(t*speed+phase);
-    const secondary=Math.sin(t*speed*.53+phase*1.67)*.18;
+    const rowRate=.82+.36*noise(3200+row);
+    const seedPhase=noise(3300+row)*Math.PI*2;
+    const primary=Math.sin(phase*rowRate+seedPhase);
+    const secondary=Math.sin(phase*rowRate*.53+seedPhase*1.67)*.18;
     return amp*(primary+secondary);
   }
 
-  function drawReflection(ctx,w,h,c,m,t,sun,water){
+  function drawReflection(ctx,w,h,c,m,phase,sun,water){
     const {horizon,bottom,rowCount}=water;
     const centerX=sun.sx;
 
@@ -126,7 +140,7 @@
       const y=lerp(horizon+h*.010,bottom,q);
       const widen=smooth01(q);
       const half=w*lerp(.022,.120,widen)*(.88+.24*noise(500+row));
-      const center=centerX+rowShift(row,q,m,t,w);
+      const center=centerX+rowShift(row,q,m,phase,w);
 
       // Straight horizontal fragments; lateral position is the only animated property.
       const pieces=q<.22 ? 1 : (q<.62 ? 2 : 3);
@@ -158,10 +172,11 @@
     ctx.clearRect(0,0,w,h);
     const key=stateKey(opt.state);
     const m=modeFor(key);
-    const t=key==='stable' ? 0 : (opt.t||0);
+    const t=opt.t||0;
+    const phase=advanceMotionClock(t,key==='stable'?0:m.speed);
     const sun=drawSun(ctx,w,h,warm);
     const water=drawWater(ctx,w,h,warm,m);
-    drawReflection(ctx,w,h,warm,m,t,sun,water);
+    drawReflection(ctx,w,h,warm,m,phase,sun,water);
   }
 
   function patchLiveAnimation(){
@@ -169,14 +184,16 @@
     window.animateLive=function focusWaveLiveAnimation(){
       cancelAnimationFrame(raf);
       const start=performance.now();
+      motionPhase=0;
+      lastMotionT=null;
       const loop=now=>{
         if(currentPage!=="live") return;
         const st=states[stateIndex];
+        const elapsed=(now-start)/1000;
+        // Dusk is intentionally independent of motionBase() and generic st.speed.
+        // Other themes retain the original generic motion scaling.
         const speedScale=(typeof motionBase==='function' ? motionBase() : 1);
-        const elapsed=(now-start)/1000*speedScale;
-        // Dusk owns its state-dependent speed internally. Other themes preserve
-        // the original generic state-speed scaling.
-        const t=activeTheme==='dusk' ? elapsed : elapsed*st.speed;
+        const t=activeTheme==='dusk' ? elapsed : elapsed*speedScale*st.speed;
         window.drawField(document.querySelector('#liveCanvas'),{
           theme:activeTheme,
           state:st,

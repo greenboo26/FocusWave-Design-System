@@ -2,7 +2,8 @@
  * State is expressed only by horizontal motion of the reflection lines:
  * stable = still; drift and dispersed use the exact same lateral-slide grammar,
  * differing only in motion amplitude and speed.
- * Dusk uses its own continuous motion clock so state changes never jump phase.
+ * Dusk owns a dedicated live requestAnimationFrame loop so the reflection is
+ * guaranteed to keep sliding during the real focus session.
  * No MutationObserver and no global polling.
  */
 (() => {
@@ -11,9 +12,9 @@
   const warm = [181,119,102];
   let installed = false;
   let baseDrawField = null;
-  let liveLoopPatched = false;
   let motionPhase = 0;
   let lastMotionT = null;
+  let duskRaf = 0;
 
   function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
   function clamp01(x){ return Math.max(0,Math.min(1,x)); }
@@ -49,20 +50,20 @@
       horizonAlpha:.18
     };
     if(key==='drift') return {
-      // Clearly visible side-to-side sliding, but still restrained.
-      shift:.012,
-      speed:.55,
+      // Gentle, clearly visible repeated side-to-side sliding.
+      shift:.008,
+      speed:.58,
       ...movingAppearance
     };
     if(key==='dispersed') return {
-      // Same slide grammar; wider and faster than drift without becoming frantic.
-      shift:.020,
-      speed:.85,
+      // Same sliding grammar, moderately wider and faster than drift.
+      shift:.013,
+      speed:.90,
       ...movingAppearance
     };
     return {
-      shift:.008,
-      speed:.40,
+      shift:.006,
+      speed:.42,
       ...movingAppearance
     };
   }
@@ -104,7 +105,7 @@
     ctx.lineWidth=Math.max(.75,w*.0007);
     ctx.beginPath(); ctx.moveTo(w*.07,horizon); ctx.lineTo(w*.94,horizon); ctx.stroke();
 
-    // Water stays horizontal. Attention state is encoded by reflection motion only.
+    // The water guide lines stay horizontal; only the reflected-light fragments move.
     for(let row=0;row<rowCount;row++){
       const q=row/(rowCount-1);
       const y=lerp(horizon+h*.014,bottom,q);
@@ -122,11 +123,10 @@
 
   function rowShift(row,q,m,phase,w){
     if(m.shift===0) return 0;
-    // Drift and dispersed share exactly the same movement: every reflection row
-    // slides horizontally left/right. Per-row amplitude, rate and phase vary only
-    // slightly, so the reflected light feels like water rather than one rigid block.
-    const amp=m.shift*w*(.78+.22*noise(3100+row))*(.68+.32*q);
-    const rowRate=.90+.20*noise(3200+row);
+    // Every reflection row repeatedly slides left/right. Rows keep small phase/rate
+    // differences so the reflection feels like water without adding vertical motion.
+    const amp=m.shift*w*(.82+.18*noise(3100+row))*(.72+.28*q);
+    const rowRate=.94+.12*noise(3200+row);
     const seedPhase=noise(3300+row)*Math.PI*2;
     return amp*Math.sin(phase*rowRate+seedPhase);
   }
@@ -142,7 +142,6 @@
       const half=w*lerp(.022,.120,widen)*(.88+.24*noise(500+row));
       const center=centerX+rowShift(row,q,m,phase,w);
 
-      // Straight horizontal fragments; lateral position is the only animated property.
       const pieces=q<.22 ? 1 : (q<.62 ? 2 : 3);
       const block=(half*2)/pieces;
       for(let p=0;p<pieces;p++){
@@ -167,48 +166,65 @@
   }
 
   function drawDusk(canvas,opt={}){
+    if(!canvas) return;
     const {w,h}=canvasSize(canvas);
     const ctx=canvas.getContext('2d');
     ctx.clearRect(0,0,w,h);
     const key=stateKey(opt.state);
     const m=modeFor(key);
-    const t=opt.t||0;
-    const phase=advanceMotionClock(t,key==='stable'?0:m.speed);
+    const phase=Number.isFinite(opt.phase)
+      ? opt.phase
+      : advanceMotionClock(opt.t||0,key==='stable'?0:m.speed);
     const sun=drawSun(ctx,w,h,warm);
     const water=drawWater(ctx,w,h,warm,m);
     drawReflection(ctx,w,h,warm,m,phase,sun,water);
   }
 
-  function patchLiveAnimation(){
-    if(liveLoopPatched || typeof window.animateLive!=='function') return;
-    window.animateLive=function focusWaveLiveAnimation(){
-      cancelAnimationFrame(raf);
-      const start=performance.now();
-      motionPhase=0;
-      lastMotionT=null;
-      const loop=now=>{
-        if(currentPage!=="live") return;
-        const st=states[stateIndex];
-        const elapsed=(now-start)/1000;
-        // Dusk is intentionally independent of motionBase() and generic st.speed.
-        // Other themes retain the original generic motion scaling.
-        const speedScale=(typeof motionBase==='function' ? motionBase() : 1);
-        const t=activeTheme==='dusk' ? elapsed : elapsed*speedScale*st.speed;
-        window.drawField(document.querySelector('#liveCanvas'),{
-          theme:activeTheme,
-          state:st,
-          t,
-          alpha:.36
-        });
-        raf=requestAnimationFrame(loop);
-      };
-      raf=requestAnimationFrame(loop);
+  function stopDuskLiveLoop(){
+    if(duskRaf){
+      cancelAnimationFrame(duskRaf);
+      duskRaf=0;
+    }
+  }
+
+  function startDuskLiveLoop(){
+    stopDuskLiveLoop();
+    if(typeof activeTheme==='undefined' || activeTheme!=='dusk') return;
+    if(typeof currentPage==='undefined' || currentPage!=='live') return;
+
+    // startLive() has already scheduled the generic live loop by the time this
+    // zero-delay callback runs. Cancel that loop so only the dusk renderer owns
+    // #liveCanvas while the dusk theme is active.
+    try{ cancelAnimationFrame(raf); }catch(_){ }
+
+    motionPhase=0;
+    lastMotionT=null;
+    let lastNow=performance.now();
+
+    const loop=now=>{
+      if(currentPage!=="live" || activeTheme!=="dusk"){
+        duskRaf=0;
+        return;
+      }
+
+      const st=states[stateIndex];
+      const m=modeFor(stateKey(st));
+      const dt=Math.min(.05,Math.max(0,(now-lastNow)/1000));
+      lastNow=now;
+      if(m.speed>0) motionPhase+=dt*m.speed;
+
+      drawDusk(document.querySelector('#liveCanvas'),{
+        state:st,
+        phase:motionPhase
+      });
+      duskRaf=requestAnimationFrame(loop);
     };
-    liveLoopPatched=true;
+
+    duskRaf=requestAnimationFrame(loop);
   }
 
   function install(){
-    if(installed){ patchLiveAnimation(); return true; }
+    if(installed) return true;
     const engine=window.FocusWaveVisualEngine;
     if(!engine?.drawField || typeof window.drawField!=='function') return false;
     baseDrawField=engine.drawField.bind(engine);
@@ -220,7 +236,6 @@
     engine.drawField=wrapped;
     window.drawField=wrapped;
     installed=true;
-    patchLiveAnimation();
     return true;
   }
 
@@ -229,9 +244,21 @@
     if(typeof renderStatic==='function') requestAnimationFrame(renderStatic);
   }
 
-  document.querySelector('#beginLive')?.addEventListener('click',install,{capture:true});
+  document.querySelector('#beginLive')?.addEventListener('click',()=>{
+    install();
+    // Run after the page's onclick=startLive handler so we can take ownership of
+    // the actual live canvas animation rather than only patching a function name.
+    setTimeout(startDuskLiveLoop,0);
+  },{capture:true});
+
   document.querySelector('#themeGroup')?.addEventListener('click',()=>requestAnimationFrame(installAndRefresh));
   document.querySelector('#startFocus')?.addEventListener('click',()=>setTimeout(installAndRefresh,120));
 
-  window.FocusWaveDuskReflection={install,drawDusk,get installed(){return installed;}};
+  window.FocusWaveDuskReflection={
+    install,
+    drawDusk,
+    startDuskLiveLoop,
+    stopDuskLiveLoop,
+    get installed(){return installed;}
+  };
 })();

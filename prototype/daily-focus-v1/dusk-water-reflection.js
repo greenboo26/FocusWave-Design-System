@@ -1,6 +1,7 @@
 /* FocusWave dusk visual — sunset reflected on water.
- * Deliberately side-effect-light: no MutationObserver, no polling loop.
- * It only intercepts the dusk renderer after the canonical visual engine exists.
+ * State is expressed only by horizontal motion of the reflection lines:
+ * stable = still, drift = gentle lateral motion, dispersed = stronger/faster motion.
+ * No MutationObserver and no global polling.
  */
 (() => {
   if (window.FocusWaveDuskReflection) return;
@@ -25,40 +26,26 @@
     const w=Math.max(10,Math.floor(r.width*d));
     const h=Math.max(10,Math.floor(r.height*d));
     if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; }
-    return {w,h,d};
+    return {w,h};
   }
 
   function modeFor(key){
-    // stable deliberately has zero time-dependent movement.
     if(key==='stable') return {
-      amp:0, speed:0, freq:1.6, second:0,
-      reflectionSway:0, rowJitter:0, pieces:1, gap:.02,
-      waterAlpha:.095, reflectionAlpha:.43, horizonAlpha:.18
+      shift:.000, speed:0,
+      reflectionAlpha:.44, waterAlpha:.09, horizonAlpha:.18
     };
     if(key==='drift') return {
-      amp:.0042, speed:.42, freq:2.05, second:.34,
-      reflectionSway:.010, rowJitter:.0025, pieces:2, gap:.10,
-      waterAlpha:.105, reflectionAlpha:.41, horizonAlpha:.18
+      shift:.010, speed:.48,
+      reflectionAlpha:.43, waterAlpha:.095, horizonAlpha:.18
     };
     if(key==='dispersed') return {
-      amp:.0145, speed:1.08, freq:3.25, second:.78,
-      reflectionSway:.040, rowJitter:.008, pieces:4, gap:.27,
-      waterAlpha:.12, reflectionAlpha:.38, horizonAlpha:.20
+      shift:.038, speed:1.35,
+      reflectionAlpha:.42, waterAlpha:.105, horizonAlpha:.20
     };
     return {
-      amp:.0022, speed:.24, freq:1.8, second:.20,
-      reflectionSway:.005, rowJitter:.0015, pieces:2, gap:.06,
-      waterAlpha:.10, reflectionAlpha:.42, horizonAlpha:.18
+      shift:.006, speed:.30,
+      reflectionAlpha:.43, waterAlpha:.095, horizonAlpha:.18
     };
-  }
-
-  function waveY(xn,q,row,m,t,h){
-    if(m.amp===0) return 0;
-    const perspective=.34+.92*q;
-    const phase=t*m.speed+row*.21;
-    const primary=Math.sin(xn*Math.PI*2*m.freq+phase);
-    const secondary=Math.sin(xn*Math.PI*2*(m.freq*1.73)-phase*.71+row*.43)*m.second;
-    return h*m.amp*perspective*(primary+secondary);
   }
 
   function drawSun(ctx,w,h,c){
@@ -75,88 +62,82 @@
     ctx.strokeStyle=rgba(c,.30);
     ctx.lineWidth=Math.max(1,Math.min(w,h)*.00115);
     ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2); ctx.stroke();
-    return {sx,sy,r};
+    return {sx};
   }
 
-  function drawWater(ctx,w,h,c,m,t,sun){
+  function drawWater(ctx,w,h,c,m){
     const horizon=h*.385;
     const bottom=h*.89;
     const rowCount=48;
 
-    // Horizon remains quiet; state is expressed by the water below it.
     ctx.strokeStyle=rgba(c,m.horizonAlpha);
     ctx.lineWidth=Math.max(.75,w*.0007);
     ctx.beginPath(); ctx.moveTo(w*.07,horizon); ctx.lineTo(w*.94,horizon); ctx.stroke();
 
+    // Keep the water grammar quiet and horizontal. Motion belongs to the
+    // reflected light, so the attention-state difference is visually legible.
     for(let row=0;row<rowCount;row++){
       const q=row/(rowCount-1);
-      const y0=lerp(horizon+h*.014,bottom,q);
-      const alpha=m.waterAlpha*(.74+.26*(1-q));
+      const y=lerp(horizon+h*.014,bottom,q);
+      const alpha=m.waterAlpha*(.72+.28*(1-q));
       ctx.strokeStyle=rgba(c,alpha);
-      ctx.lineWidth=Math.max(.55,w*(.00045+.00022*q));
+      ctx.lineWidth=Math.max(.55,w*(.00042+.00018*q));
       ctx.lineCap='round';
       ctx.beginPath();
-      const samples=110;
-      for(let i=0;i<=samples;i++){
-        const xn=.055+(i/samples)*.89;
-        const x=xn*w;
-        const y=y0+waveY(xn,q,row,m,t,h);
-        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-      }
+      ctx.moveTo(w*.055,y);
+      ctx.lineTo(w*.945,y);
       ctx.stroke();
     }
-
-    drawReflection(ctx,w,h,c,m,t,sun,horizon,bottom,rowCount);
+    return {horizon,bottom,rowCount};
   }
 
-  function drawReflection(ctx,w,h,c,m,t,sun,horizon,bottom,rowCount){
-    const sx=sun.sx;
+  function rowShift(row,q,m,t,w){
+    if(m.shift===0) return 0;
+    // Each reflection row has its own deterministic amplitude, speed and phase.
+    // This looks random, but remains smooth rather than jittering frame-to-frame.
+    const amp=m.shift*w*(.42+.58*noise(3100+row))*(.30+.70*q);
+    const speed=m.speed*(.72+.62*noise(3200+row));
+    const phase=noise(3300+row)*Math.PI*2;
+    const primary=Math.sin(t*speed+phase);
+    const secondary=Math.sin(t*speed*.47+phase*1.73)*.22;
+    return amp*(primary+secondary);
+  }
+
+  function drawReflection(ctx,w,h,c,m,t,sun,water){
+    const {horizon,bottom,rowCount}=water;
+    const centerX=sun.sx;
+
     for(let row=0;row<rowCount;row++){
       const q=row/(rowCount-1);
-      const y0=lerp(horizon+h*.010,bottom,q);
+      const y=lerp(horizon+h*.010,bottom,q);
       const widen=smooth01(q);
-      const halfBase=w*lerp(.020,.118,widen);
-      const staticWidth=.90+noise(500+row)*.22;
-      const half=halfBase*staticWidth;
-      const moving=m.reflectionSway===0 ? 0 : Math.sin(t*m.speed*.86+row*.61)*w*m.reflectionSway*(.22+.78*q);
-      const staticOffset=(noise(700+row)-.5)*w*(m.rowJitter*(.25+.75*q));
-      const center=sx+moving+staticOffset;
-      const pieces=m.pieces+(stateKeyFromMode(m)==='dispersed' && row%5===0 ? 1 : 0);
-      const block=(half*2)/pieces;
+      const half=w*lerp(.022,.120,widen)*(.88+.24*noise(500+row));
+      const shift=rowShift(row,q,m,t,w);
+      const center=centerX+shift;
 
+      // Reflection stays a set of straight horizontal line fragments. Their
+      // only time-dependent property is lateral position.
+      const pieces=q<.22 ? 1 : (q<.62 ? 2 : 3);
+      const block=(half*2)/pieces;
       for(let p=0;p<pieces;p++){
-        if(pieces>1 && noise(900+row*13+p)<m.gap*(.35+.65*q)) continue;
         const edge=center-half+p*block;
-        const trim=.05+.18*noise(1100+row*17+p);
-        const trim2=.05+.20*noise(1300+row*19+p);
-        const x1=edge+block*trim;
-        const x2=edge+block*(1-trim2);
+        const trimL=.08+.15*noise(1100+row*17+p);
+        const trimR=.08+.17*noise(1300+row*19+p);
+        const x1=edge+block*trimL;
+        const x2=edge+block*(1-trimR);
         if(x2<=x1) continue;
 
-        const mid=(x1+x2)/2;
-        const xn=mid/w;
-        const y=y0+waveY(xn,q,row,m,t,h);
-        const alpha=m.reflectionAlpha*(1-.18*q)*(.86+.17*noise(1500+row*11+p));
-        const thickness=Math.max(1,w*(.0010+.00085*(1-q)));
-        const bend=m.amp===0 ? 0 : h*m.amp*.20*Math.sin(t*m.speed+row*.33+p);
-
+        const alpha=m.reflectionAlpha*(1-.16*q)*(.88+.14*noise(1500+row*11+p));
+        const thickness=Math.max(1,w*(.0010+.00080*(1-q)));
         ctx.strokeStyle=rgba(c,alpha);
         ctx.lineWidth=thickness;
         ctx.lineCap='round';
         ctx.beginPath();
         ctx.moveTo(x1,y);
-        ctx.quadraticCurveTo(mid,y+bend,x2,y);
+        ctx.lineTo(x2,y);
         ctx.stroke();
       }
     }
-  }
-
-  // Tiny helper keeps the reflection fragmentation rule explicit without
-  // storing user-facing state anywhere outside the current draw call.
-  function stateKeyFromMode(m){
-    if(m.amp===0) return 'stable';
-    if(m.amp>.01) return 'dispersed';
-    return 'drift';
   }
 
   function drawDusk(canvas,opt={}){
@@ -165,10 +146,11 @@
     ctx.clearRect(0,0,w,h);
     const key=stateKey(opt.state);
     const m=modeFor(key);
-    // Stable ignores t entirely so the sunset reflection is perfectly still.
+    // Stable deliberately ignores time: every reflection line is motionless.
     const t=key==='stable' ? 0 : (opt.t||0);
     const sun=drawSun(ctx,w,h,warm);
-    drawWater(ctx,w,h,warm,m,t,sun);
+    const water=drawWater(ctx,w,h,warm,m);
+    drawReflection(ctx,w,h,warm,m,t,sun,water);
   }
 
   function install(){

@@ -56,7 +56,7 @@ import('./daily-garden-rewards.js?v=3');
 import('./garden-interactive-sand.js?v=1');
 import('./garden-materials.js?v=1');
 import('./garden-realistic-v2.js?v=1');
-import('./garden-real-sand-photo.js?v=1');
+import('./garden-real-sand-photo.js?v=2');
 import('./setup-focus-target.js?v=1');
 const settingsReady = import('./settings-controller.js?v=9');
 settingsReady

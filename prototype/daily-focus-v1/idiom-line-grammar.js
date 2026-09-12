@@ -55,6 +55,7 @@ import('./live-ui-refinements.js?v=1');
 import('./daily-garden-rewards.js?v=3');
 import('./garden-interactive-sand.js?v=1');
 import('./garden-materials.js?v=1');
+import('./garden-realistic-v2.js?v=1');
 import('./setup-focus-target.js?v=1');
 const settingsReady = import('./settings-controller.js?v=9');
 settingsReady

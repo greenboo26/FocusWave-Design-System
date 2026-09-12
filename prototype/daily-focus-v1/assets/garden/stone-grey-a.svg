@@ -1,31 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
-  <defs>
-    <radialGradient id="base" cx="31%" cy="22%" r="78%">
-      <stop offset="0" stop-color="#b9bbb5"/>
-      <stop offset="0.26" stop-color="#8b8f89"/>
-      <stop offset="0.62" stop-color="#656a65"/>
-      <stop offset="1" stop-color="#3e4540"/>
-    </radialGradient>
-    <filter id="rock" x="-12%" y="-15%" width="124%" height="130%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.026" numOctaves="5" seed="17" result="noise"/>
-      <feDiffuseLighting in="noise" surfaceScale="5" diffuseConstant="0.72" lighting-color="#d9ddd6" result="diffuse">
-        <feDistantLight azimuth="225" elevation="54"/>
-      </feDiffuseLighting>
-      <feBlend in="SourceGraphic" in2="diffuse" mode="multiply" result="rough"/>
-      <feSpecularLighting in="noise" surfaceScale="3.2" specularConstant="0.42" specularExponent="18" lighting-color="#f7f7f3" result="spec">
-        <feDistantLight azimuth="225" elevation="58"/>
-      </feSpecularLighting>
-      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specClip"/>
-      <feBlend in="rough" in2="specClip" mode="screen"/>
-    </filter>
-    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff" stop-opacity=".34"/>
-      <stop offset=".32" stop-color="#fff" stop-opacity=".05"/>
-      <stop offset=".76" stop-color="#101512" stop-opacity=".18"/>
-      <stop offset="1" stop-color="#0b100d" stop-opacity=".28"/>
-    </linearGradient>
-  </defs>
-  <path d="M105 218 C117 122 215 73 344 78 C472 82 559 137 568 231 C576 318 497 385 358 403 C222 421 113 365 88 292 C78 263 83 239 105 218Z" fill="url(#base)" filter="url(#rock)"/>
-  <path d="M105 218 C117 122 215 73 344 78 C472 82 559 137 568 231 C576 318 497 385 358 403 C222 421 113 365 88 292 C78 263 83 239 105 218Z" fill="url(#sheen)" opacity=".62"/>
-  <path d="M174 180 C247 120 374 115 463 164" fill="none" stroke="#d7dad3" stroke-opacity=".16" stroke-width="9" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180">
+<defs>
+  <radialGradient id="g" cx="34%" cy="24%" r="76%"><stop offset="0" stop-color="#a8aaa6"/><stop offset=".28" stop-color="#858985"/><stop offset=".62" stop-color="#646965"/><stop offset="1" stop-color="#454a46"/></radialGradient>
+  <linearGradient id="shade" x1=".18" y1=".08" x2=".88" y2=".92"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset=".42" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#101411" stop-opacity=".30"/></linearGradient>
+  <clipPath id="c"><path d="M31 100C31 58 66 30 116 25c51-5 91 15 100 54 10 42-17 78-70 88-57 10-103-8-113-43-3-9-4-17-2-24z"/></clipPath>
+  <filter id="tex" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".055" numOctaves="4" seed="19" result="n"/><feDiffuseLighting in="n" surfaceScale="2.3" diffuseConstant=".46" lighting-color="#d7d8d2" result="l"><feDistantLight azimuth="225" elevation="54"/></feDiffuseLighting><feBlend in="SourceGraphic" in2="l" mode="multiply"/></filter>
+</defs>
+<path d="M31 100C31 58 66 30 116 25c51-5 91 15 100 54 10 42-17 78-70 88-57 10-103-8-113-43-3-9-4-17-2-24z" fill="url(#g)" filter="url(#tex)"/>
+<g clip-path="url(#c)"><rect width="240" height="180" fill="url(#shade)"/><path d="M57 74c31-25 81-31 126-13" fill="none" stroke="#e0e1dc" stroke-opacity=".12" stroke-width="4"/><circle cx="78" cy="115" r="2" fill="#222a25" opacity=".20"/><circle cx="154" cy="74" r="1.4" fill="#fff" opacity=".16"/></g>
 </svg>

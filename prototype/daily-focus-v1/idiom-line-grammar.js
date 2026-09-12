@@ -53,7 +53,7 @@ import('./theme-rain-controller.js?v=4');
 import('./dusk-water-reflection.js?v=15');
 import('./live-ui-refinements.js?v=1');
 import('./daily-garden-rewards.js?v=3');
-import('./insights-ink-pond.js?v=1');
+import('./insights-ink-pond-v2.js?v=1');
 import('./setup-focus-target.js?v=1');
 const settingsReady = import('./settings-controller.js?v=9');
 settingsReady

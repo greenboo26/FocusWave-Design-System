@@ -1,43 +1,61 @@
-/* FocusWave real photographic sand surface v1.
- * Uses a real CC0 seamless sand photograph as the visual base layer.
+/* FocusWave real photographic sand surface v2.
+ * Uses a real CC0 seamless sand photograph only as fine-grain microdetail.
+ * The visible surface is tuned toward pale, warm karesansui sand: bright, fine and low-contrast.
  * The surface starts flat and un-raked; interaction canvases remain above it.
  * Source: Wikimedia Commons, "Smooth clean beach shore sand seamless ground texture.jpg" (CC0).
  * No MutationObserver and no polling.
  */
 (() => {
-  if (window.FocusWaveRealSandPhoto) return;
+  if (window.FocusWaveRealSandPhotoV2) return;
 
   const SAND_URL = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Smooth_clean_beach_shore_sand_seamless_ground_texture.jpg?width=1600';
 
   function ensureStyles() {
-    if (document.querySelector('style[data-focuswave-real-sand-photo]')) return;
+    document.querySelector('style[data-focuswave-real-sand-photo]')?.remove();
+    if (document.querySelector('style[data-focuswave-real-sand-photo-v2]')) return;
+
     const style = document.createElement('style');
-    style.dataset.focuswaveRealSandPhoto = 'true';
+    style.dataset.focuswaveRealSandPhotoV2 = 'true';
     style.textContent = `
       #page-insights #fwGardenInner{
         position:relative!important;
         isolation:isolate!important;
-        background:#eee5d4!important;
+        background:#f2ece2!important;
         background-image:none!important;
         overflow:hidden!important;
+        box-shadow:
+          inset 0 8px 15px rgba(111,92,67,.045),
+          inset 0 -4px 8px rgba(255,255,255,.46),
+          0 1px 0 rgba(255,255,255,.50)!important;
       }
 
+      /*
+       * Real sand photograph used only as micro-grain detail.
+       * Smaller tile = visually finer grains; low contrast + warm-white base removes
+       * the beach-like dark pits and coarse gravel appearance of the previous pass.
+       */
       #page-insights #fwGardenInner::before{
         content:'';
         position:absolute;
-        inset:-2px;
+        inset:-3px;
         z-index:0;
         pointer-events:none;
         background-image:url('${SAND_URL}');
         background-repeat:repeat;
-        background-size:520px 520px;
+        background-size:285px 285px;
         background-position:center center;
         image-rendering:auto;
-        filter:saturate(.72) brightness(1.12) contrast(.96);
+        filter:
+          grayscale(.18)
+          sepia(.08)
+          saturate(.42)
+          brightness(1.42)
+          contrast(.58);
+        opacity:.42;
         transform:translateZ(0);
       }
 
-      /* Very light warm daylight wash only; the grain itself remains photographic. */
+      /* Pale warm daylight veil, matching fine indoor zen-garden sand rather than beach sand. */
       #page-insights #fwGardenInner::after{
         content:'';
         position:absolute;
@@ -45,12 +63,14 @@
         z-index:1;
         pointer-events:none;
         background:
-          linear-gradient(135deg,rgba(255,255,255,.20),rgba(255,252,244,.045) 48%,rgba(117,90,55,.035)),
-          radial-gradient(ellipse at 26% 18%,rgba(255,255,255,.12),transparent 58%);
-        box-shadow:inset 0 10px 18px rgba(91,68,42,.055),inset 0 -4px 8px rgba(255,255,255,.24);
+          linear-gradient(135deg,rgba(255,253,248,.40),rgba(255,250,242,.24) 47%,rgba(231,218,198,.055)),
+          radial-gradient(ellipse at 24% 15%,rgba(255,255,255,.24),transparent 62%);
+        box-shadow:
+          inset 0 7px 13px rgba(91,72,49,.026),
+          inset 0 -3px 7px rgba(255,255,255,.34);
       }
 
-      /* Disable every synthetic base texture so only the real sand photograph is visible. */
+      /* Disable every synthetic base texture so the pale photographic micro-grain is the only base surface. */
       #page-insights #fwInteractiveSandBase,
       #page-insights #fwDailyGardenCanvas,
       #page-insights #fwGardenCanvas{
@@ -67,5 +87,5 @@
   }
 
   ensureStyles();
-  window.FocusWaveRealSandPhoto = {source:SAND_URL};
+  window.FocusWaveRealSandPhotoV2 = {source:SAND_URL};
 })();

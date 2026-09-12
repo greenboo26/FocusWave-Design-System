@@ -1,59 +1,395 @@
-/* FocusWave physical karesansui tools v6.
- * Reuses the approved lab side-drawer assets and interaction: a wooden tray,
- * real tool silhouettes, pickup-on-contact and direction-aware rotation.
+/* FocusWave karesansui bottom tool dock v8.
+ * Click a physical rake in the bottom dock to equip it; click the same tool again to unequip.
+ * While equipped, the physical tool follows the pointer over the sand and left-dragging leaves
+ * tooth-count-accurate grooves. The sand surface itself starts flat and is rendered separately.
+ * No MutationObserver and no global polling.
  */
 (() => {
-  const ASSET_ROOT='./lab/assets/karesansui/';
-  const ASSETS={fine:'fine.webp',medium:'medium.webp',coarse:'coarse.webp',flatten:'flatten.webp'};
-  const LABELS={move:'移动石组',fine:'细耙 · 7 齿',medium:'中耙 · 5 齿',coarse:'粗耙 · 3 齿',flatten:'平整棒'};
-  const SPECS={fine:{teeth:7,spacing:8,width:.76,contact:90},medium:{teeth:5,spacing:12,width:.88,contact:76},coarse:{teeth:3,spacing:18,width:1.02,contact:56},flatten:{eraseWidth:94,contact:104}};
-  let installed=false,frame,inner,canvas,drawer,cursor,cursorImg,status;
-  let tool='move',drawing=false,current=null,actions=[],lastScreen=null,lastAngle=0;
+  if (window.FocusWaveGardenToolsV8) return;
 
-  function metrics(){const d=Math.min(devicePixelRatio||1,2),r=canvas.getBoundingClientRect(),w=Math.max(10,Math.round(r.width*d)),h=Math.max(10,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}return{d,r,w,h,sx:w/r.width,sy:h/r.height}}
-  function point(event){const {r}=metrics();return{x:event.clientX-r.left,y:event.clientY-r.top,pressure:event.pressure||.5}}
-  function smoothPath(ctx,points,sx,sy,offset=0){
-    if(points.length<2)return;
-    const shifted=points.map((p,i,all)=>{const a=all[Math.max(0,i-1)],b=all[Math.min(all.length-1,i+1)],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;return{x:(p.x-dy/len*offset)*sx,y:(p.y+dx/len*offset)*sy}});
-    ctx.moveTo(shifted[0].x,shifted[0].y);
-    for(let i=1;i<shifted.length-1;i++){const mid={x:(shifted[i].x+shifted[i+1].x)/2,y:(shifted[i].y+shifted[i+1].y)/2};ctx.quadraticCurveTo(shifted[i].x,shifted[i].y,mid.x,mid.y)}
-    const last=shifted.at(-1);ctx.lineTo(last.x,last.y);
+  const ASSET_ROOT = './lab/assets/karesansui/';
+  const ASSETS = {
+    fine: 'fine.webp',
+    medium: 'medium.webp',
+    coarse: 'coarse.webp',
+    flatten: 'flatten.webp'
+  };
+  const LABELS = {
+    fine: '细耙 7齿',
+    medium: '中耙 5齿',
+    coarse: '粗耙 3齿',
+    flatten: '平整棒'
+  };
+  const SPECS = {
+    fine: {teeth: 7, spacing: 8.5, dark: 1.45, light: .72},
+    medium: {teeth: 5, spacing: 12.5, dark: 1.55, light: .76},
+    coarse: {teeth: 3, spacing: 19, dark: 1.7, light: .82},
+    flatten: {eraseWidth: 96}
+  };
+
+  let installed = false;
+  let frame = null;
+  let inner = null;
+  let canvas = null;
+  let dock = null;
+  let status = null;
+  let cursor = null;
+  let cursorImg = null;
+  let tool = null;
+  let drawing = false;
+  let current = null;
+  let actions = [];
+  let lastScreen = null;
+  let lastAngle = -45;
+  let resizeObserver = null;
+
+  function metrics() {
+    const d = Math.min(window.devicePixelRatio || 1, 2);
+    const r = canvas.getBoundingClientRect();
+    const w = Math.max(10, Math.round(r.width * d));
+    const h = Math.max(10, Math.round(r.height * d));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    return {d, r, w, h, sx: w / r.width, sy: h / r.height};
   }
-  function renderAction(ctx,action,m){
-    if(action.tool==='flatten'){ctx.save();ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=SPECS.flatten.eraseWidth*m.d;ctx.beginPath();smoothPath(ctx,action.points,m.sx,m.sy);ctx.stroke();ctx.restore();return}
-    const spec=SPECS[action.tool];if(!spec)return;const center=(spec.teeth-1)/2;
-    for(let tooth=0;tooth<spec.teeth;tooth++){const offset=(tooth-center)*spec.spacing;ctx.beginPath();smoothPath(ctx,action.points,m.sx,m.sy,offset);ctx.strokeStyle=tooth===0?'rgba(255,255,255,.82)':'rgba(100,96,88,.34)';ctx.lineWidth=spec.width*m.d;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()}
+
+  function point(event) {
+    const {r} = metrics();
+    return {x: event.clientX - r.left, y: event.clientY - r.top};
   }
-  function redraw(){if(!canvas)return;const m=metrics(),ctx=canvas.getContext('2d');ctx.clearRect(0,0,m.w,m.h);actions.forEach(action=>renderAction(ctx,action,m));if(current)renderAction(ctx,current,m);if(status){const spec=SPECS[tool];status.textContent=tool==='move'?`${actions.length} 次塑形 · 可拖动石组`:`${actions.length} 次塑形 · ${LABELS[tool]} · 接触宽度 ${spec.contact}px`}}
-  function moveCursor(event){const r=inner.getBoundingClientRect();cursor.style.left=`${event.clientX-r.left}px`;cursor.style.top=`${event.clientY-r.top}px`;if(lastScreen){const dx=event.clientX-lastScreen[0],dy=event.clientY-lastScreen[1];if(Math.hypot(dx,dy)>2){const raw=Math.atan2(dy,dx)*180/Math.PI;lastAngle=lastAngle*.64+raw*.36;cursor.style.setProperty('--tool-angle',`${lastAngle}deg`)}}lastScreen=[event.clientX,event.clientY]}
-  function selectTool(next){tool=next;document.querySelectorAll('[data-physical-tool]').forEach(b=>b.classList.toggle('active',b.dataset.physicalTool===next));cursor.className=`fw-physical-cursor ${next}`;cursorImg.src=next==='move'?'':ASSET_ROOT+ASSETS[next];cursorImg.alt=LABELS[next]||'';canvas.style.pointerEvents=next==='move'?'none':'auto';inner.style.cursor=next==='move'?'grab':'none';redraw()}
-  function start(event){if(tool==='move')return;drawing=true;current={tool,points:[point(event)]};canvas.setPointerCapture?.(event.pointerId);lastScreen=[event.clientX,event.clientY];moveCursor(event);cursor.classList.add('using');drawer.classList.remove('open');event.preventDefault();redraw()}
-  function move(event){if(!drawing||!current)return;moveCursor(event);const p=point(event),last=current.points.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>2){current.points.push(p);redraw()}}
-  function end(event){if(!drawing)return;if(current?.points.length>1)actions.push(current);drawing=false;current=null;cursor.classList.remove('using');lastScreen=null;try{canvas.releasePointerCapture(event.pointerId)}catch{}redraw()}
-  function buildPhysicalDrawer(old){
-    const bay=document.createElement('aside');bay.id='fwEditTools';bay.className='fw-physical-bay';bay.setAttribute('aria-label','实体庭具收纳');
-    bay.innerHTML=`<div class="fw-physical-drawer" id="fwPhysicalDrawer"><img class="fw-tray-img" src="${ASSET_ROOT}tray.webp" alt="木质庭具托盘"><button class="fw-drawer-toggle" type="button" aria-label="抽出或收回庭具托盘"></button><button class="fw-hit fine" data-physical-tool="fine" aria-label="细耙 7 齿"></button><button class="fw-hit medium" data-physical-tool="medium" aria-label="中耙 5 齿"></button><button class="fw-hit coarse" data-physical-tool="coarse" aria-label="粗耙 3 齿"></button><button class="fw-hit flatten" data-physical-tool="flatten" aria-label="平整棒"></button></div><div class="fw-physical-actions"><button data-physical-tool="move">移动石组</button><button data-action="undo">撤销</button><button data-action="reset">重置白砂</button></div><div class="fw-physical-status" id="fwPhysicalStatus"></div><div class="fw-pull-hint" aria-hidden="true">← 向左拉开庭具</div>`;
-    old.replaceWith(bay);drawer=bay.querySelector('#fwPhysicalDrawer');status=bay.querySelector('#fwPhysicalStatus');drawer.querySelector('.fw-drawer-toggle').onclick=()=>drawer.classList.toggle('open');
-    bay.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.dataset.physicalTool)selectTool(button.dataset.physicalTool);if(button.dataset.action==='undo'){actions.pop();redraw()}if(button.dataset.action==='reset'){actions=[];current=null;redraw()}});
+
+  function shiftedPath(points, offset) {
+    return points.map((p, i, all) => {
+      const a = all[Math.max(0, i - 1)];
+      const b = all[Math.min(all.length - 1, i + 1)];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return {x: p.x - dy / len * offset, y: p.y + dx / len * offset};
+    });
   }
-  function replaceCanvas(old){canvas=document.createElement('canvas');canvas.id='fwGardenUserCanvas';old.replaceWith(canvas);cursor=document.createElement('div');cursor.className='fw-physical-cursor move';cursor.innerHTML='<img alt="">';cursorImg=cursor.querySelector('img');inner.appendChild(cursor);canvas.addEventListener('pointerdown',start);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerleave',()=>{if(!drawing){cursor.classList.remove('using');lastScreen=null}});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end)}
-  function install(){
-    if(installed)return true;frame=document.querySelector('#fwGardenFrame');inner=document.querySelector('#fwGardenInner');const oldTools=document.querySelector('#fwEditTools'),oldCanvas=document.querySelector('#fwGardenUserCanvas');if(!frame||!inner||!oldTools||!oldCanvas)return false;
-    installed=true;buildPhysicalDrawer(oldTools);replaceCanvas(oldCanvas);const editButton=document.querySelector('#fwEditGarden');if(editButton&&!frame.classList.contains('fw-editing'))editButton.click();if(editButton)editButton.hidden=true;
-    const help=document.querySelector('.fw-garden-help');if(help)help.textContent='从右侧向左拉开庭具盘，选择一件庭具；按下沙面时庭具会被拿起，并随塑形方向转动。';
-    const style=document.createElement('style');style.dataset.focuswavePhysicalGarden='true';style.textContent=`
-      #fwEditGarden[hidden]{display:none!important}#fwGardenFrame{display:block!important;padding:12px!important;border:10px solid #d0aa79!important;border-radius:22px!important;background:linear-gradient(100deg,#d9bd96,#b98659 88%,#8e603d)!important;box-shadow:0 22px 38px rgba(62,48,34,.16),inset 0 1px rgba(255,255,255,.55)!important;overflow:hidden!important}
-      #fwGardenInner{width:100%!important;height:100%!important;min-width:0;border-radius:11px!important;background:radial-gradient(circle at 20% 30%,rgba(91,82,67,.06) 0 .65px,transparent .8px),radial-gradient(circle at 74% 64%,rgba(91,82,67,.035) 0 .7px,transparent .9px),linear-gradient(145deg,#f6f1e8,#e9e0d1)!important;background-size:7px 7px,11px 11px,auto!important;box-shadow:inset 0 0 38px rgba(70,58,43,.16),inset 0 1px rgba(255,255,255,.9)!important}
-      #fwGardenCanvas{display:block!important}.fw-physical-bay{position:absolute!important;right:12px!important;top:12px!important;bottom:12px!important;width:258px!important;z-index:20!important;pointer-events:none!important;background:transparent!important;overflow:visible!important}.fw-physical-bay:before{content:'';position:absolute;right:-2px;top:35%;width:12px;height:108px;border-radius:9px 0 0 9px;background:linear-gradient(90deg,#8a5c39,#d6b58b 55%,#a06a42);box-shadow:-5px 0 12px rgba(75,50,29,.20),inset 1px 1px 2px rgba(255,255,255,.24);z-index:6;pointer-events:auto}
-      .fw-physical-drawer{position:absolute;right:-244px;top:50%;width:244px;transform:translateY(-50%) rotate(-26deg) scale(.92);transform-origin:right center;transition:right .45s cubic-bezier(.2,.72,.2,1);filter:drop-shadow(0 14px 14px rgba(67,46,29,.25));z-index:8;pointer-events:auto}.fw-physical-drawer.open{right:0}.fw-tray-img{display:block;width:244px;user-select:none;pointer-events:none}.fw-drawer-toggle{position:absolute;left:-31px;top:35%;width:35px;height:74px;border:0;background:transparent;cursor:pointer}.fw-drawer-toggle:after{content:'';position:absolute;left:10px;top:16px;width:10px;height:41px;border-radius:8px;background:rgba(88,55,28,.33);box-shadow:inset 1px 1px 2px rgba(58,38,21,.2)}
-      .fw-hit{position:absolute;border:0;background:transparent;cursor:pointer;padding:0}.fw-hit.active:after{content:'';position:absolute;width:9px;height:9px;border-radius:50%;background:#67816e;right:8px;top:8px;box-shadow:0 0 0 5px rgba(103,129,110,.18)}.fw-hit.fine{left:4%;top:8%;width:34%;height:58%}.fw-hit.medium{left:31%;top:22%;width:30%;height:49%}.fw-hit.coarse{left:53%;top:31%;width:26%;height:44%}.fw-hit.flatten{left:68%;top:30%;width:27%;height:50%}
-      .fw-pull-hint{position:absolute;right:18px;top:50%;transform:translateY(-50%);width:150px;color:#76563b;font:13px var(--ui);letter-spacing:.03em;line-height:1.5;text-align:right;pointer-events:none;z-index:7;opacity:.94;transition:opacity .18s}.fw-physical-drawer.open~.fw-pull-hint{opacity:0}.fw-physical-actions{position:absolute;right:16px;bottom:52px;width:210px;display:flex;justify-content:center;flex-wrap:wrap;gap:5px 12px;z-index:9;opacity:0;transform:translateX(22px);transition:opacity .2s,transform .3s;pointer-events:none}.fw-physical-drawer.open~.fw-physical-actions{opacity:1;transform:none;pointer-events:auto}.fw-physical-actions button{border:0;background:rgba(245,237,225,.86);border-radius:999px;padding:5px 9px;color:#6f5138;font:10px var(--ui);cursor:pointer;box-shadow:0 3px 7px rgba(74,48,25,.12)}.fw-physical-actions button:hover{color:#443b32}.fw-physical-actions button[data-physical-tool].active{color:#486152}.fw-physical-status{position:absolute;right:22px;bottom:23px;width:210px;text-align:center;color:#8c7d6e;font:9px var(--ui);line-height:1.4;opacity:0;transition:opacity .2s}.fw-physical-drawer.open~.fw-physical-status{opacity:1}
-      #fwGardenUserCanvas{z-index:6!important;touch-action:none;background:transparent!important}.fw-physical-cursor{--tool-angle:0deg;position:absolute;left:0;top:0;pointer-events:none;z-index:9;opacity:0}.fw-physical-cursor.using{opacity:.98}.fw-physical-cursor img{display:block;filter:drop-shadow(0 7px 5px rgba(58,40,24,.27));transform-origin:28% 74%;user-select:none}.fw-physical-cursor.fine img{width:150px;transform:translate(-35px,-116px) rotate(calc(var(--tool-angle) - 44deg))}.fw-physical-cursor.medium img{width:145px;transform:translate(-34px,-112px) rotate(calc(var(--tool-angle) - 44deg))}.fw-physical-cursor.coarse img{width:136px;transform:translate(-32px,-106px) rotate(calc(var(--tool-angle) - 44deg))}.fw-physical-cursor.flatten img{width:150px;transform:translate(-38px,-112px) rotate(calc(var(--tool-angle) - 44deg))}
-      .fw-garden-help{opacity:1!important;height:38px!important}.fw-editing+.fw-garden-help{opacity:1!important}
-      @media(max-width:900px){.fw-physical-bay{width:200px!important}.fw-physical-drawer{width:194px;right:-194px}.fw-tray-img{width:194px}.fw-physical-drawer.open{right:0}.fw-physical-actions,.fw-physical-status{right:5px;width:180px}.fw-physical-actions{bottom:45px}}
-      @media(max-width:640px){.fw-reward-block{display:none!important}#fwGardenFrame{padding:7px!important;border-width:7px!important}.fw-physical-bay{right:7px!important;top:7px!important;bottom:7px!important;width:170px!important}.fw-physical-drawer{top:50%;width:168px;right:-168px}.fw-physical-drawer.open{right:0}.fw-tray-img{width:168px}.fw-physical-actions{right:0;width:164px;bottom:38px}.fw-physical-status{display:none}}
-    `;document.head.appendChild(style);selectTool('move');new ResizeObserver(redraw).observe(canvas);requestAnimationFrame(redraw);return true;
+
+  function tracePath(ctx, points, sx, sy, offset = 0) {
+    if (points.length < 2) return;
+    const path = shiftedPath(points, offset);
+    ctx.moveTo(path[0].x * sx, path[0].y * sy);
+    for (let i = 1; i < path.length - 1; i += 1) {
+      const mx = (path[i].x + path[i + 1].x) / 2;
+      const my = (path[i].y + path[i + 1].y) / 2;
+      ctx.quadraticCurveTo(path[i].x * sx, path[i].y * sy, mx * sx, my * sy);
+    }
+    const last = path[path.length - 1];
+    ctx.lineTo(last.x * sx, last.y * sy);
   }
-  function boot(){if(install())return;const root=document.querySelector('#page-insights')||document.body;const observer=new MutationObserver(()=>{if(install())observer.disconnect()});observer.observe(root,{childList:true,subtree:true})}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+
+  function strokeGroove(ctx, action, m, offset, spec) {
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    tracePath(ctx, action.points, m.sx, m.sy, offset);
+    ctx.strokeStyle = 'rgba(105, 91, 70, .34)';
+    ctx.lineWidth = spec.dark * m.d;
+    ctx.stroke();
+
+    ctx.translate(0, -1.05 * m.d);
+    ctx.beginPath();
+    tracePath(ctx, action.points, m.sx, m.sy, offset);
+    ctx.strokeStyle = 'rgba(255, 255, 255, .70)';
+    ctx.lineWidth = spec.light * m.d;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function renderAction(ctx, action, m) {
+    if (action.tool === 'flatten') {
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = SPECS.flatten.eraseWidth * m.d;
+      ctx.beginPath();
+      tracePath(ctx, action.points, m.sx, m.sy, 0);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    const spec = SPECS[action.tool];
+    if (!spec) return;
+    const center = (spec.teeth - 1) / 2;
+    for (let tooth = 0; tooth < spec.teeth; tooth += 1) {
+      strokeGroove(ctx, action, m, (tooth - center) * spec.spacing, spec);
+    }
+  }
+
+  function updateStatus() {
+    if (!status) return;
+    status.innerHTML = `<span class="fw-dock-dot"></span><span>${actions.length} 次塑形</span><span class="fw-dock-sep">·</span><span>${tool ? `已选择 ${LABELS[tool]}` : '尚未选择庭具'}</span>`;
+  }
+
+  function redraw() {
+    if (!canvas) return;
+    const m = metrics();
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, m.w, m.h);
+    actions.forEach(action => renderAction(ctx, action, m));
+    if (current) renderAction(ctx, current, m);
+    updateStatus();
+  }
+
+  function showCursor(visible) {
+    if (!cursor) return;
+    cursor.classList.toggle('visible', Boolean(visible && tool));
+  }
+
+  function moveCursor(event) {
+    if (!tool || !cursor) return;
+    const r = inner.getBoundingClientRect();
+    cursor.style.left = `${event.clientX - r.left}px`;
+    cursor.style.top = `${event.clientY - r.top}px`;
+    showCursor(true);
+
+    if (lastScreen) {
+      const dx = event.clientX - lastScreen[0];
+      const dy = event.clientY - lastScreen[1];
+      if (Math.hypot(dx, dy) > 2) {
+        const raw = Math.atan2(dy, dx) * 180 / Math.PI;
+        lastAngle = lastAngle * .68 + raw * .32;
+      }
+    }
+    cursor.style.setProperty('--tool-angle', `${lastAngle}deg`);
+    lastScreen = [event.clientX, event.clientY];
+  }
+
+  function setTool(next) {
+    tool = next && SPECS[next] ? next : null;
+    dock?.querySelectorAll('[data-rake-tool]').forEach(button => {
+      const active = button.dataset.rakeTool === tool;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (tool) {
+      cursor.className = `fw-physical-cursor ${tool}`;
+      cursorImg.src = ASSET_ROOT + ASSETS[tool];
+      cursorImg.alt = LABELS[tool];
+      inner.style.cursor = 'none';
+    } else {
+      cursor.className = 'fw-physical-cursor';
+      cursorImg.removeAttribute('src');
+      cursorImg.alt = '';
+      inner.style.cursor = '';
+      showCursor(false);
+    }
+    updateStatus();
+  }
+
+  function toggleTool(next) {
+    setTool(tool === next ? null : next);
+  }
+
+  function start(event) {
+    if (!tool || event.button !== 0) return;
+    drawing = true;
+    current = {tool, points: [point(event)]};
+    canvas.setPointerCapture?.(event.pointerId);
+    moveCursor(event);
+    cursor.classList.add('using');
+    event.preventDefault();
+    redraw();
+  }
+
+  function move(event) {
+    if (tool) moveCursor(event);
+    if (!drawing || !current) return;
+    const p = point(event);
+    const last = current.points[current.points.length - 1];
+    if (Math.hypot(p.x - last.x, p.y - last.y) > 1.8) {
+      current.points.push(p);
+      redraw();
+    }
+  }
+
+  function end(event) {
+    if (!drawing) return;
+    if (current?.points.length > 1) actions.push(current);
+    drawing = false;
+    current = null;
+    cursor.classList.remove('using');
+    try { canvas.releasePointerCapture(event.pointerId); } catch (_) {}
+    redraw();
+  }
+
+  function buildDock(oldTools) {
+    const nextDock = document.createElement('div');
+    nextDock.id = 'fwEditTools';
+    nextDock.className = 'fw-tool-dock';
+    nextDock.setAttribute('aria-label', '枯山水庭具工具栏');
+    nextDock.innerHTML = `
+      <div class="fw-dock-status" id="fwPhysicalStatus"></div>
+      <div class="fw-dock-divider" aria-hidden="true"></div>
+      <div class="fw-dock-tools" role="group" aria-label="选择庭具">
+        ${['fine','medium','coarse','flatten'].map(key => `
+          <button class="fw-dock-tool" type="button" data-rake-tool="${key}" aria-pressed="false" title="${LABELS[key]}">
+            <span class="fw-dock-thumb"><img src="${ASSET_ROOT + ASSETS[key]}" alt=""></span>
+            <span>${LABELS[key]}</span>
+          </button>`).join('')}
+      </div>
+      <div class="fw-dock-divider" aria-hidden="true"></div>
+      <div class="fw-dock-actions">
+        <button type="button" data-action="undo" title="撤销上一次塑形">↶ <span>撤销</span></button>
+        <button type="button" data-action="reset" title="清空全部砂纹">↻ <span>重置白砂</span></button>
+      </div>`;
+
+    oldTools.remove();
+    const help = document.querySelector('#page-insights .fw-garden-help');
+    if (help) help.insertAdjacentElement('afterend', nextDock);
+    else frame.insertAdjacentElement('afterend', nextDock);
+
+    dock = nextDock;
+    status = nextDock.querySelector('#fwPhysicalStatus');
+    nextDock.addEventListener('click', event => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      const nextTool = button.dataset.rakeTool;
+      if (nextTool) toggleTool(nextTool);
+      if (button.dataset.action === 'undo') {
+        actions.pop();
+        redraw();
+      }
+      if (button.dataset.action === 'reset') {
+        actions = [];
+        current = null;
+        redraw();
+      }
+    });
+  }
+
+  function replaceCanvas(oldCanvas) {
+    const nextCanvas = document.createElement('canvas');
+    nextCanvas.id = 'fwGardenUserCanvas';
+    oldCanvas.replaceWith(nextCanvas);
+    canvas = nextCanvas;
+
+    cursor = document.createElement('div');
+    cursor.className = 'fw-physical-cursor';
+    cursor.innerHTML = '<img alt="">';
+    cursorImg = cursor.querySelector('img');
+    inner.appendChild(cursor);
+
+    canvas.addEventListener('pointerenter', event => {
+      lastScreen = null;
+      if (tool) moveCursor(event);
+    });
+    canvas.addEventListener('pointerdown', start);
+    canvas.addEventListener('pointermove', move);
+    canvas.addEventListener('pointerleave', () => {
+      if (!drawing) {
+        lastScreen = null;
+        showCursor(false);
+      }
+    });
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+  }
+
+  function ensureStyles() {
+    if (document.querySelector('style[data-focuswave-bottom-garden-tools]')) return;
+    const style = document.createElement('style');
+    style.dataset.focuswaveBottomGardenTools = 'true';
+    style.textContent = `
+      #page-insights #fwEditGarden{display:none!important}
+      #page-insights #fwGardenFrame{overflow:hidden!important}
+      #page-insights #fwGardenInner{cursor:default}
+      #page-insights #fwGardenUserCanvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:10!important;background:transparent!important;touch-action:none!important;pointer-events:auto!important}
+      #page-insights #fwStoneLayer,#page-insights #fwStoneLayer .fw-stone{pointer-events:none!important}
+      #page-insights .fw-garden-help{height:34px!important;opacity:1!important;color:#8a847a!important;font-size:11px!important}
+
+      #page-insights .fw-tool-dock{
+        min-height:88px;margin:10px 0 0;padding:8px 14px 8px 18px;
+        display:grid;grid-template-columns:minmax(190px,1fr) auto minmax(470px,1.55fr) auto minmax(220px,1fr);
+        align-items:center;gap:16px;border:1px solid rgba(72,67,58,.10);border-radius:20px;
+        background:rgba(249,247,241,.94);box-shadow:0 12px 30px rgba(56,49,38,.08),inset 0 1px rgba(255,255,255,.75);
+        backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+      }
+      #page-insights .fw-dock-status{display:flex;align-items:center;gap:8px;color:#7c7d77;font-size:11px;white-space:nowrap}
+      #page-insights .fw-dock-dot{width:7px;height:7px;border-radius:50%;background:#5e635f;opacity:.82}
+      #page-insights .fw-dock-sep{color:#bbb6ac}
+      #page-insights .fw-dock-divider{width:1px;height:40px;background:rgba(67,64,57,.11)}
+      #page-insights .fw-dock-tools{display:flex;align-items:center;justify-content:center;gap:12px}
+      #page-insights .fw-dock-tool{width:94px;height:72px;padding:5px 6px 4px;border:1px solid transparent;border-radius:13px;background:transparent;display:grid;grid-template-rows:45px auto;place-items:center;gap:2px;cursor:pointer;color:#696a64;font-size:10px;transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
+      #page-insights .fw-dock-tool:hover{background:rgba(225,216,201,.28);transform:translateY(-1px)}
+      #page-insights .fw-dock-tool.active{border-color:#947154;background:rgba(201,169,131,.11);box-shadow:inset 0 0 0 1px rgba(148,113,84,.08)}
+      #page-insights .fw-dock-thumb{width:72px;height:43px;display:grid;place-items:center;overflow:hidden}
+      #page-insights .fw-dock-thumb img{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 4px 3px rgba(70,46,27,.16));pointer-events:none;user-select:none}
+      #page-insights .fw-dock-tool[data-rake-tool="flatten"] .fw-dock-thumb img{width:64px;height:64px}
+      #page-insights .fw-dock-actions{display:flex;justify-content:flex-end;gap:8px;white-space:nowrap}
+      #page-insights .fw-dock-actions button{height:36px;padding:0 12px;border:1px solid rgba(74,70,62,.10);border-radius:999px;background:rgba(255,255,255,.33);color:#797970;font-size:11px;cursor:pointer;transition:background .16s,color .16s}
+      #page-insights .fw-dock-actions button:hover{background:rgba(255,255,255,.72);color:#4f544f}
+
+      #page-insights .fw-physical-cursor{--tool-angle:-45deg;position:absolute;left:0;top:0;z-index:24;pointer-events:none;opacity:0;transform:translateZ(0);transition:opacity .08s}
+      #page-insights .fw-physical-cursor.visible{opacity:.96}
+      #page-insights .fw-physical-cursor.using{opacity:1}
+      #page-insights .fw-physical-cursor img{display:block;width:145px;height:145px;object-fit:contain;user-select:none;filter:drop-shadow(0 8px 7px rgba(61,42,26,.24));transform-origin:38% 72%;transform:translate(-38%,-72%) rotate(calc(var(--tool-angle) - 45deg))}
+      #page-insights .fw-physical-cursor.medium img{width:140px;height:140px}
+      #page-insights .fw-physical-cursor.coarse img{width:134px;height:134px}
+      #page-insights .fw-physical-cursor.flatten img{width:142px;height:142px;transform-origin:42% 64%;transform:translate(-42%,-64%) rotate(calc(var(--tool-angle) - 45deg))}
+
+      @media(max-width:1100px){
+        #page-insights .fw-tool-dock{grid-template-columns:1fr auto minmax(390px,1.7fr) auto auto;gap:10px;padding-left:12px}
+        #page-insights .fw-dock-tool{width:82px}.fw-dock-status .fw-dock-sep{display:none}
+      }
+      @media(max-width:780px){
+        #page-insights .fw-tool-dock{grid-template-columns:1fr;gap:8px;padding:10px;overflow-x:auto}
+        #page-insights .fw-dock-status,#page-insights .fw-dock-actions{justify-content:center}
+        #page-insights .fw-dock-divider{display:none}
+        #page-insights .fw-dock-tools{justify-content:flex-start;min-width:max-content}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function install() {
+    if (installed) return true;
+    frame = document.querySelector('#fwGardenFrame');
+    inner = document.querySelector('#fwGardenInner');
+    const oldTools = document.querySelector('#fwEditTools');
+    const oldCanvas = document.querySelector('#fwGardenUserCanvas');
+    if (!frame || !inner || !oldTools || !oldCanvas) return false;
+
+    installed = true;
+    frame.classList.remove('fw-photo-active', 'fw-three-active');
+    ensureStyles();
+    buildDock(oldTools);
+    replaceCanvas(oldCanvas);
+
+    const editButton = document.querySelector('#fwEditGarden');
+    if (editButton) editButton.hidden = true;
+    const help = document.querySelector('#page-insights .fw-garden-help');
+    if (help) help.textContent = '点击下方庭具即可拿起；鼠标进入沙盘后庭具会跟随光标。按住左键拖动留下对应齿数的砂纹；再次点击当前庭具即可放下。';
+
+    setTool(null);
+    resizeObserver = new ResizeObserver(() => requestAnimationFrame(redraw));
+    resizeObserver.observe(canvas);
+    requestAnimationFrame(redraw);
+    return true;
+  }
+
+  function boot() {
+    if (install()) return;
+    requestAnimationFrame(install);
+  }
+
+  window.FocusWaveGardenToolsV8 = {
+    install,
+    selectTool: setTool,
+    get activeTool() { return tool; },
+    reset() { actions = []; current = null; redraw(); }
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
+  else boot();
 })();

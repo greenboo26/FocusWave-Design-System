@@ -1,6 +1,53 @@
 # FocusWave Daily Focus Prototype v1
 
-这是 FocusWave 日常学习/工作产品的第一版可交互网页原型。
+这是 FocusWave 日常学习/工作产品的第一版可交互网页原型，
+同时也是**不依赖 GitHub 的本地工作副本**。
+
+---
+
+## 本地怎么打开（重要）
+
+GitHub 服务器不稳定，本目录已把站点所需的全部文件拉到本地，可直接离线查看和修改。
+
+**方式一：双击 `FocusWave-standalone.html`（最省事）**
+
+自包含构建产物，所有 JS 模块、莲花池素材、引言库数据都已内联，
+用 `file://` 协议也能完整运行。直接双击就见效果。
+
+> 原版 `index.html` 用了 ES module 动态 `import()` 和 `import.meta.url`，
+> 这两者在 `file://` 下会被浏览器拦截，双击原版是白屏——所以才需要 standalone 版。
+
+**方式二：双击 `start-server.bat`（改代码时推荐）**
+
+自动起本地服务器并打开 http://localhost:8899/index.html 。
+编辑源文件后刷新浏览器即可看到效果，无需重新构建。
+
+---
+
+## 改完之后
+
+| 想做什么 | 怎么做 |
+|---|---|
+| 同步回 git 仓库 | 双击 `sync-to-repo.bat`，改动会复制回<br>`..\FocusWave-Design-System\prototype\daily-focus-v1\`，之后照常 commit / push |
+| 重新生成双击版 | 命令行执行 `node build-standalone.js` |
+
+## 文件说明
+
+| 文件 | 作用 |
+|---|---|
+| `FocusWave-standalone.html` | 自包含构建产物，双击即可打开 |
+| `index.html` | 原版入口页，需要 http 环境 |
+| `build-standalone.js` | 构建脚本：内联所有本地模块与引言库 JSON |
+| `start-server.bat` | 起本地服务器预览 |
+| `sync-to-repo.bat` | 把本地改动同步回 git 仓库目录 |
+| `*.js` / `*.css` | 各页面运行时（今日、洞察、画像、练习、设置） |
+| `assets/inkpond/` | 莲花池素材：背景、鱼、三张莲花 PNG |
+| `content/` | 引言与文案数据 |
+
+> 说明：莲花奖励数据存在浏览器 `localStorage`，每天 24:00 自动清空，
+> 与线上版本行为完全一致。
+
+---
 
 ## 目标
 
@@ -32,10 +79,6 @@ Session Summary
 v1 使用前端 `AttentionState` 模拟器驱动 Live Focus。模拟器的数据结构与未来成熟模型输出保持同一方向：state vector / region / focus index / confidence / quality / model version。
 
 后续接入真实系统时，前端状态源将替换为本地 Runtime 的 WebSocket，而页面结构与视觉映射保持稳定。
-
-## 运行
-
-直接用浏览器打开 `index.html` 即可体验，无外部依赖。
 
 ## 视觉基线
 

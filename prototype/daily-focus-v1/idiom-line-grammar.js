@@ -54,7 +54,7 @@ import('./dusk-water-reflection.js?v=15');
 import('./live-ui-refinements.js?v=1');
 import('./focus-session-rewards.js?v=1');
 import('./insights-ink-pond-v3.js?v=4');
-import('./insights-lotus-overlay.js?v=2');
+import('./insights-lotus-overlay.js?v=3');
 import('./setup-focus-target.js?v=1');
 const settingsReady = import('./settings-controller.js?v=9');
 settingsReady

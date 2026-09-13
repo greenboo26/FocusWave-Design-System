@@ -1,6 +1,7 @@
-/* FocusWave visible lotus overlay v2.
+/* FocusWave visible lotus overlay v3.
  * Keeps earned lotuses visible and draggable independently from the pond canvas.
  * Uses the same reward and position storage as insights-ink-pond-v3.
+ * Uses the approved transparent PNG directly; no nested SVG image loading.
  * No MutationObserver and no polling.
  */
 (() => {
@@ -8,7 +9,7 @@
 
   const REWARD_KEY='focuswave.dailyRewardStones.v2';
   const LOTUS_KEY='focuswave.dailyLotusPositions.v3';
-  const LOTUS_URL=new URL('./assets/inkpond/ink-lotus-visible.svg',import.meta.url).href;
+  const LOTUS_URL=new URL('./assets/inkpond/ink-lotus-approved-transparent.png',import.meta.url).href;
   const LOTUS_SIZES={small:46,medium:68,large:92};
   const LOTUS_KEYS=['small','medium','large'];
   const LOTUS_SLOTS=[
@@ -74,8 +75,8 @@
     style.dataset.focuswaveLotusOverlay='true';
     style.textContent=`
       #fwInkPondFrame,#page-insights .fw-ink-frame{position:relative}
-      #fwLotusOverlay{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden;border-radius:inherit}
-      #fwLotusOverlay .fw-visible-lotus{position:absolute;display:block;transform:translate(-50%,-50%);pointer-events:auto;cursor:grab;user-select:none;-webkit-user-drag:none;touch-action:none;filter:drop-shadow(0 4px 7px rgba(78,70,61,.08));}
+      #fwLotusOverlay{position:absolute;inset:0;z-index:12;pointer-events:none;overflow:hidden;border-radius:inherit}
+      #fwLotusOverlay .fw-visible-lotus{position:absolute;display:block;transform:translate(-50%,-50%);pointer-events:auto;cursor:grab;user-select:none;-webkit-user-drag:none;touch-action:none;object-fit:contain;opacity:1!important;visibility:visible!important;filter:drop-shadow(0 4px 7px rgba(78,70,61,.08));}
       #fwLotusOverlay .fw-visible-lotus:active{cursor:grabbing}
     `;
     document.head.appendChild(style);
@@ -112,6 +113,7 @@
       const size=LOTUS_SIZES[item.size];
       img.style.width=`${size}px`;
       img.style.height=`${size}px`;
+      img.addEventListener('error',()=>console.error('FocusWave lotus asset failed to load',LOTUS_URL));
       img.addEventListener('pointerdown',event=>{
         if(event.button!==0)return;
         dragging={index,pointerId:event.pointerId};

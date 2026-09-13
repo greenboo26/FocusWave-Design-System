@@ -7,15 +7,23 @@
   if (window.FocusWaveInkPondV3) return;
 
   const REWARD_KEY='focuswave.dailyRewardStones.v2';
-  const LOTUS_KEY='focuswave.dailyLotusPositions.v3';
+  const LOTUS_KEY='focuswave.dailyLotusPositions.v5';
   const BG_URL=new URL('./assets/inkpond/pond-background.svg',import.meta.url).href;
   const FISH_URL=new URL('./assets/inkpond/ink-fish.svg',import.meta.url).href;
   const LOTUS_URL=new URL('./assets/inkpond/ink-lotus-approved-transparent.png',import.meta.url).href;
-  const LOTUS_SIZES={small:46,medium:68,large:92};
+  /* Three clearly distinct sizes. The spread is deliberately wide (small : large
+   * = 1 : 2.2) so the size a reward happens to roll is readable at a glance in
+   * the pond, rather than looking like rendering jitter. Each completed focus
+   * session picks one of the three uniformly at random. */
+  const LOTUS_SIZES={small:58,medium:92,large:128};
   const LOTUS_KEYS=['small','medium','large'];
+  /* Positions are spread over a wide grid so that a long run of consecutive
+   * rewards never piles up in the middle of the pond. Slots are consumed in
+   * order; when a run exceeds the slot count the sequence wraps. */
   const LOTUS_SLOTS=[
-    [.28,.48],[.69,.65],[.47,.31],[.79,.38],[.36,.72],[.58,.52],
-    [.18,.65],[.72,.77],[.40,.54],[.84,.60],[.55,.79],[.30,.30]
+    [.16,.24],[.44,.20],[.72,.26],[.88,.45],[.80,.68],[.52,.74],
+    [.24,.70],[.12,.48],[.34,.42],[.62,.44],[.50,.56],[.28,.88],
+    [.68,.88],[.90,.80],[.08,.76],[.94,.60],[.40,.66],[.60,.62]
   ];
 
   let page=null,shell=null,canvas=null,ctx=null;
@@ -36,13 +44,60 @@
 
   function randomLotusSize(){return LOTUS_KEYS[Math.floor(Math.random()*LOTUS_KEYS.length)]}
 
+  /* Collision distance depends on the two bloom sizes, because a large lotus
+   * needs more room than a small one. Both sizes are in CSS pixels, the pond
+   * size is in normalised units, so convert through the canvas width. The
+   * factor .86 lets petals of neighbouring blooms brush slightly without the
+   * flowers reading as one merged shape. */
+  const pondScale=()=>Math.max(1,width);
+  function collideGap(sizeA,sizeB){
+    const rA=LOTUS_SIZES[sizeA]/2, rB=LOTUS_SIZES[sizeB]/2;
+    return (rA+rB)*.86/pondScale();
+  }
+  /* Floor so that even two small blooms keep a visible gap at narrow widths. */
+  const MIN_GAP_FLOOR=.10;
+
+  function tooClose(x,y,size){
+    for(const other of lotus){
+      const gap=Math.max(MIN_GAP_FLOOR,collideGap(size,other.size));
+      if(Math.hypot(other.x-x,other.y-y)<gap) return true;
+    }
+    return false;
+  }
+
   function defaultLotus(index){
     const slot=LOTUS_SLOTS[index%LOTUS_SLOTS.length];
+    const size=randomLotusSize();
+    let x=clamp(slot[0]+rand(-.018,.018),.07,.93);
+    let y=clamp(slot[1]+rand(-.018,.018),.10,.90);
+    /* If the assigned slot is already occupied (happens once a long run wraps
+     * back over the slot table), spiral outwards until a free spot is found.
+     * This keeps every reward visible instead of stacking two blooms together. */
+    if(tooClose(x,y,size)){
+      for(let attempt=0;attempt<28;attempt++){
+        const angle=attempt*2.399;               // golden-angle spiral
+        const radius=.055+attempt*.017;
+        const nx=clamp(x+Math.cos(angle)*radius,.07,.93);
+        const ny=clamp(y+Math.sin(angle)*radius,.10,.90);
+        if(!tooClose(nx,ny,size)){x=nx;y=ny;break}
+        if(attempt===27){x=nx;y=ny}              // pond is genuinely full; accept
+      }
+    }
+    /* Re-roll both position and size if this bloom is still sitting on top of
+     * an existing one and the pond is not yet crowded — better to move than to
+     * show two flowers merged into one shape. */
+    if(tooClose(x,y,size)&&lotus.length<10){
+      for(let attempt=0;attempt<12;attempt++){
+        const p=LOTUS_SLOTS[(index+attempt+1)%LOTUS_SLOTS.length];
+        const rx=clamp(p[0]+rand(-.02,.02),.07,.93);
+        const ry=clamp(p[1]+rand(-.02,.02),.10,.90);
+        if(!tooClose(rx,ry,size)){x=rx;y=ry;break}
+      }
+    }
     return {
       id:`lotus-${Date.now()}-${index}-${Math.floor(Math.random()*100000)}`,
-      x:clamp(slot[0]+rand(-.018,.018),.07,.93),
-      y:clamp(slot[1]+rand(-.018,.018),.10,.90),
-      size:randomLotusSize()
+      x,y,
+      size
     };
   }
 
@@ -69,6 +124,29 @@
       y:clamp(Number(item.y)||.5,.10,.90),
       size:LOTUS_SIZES[item.size]?item.size:randomLotusSize()
     }));
+    /* Positions persisted by an earlier build may sit almost on top of each
+     * other (the old slot table clustered them centrally), and an earlier build
+     * also used smaller size tiers. Detach any such pair so a reload always
+     * shows the full count as distinct blooms at readable sizes. */
+    lotus.forEach((item,index)=>{
+      for(let k=0;k<index;k++){
+        const other=lotus[k];
+        const gap=Math.max(MIN_GAP_FLOOR,collideGap(item.size,other.size));
+        if(Math.hypot(other.x-item.x,other.y-item.y)>=gap) continue;
+        for(let attempt=0;attempt<28;attempt++){
+          const angle=(index+attempt)*2.399;
+          const radius=.06+attempt*.017;
+          const nx=clamp(item.x+Math.cos(angle)*radius,.07,.93);
+          const ny=clamp(item.y+Math.sin(angle)*radius,.10,.90);
+          let clash=false;
+          for(let m=0;m<index;m++){
+            const need=Math.max(MIN_GAP_FLOOR,collideGap(item.size,lotus[m].size));
+            if(Math.hypot(lotus[m].x-nx,lotus[m].y-ny)<need){clash=true;break}
+          }
+          if(!clash||attempt===27){item.x=nx;item.y=ny;break}
+        }
+      }
+    });
     while(lotus.length<count) lotus.push(defaultLotus(lotus.length));
     writeLotusState();
     const n=shell?.querySelector('#fwInkLotusCount');
@@ -100,16 +178,24 @@
     style.dataset.focuswaveInkV3='true';
     style.textContent=`
       #page-insights{padding:0!important;background:#f6f3ec!important;color:#303632!important;min-height:100vh!important}
+      /* The pond owns the 洞察 page outright. Everything else in this page's
+       * original markup is masked out. The focus archive used to live here as a
+       * second section; it now has its own top-level page (#page-archive) and
+       * its own nav entry, so it is no longer excepted here. */
       #page-insights>:not(#fwInkPondShell){display:none!important}
-      #fwInkPondShell{min-height:100vh;padding:38px 5.4vw 58px;box-sizing:border-box;background:linear-gradient(180deg,#faf8f3,#f5f1e9)}
+      #fwInkPondShell{min-height:calc(100vh - 1px);display:flex;flex-direction:column;justify-content:center;padding:46px 5.4vw 62px;box-sizing:border-box;background:linear-gradient(180deg,#faf8f3,#f5f1e9)}
       .fw-ink-head{display:flex;align-items:flex-end;justify-content:space-between;gap:34px;margin-bottom:24px}
       .fw-ink-title-row{display:flex;align-items:baseline;gap:14px}.fw-ink-title{margin:0;font-family:var(--human);font-size:40px;font-weight:400;letter-spacing:.06em;color:#303632}.fw-ink-title-en{font-family:Georgia,serif;font-size:17px;color:#858a84}
       .fw-ink-sub{margin-top:8px;font-family:var(--human);font-size:14px;color:#8a8e89;letter-spacing:.04em}
       .fw-ink-actions{display:flex;align-items:center;gap:14px;padding-bottom:2px}.fw-ink-count{display:flex;align-items:center;gap:8px;font-size:12px;color:#747a75;white-space:nowrap}.fw-ink-count i{width:15px;height:15px;border-radius:50%;display:block;background:radial-gradient(circle at 34% 30%,#f5dddd 0 28%,#c77d88 74%,#a86170 100%);box-shadow:0 2px 6px rgba(116,75,83,.14)}.fw-ink-count strong{font-size:17px;font-weight:450;color:#414943;font-variant-numeric:tabular-nums}
       .fw-feed-btn{height:40px;padding:0 17px;border:1px solid rgba(52,62,56,.12);border-radius:999px;background:rgba(255,255,255,.60);color:#55605a;font-family:var(--human);font-size:13px;cursor:pointer;box-shadow:0 5px 16px rgba(65,71,65,.06);transition:.18s}.fw-feed-btn:hover{background:#fff;transform:translateY(-1px)}.fw-feed-btn:active{transform:none}.fw-feed-btn[disabled]{opacity:.55;cursor:default;transform:none}
-      .fw-ink-frame{position:relative;height:min(53vw,640px);min-height:460px;border:1px solid rgba(54,65,59,.07);border-radius:24px;overflow:hidden;background:#f6f1e7;box-shadow:0 24px 52px rgba(49,55,50,.07)}
+      .fw-ink-frame{position:relative;height:min(58vw,660px);min-height:470px;border:1px solid rgba(54,65,59,.07);border-radius:24px;overflow:hidden;background:#f6f1e7;box-shadow:0 24px 52px rgba(49,55,50,.07)}
       #fwInkPondCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}.fw-ink-hint{position:absolute;left:24px;bottom:18px;padding:7px 11px;border-radius:999px;background:rgba(251,249,243,.78);backdrop-filter:blur(5px);font-size:11px;color:#7e8580;pointer-events:none}.fw-ink-caption{margin-top:12px;text-align:center;font-family:var(--human);font-size:12px;color:#8a8f8a;letter-spacing:.04em}
-      @media(max-width:900px){#fwInkPondShell{padding:28px 22px 46px}.fw-ink-head{align-items:flex-start;flex-direction:column;gap:16px}.fw-ink-actions{width:100%;justify-content:space-between}.fw-ink-title{font-size:34px}.fw-ink-frame{height:68vh;min-height:420px}}
+      @media(max-width:900px){#fwInkPondShell{padding:30px 22px 48px;justify-content:flex-start}.fw-ink-head{align-items:flex-start;flex-direction:column;gap:16px}.fw-ink-actions{width:100%;justify-content:space-between}.fw-ink-title{font-size:34px}.fw-ink-frame{height:68vh;min-height:420px}}
+      /* Highlight applied to a bloom when its archive record is selected. The
+       * ring is drawn by the canvas, not by CSS, so this class only carries the
+       * state flag. */
+      #fwInkPondCanvas.fw-pond-linked{cursor:pointer}
     `;
     document.head.appendChild(style);
   }
@@ -159,9 +245,51 @@
   function canvasPoint(event){const r=canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
   function lotusRadius(item){return LOTUS_SIZES[item.size]/2}
   function hitLotus(p){for(let i=lotus.length-1;i>=0;i--){const l=lotus[i],dx=p.x-l.x*width,dy=p.y-l.y*height;if(Math.hypot(dx,dy)<lotusRadius(l)*1.08)return i}return-1}
-  function onPointerDown(event){if(event.button!==0)return;const p=canvasPoint(event),hit=hitLotus(p);if(hit>=0){dragging=hit;canvas.setPointerCapture?.(event.pointerId);canvas.style.cursor='grabbing'}else addRipple(p.x,p.y,1);event.preventDefault()}
-  function onPointerMove(event){const p=canvasPoint(event);if(dragging>=0){const l=lotus[dragging];l.x=clamp(p.x/width,.055,.945);l.y=clamp(p.y/height,.08,.92);event.preventDefault()}canvas.style.cursor=dragging>=0?'grabbing':(hitLotus(p)>=0?'grab':'crosshair')}
-  function onPointerUp(event){if(dragging>=0){dragging=-1;writeLotusState()}try{canvas.releasePointerCapture?.(event.pointerId)}catch(_){ }canvas.style.cursor='crosshair'}
+
+  /* Which bloom is currently linked to a selected archive record. Drawn as a
+   * soft ring so the pond and the archive reference the same flower. The
+   * archive now lives on its own page, so the ring survives the page switch —
+   * it is index state, not DOM state. */
+  let linkedIndex=-1;
+  window.addEventListener('focuswave:bloom-highlight',event=>{
+    const index=event.detail?.index;
+    linkedIndex=typeof index==='number'?index:-1;
+  });
+
+  /* Clicking a bloom opens the matching record on the 档案 page. A click and a
+   * drag both start with pointerdown, so the click is only reported when the
+   * pointer did not travel — otherwise repositioning a flower would also jump
+   * the page. */
+  let pressPoint=null;
+  function onPointerDown(event){
+    if(event.button!==0)return;
+    const p=canvasPoint(event),hit=hitLotus(p);
+    if(hit>=0){dragging=hit;pressPoint={x:p.x,y:p.y,moved:false};canvas.setPointerCapture?.(event.pointerId);canvas.style.cursor='grabbing'}
+    else addRipple(p.x,p.y,1);
+    event.preventDefault();
+  }
+  function onPointerMove(event){
+    const p=canvasPoint(event);
+    if(dragging>=0){
+      if(pressPoint&&Math.hypot(p.x-pressPoint.x,p.y-pressPoint.y)>4)pressPoint.moved=true;
+      const l=lotus[dragging];l.x=clamp(p.x/width,.055,.945);l.y=clamp(p.y/height,.08,.92);event.preventDefault();
+    }
+    canvas.style.cursor=dragging>=0?'grabbing':(hitLotus(p)>=0?'pointer':'crosshair');
+  }
+  function onPointerUp(event){
+    if(dragging>=0){
+      const dragged=dragging,wasMoved=pressPoint?.moved;
+      dragging=-1;pressPoint=null;
+      writeLotusState();
+      /* A bloom that was clicked rather than moved opens its archive record. */
+      if(!wasMoved){
+        linkedIndex=dragged;
+        window.dispatchEvent(new CustomEvent('focuswave:bloom-selected',{detail:{index:dragged}}));
+      }
+    }
+    try{canvas.releasePointerCapture?.(event.pointerId)}catch(_){ }
+    canvas.style.cursor='crosshair';
+  }
 
   function addRipple(x,y,strength=.8){ripples.push({x,y,age:0,duration:1.8,strength});if(ripples.length>18)ripples.shift()}
 
@@ -194,10 +322,24 @@
 
   function drawBackground(){ctx.fillStyle='#f6f1e7';ctx.fillRect(0,0,width,height);if(assetsReady)drawCover(bgImage)}
   function drawLotus(item){if(!assetsReady)return;const size=LOTUS_SIZES[item.size];ctx.save();ctx.translate(item.x*width,item.y*height);ctx.globalAlpha=.98;ctx.drawImage(lotusImage,-size/2,-size/2,size,size);ctx.restore()}
+
+  /* A soft ring around the bloom whose archive record is selected. Kept very
+   * light so it reads as a pencil circle on paper, not as a selection UI. */
+  function drawLinkedRing(){
+    if(linkedIndex<0||linkedIndex>=lotus.length)return;
+    const item=lotus[linkedIndex],r=lotusRadius(item)+7;
+    ctx.save();
+    ctx.translate(item.x*width,item.y*height);
+    ctx.strokeStyle='rgba(150,116,74,.62)';
+    ctx.lineWidth=1.4;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
   function drawFish(f){if(!assetsReady)return;const angle=Math.atan2(f.vy,f.vx)-Math.PI/2;const h=f.size,w=h*(fishImage.width/fishImage.height);ctx.save();ctx.translate(f.x*width,f.y*height);ctx.rotate(angle);ctx.globalAlpha=.91;ctx.drawImage(fishImage,-w/2,-h/2,w,h);ctx.restore()}
   function drawRipples(){ctx.save();for(const r of ripples){const t=r.age/r.duration,ease=1-Math.pow(1-t,2);for(let i=0;i<4;i++){const radius=(12+i*12+ease*58)*r.strength;ctx.strokeStyle=`rgba(67,79,72,${Math.max(0,(1-t)*(.15-i*.027)*r.strength)})`;ctx.lineWidth=.85;ctx.beginPath();ctx.arc(r.x,r.y,radius,0,Math.PI*2);ctx.stroke()}}ctx.restore()}
   function drawFood(){for(const g of food){ctx.fillStyle=g.landed?'rgba(117,86,53,.72)':'rgba(132,94,55,.62)';ctx.beginPath();ctx.arc(g.x,g.y,g.r,0,Math.PI*2);ctx.fill()}}
-  function draw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);drawBackground();drawRipples();lotus.forEach(drawLotus);fish.forEach(drawFish);drawFood()}
+  function draw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);drawBackground();drawRipples();lotus.forEach(drawLotus);drawLinkedRing();fish.forEach(drawFish);drawFood()}
 
   function frameLoop(now){if(!canvas?.isConnected)return;const dt=Math.min(.035,(now-lastTime)/1000||.016);lastTime=now;if(!document.hidden){update(dt,now);draw()}raf=requestAnimationFrame(frameLoop)}
   function stopScene(){cancelAnimationFrame(raf);raf=0;resizeObserver?.disconnect();resizeObserver=null}

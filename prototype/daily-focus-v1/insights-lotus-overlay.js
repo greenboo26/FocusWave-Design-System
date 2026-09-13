@@ -1,4 +1,4 @@
-/* FocusWave visible lotus overlay v1.
+/* FocusWave visible lotus overlay v2.
  * Keeps earned lotuses visible and draggable independently from the pond canvas.
  * Uses the same reward and position storage as insights-ink-pond-v3.
  * No MutationObserver and no polling.
@@ -143,7 +143,7 @@
     return true;
   }
 
-  function syncSoon(){[0,70,180,420].forEach(delay=>setTimeout(render,delay));}
+  function syncSoon(){[0,70,180,420,900,1400].forEach(delay=>setTimeout(render,delay));}
 
   document.addEventListener('click',event=>{
     const target=event.target?.closest?.('button,[data-nav],[data-go]');

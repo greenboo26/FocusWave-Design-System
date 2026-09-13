@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <filter id="paper-key" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="lum"/>
+      <feComponentTransfer in="lum" result="mask">
+        <feFuncA type="table" tableValues="1 1 1 1 1 1 .96 .88 .66 .18 0"/>
+      </feComponentTransfer>
+      <feComposite in="SourceGraphic" in2="mask" operator="in"/>
+    </filter>
+  </defs>
+  <image href="ink-lotus-approved.png" x="0" y="0" width="96" height="96" preserveAspectRatio="xMidYMid meet" filter="url(#paper-key)"/>
+</svg>

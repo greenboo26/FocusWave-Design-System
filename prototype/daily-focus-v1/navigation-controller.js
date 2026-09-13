@@ -9,6 +9,7 @@
     live:'today',
     summary:'today',
     insights:'insights',
+    archive:'archive',
     portraits:'portraits',
     practice:'practice',
     settings:'settings'

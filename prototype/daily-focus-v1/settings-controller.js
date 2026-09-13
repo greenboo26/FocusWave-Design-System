@@ -96,9 +96,18 @@ function ensurePortraitDetailsRuntime() {
   return appendRuntime('./portrait-details.js?v=5', 'portrait-details');
 }
 
+/* The insights page used to mount a second, competing runtime here
+ * (insights-longterm.js + garden-tools-v3.js). That module replaced
+ * #page-insights wholesale via innerHTML, which destroyed both the ink pond
+ * canvas and the focus archive mounted below it.
+ *
+ * The insights page is now owned by two cooperating modules that load eagerly
+ * from the boot chain — insights-ink-pond-v3.js (the pond) and
+ * insights-archive.js (the 专注档案 below it) — so there is nothing left to
+ * load lazily for this route. Kept as a resolved promise so the call site and
+ * the runtime-loading contract stay unchanged. */
 async function ensureInsightsRuntime() {
-  await appendRuntime('./insights-longterm.js?v=4', 'insights-longterm');
-  await appendRuntime('./garden-tools-v3.js?v=7', 'garden-tools-v3');
+  return Promise.resolve();
 }
 
 function ensureLiveEngines() {

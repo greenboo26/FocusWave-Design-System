@@ -10,7 +10,7 @@
   const LOTUS_KEY='focuswave.dailyLotusPositions.v3';
   const BG_URL=new URL('./assets/inkpond/pond-background.svg',import.meta.url).href;
   const FISH_URL=new URL('./assets/inkpond/ink-fish.svg',import.meta.url).href;
-  const LOTUS_URL=new URL('./assets/inkpond/ink-lotus-approved.png',import.meta.url).href;
+  const LOTUS_URL=new URL('./assets/inkpond/ink-lotus-approved-transparent.png',import.meta.url).href;
   const LOTUS_SIZES={small:46,medium:68,large:92};
   const LOTUS_KEYS=['small','medium','large'];
   const LOTUS_SLOTS=[

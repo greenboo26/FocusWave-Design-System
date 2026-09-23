@@ -32,7 +32,9 @@
     if(title)title.textContent='呼吸锚定';
     overlay.querySelector('.practice-reminder')?.remove();
     if(guide)guide.textContent='跟随圆环，吸气 4 秒，呼气 6 秒，循环6次';
-    overlay.querySelector('#practiceNoiseToggle')?.remove();
+    // Keep #practiceNoiseToggle: it is the only entry to the optional white-noise
+    // masker implemented in content-engine (startWhiteNoise/stopWhiteNoise).
+    // Removing it here made that whole feature unreachable.
   }
 
   function patchPracticeSoon(){

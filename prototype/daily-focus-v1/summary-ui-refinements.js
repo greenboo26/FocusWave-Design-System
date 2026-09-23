@@ -47,9 +47,6 @@
 
     const decisionTitle = summary.querySelector('#portraitDecision > b');
     if (decisionTitle) decisionTitle.textContent = '是否保留本次专注记录';
-
-    // The optional AI reflection block is intentionally removed from Session Summary.
-    summary.querySelector('.ai-reflection-card')?.remove();
   }
 
   function updatePracticeCount(){
@@ -72,8 +69,10 @@
     document.querySelector('#beginLive')?.addEventListener('click', markSessionStart);
     document.querySelector('#finishBtn')?.addEventListener('click', updatePracticeCount);
 
-    // ai-assistant-controller may have just inserted the optional card before this
-    // module runs; remove it once more after the current task without observing DOM.
+    // ai-assistant-controller owns the optional AI reflection card on this page
+    // (docs/DESIGN_DECISIONS.md D-020: user-triggered, provenance visible).
+    // It is injected on that module's init; run one more static patch after the
+    // current task so titles/labels stay consistent regardless of load order.
     queueMicrotask(patchSummaryStatic);
   }
 

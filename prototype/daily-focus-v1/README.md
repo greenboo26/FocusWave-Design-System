@@ -17,9 +17,10 @@ GitHub 服务器不稳定，本目录已把站点所需的全部文件拉到本�
 > 原版 `index.html` 用了 ES module 动态 `import()` 和 `import.meta.url`，
 > 这两者在 `file://` 下会被浏览器拦截，双击原版是白屏——所以才需要 standalone 版。
 
-**方式二：双击 `start-server.bat`（改代码时推荐）**
+**方式二：起本地静态服务器（改代码时推荐）**
 
-自动起本地服务器并打开 http://localhost:8899/index.html 。
+在本目录运行任意静态服务器，例如 `python3 -m http.server 8899`，
+然后打开 http://localhost:8899/index.html 。
 编辑源文件后刷新浏览器即可看到效果，无需重新构建。
 
 ---
@@ -28,7 +29,7 @@ GitHub 服务器不稳定，本目录已把站点所需的全部文件拉到本�
 
 | 想做什么 | 怎么做 |
 |---|---|
-| 同步回 git 仓库 | 双击 `sync-to-repo.bat`，改动会复制回<br>`..\FocusWave-Design-System\prototype\daily-focus-v1\`，之后照常 commit / push |
+| 同步回 git 仓库 | 本目录就是 git 仓库内的工作副本，改动后照常 commit / push |
 | 重新生成双击版 | 命令行执行 `node build-standalone.js` |
 
 ## 文件说明
@@ -38,8 +39,6 @@ GitHub 服务器不稳定，本目录已把站点所需的全部文件拉到本�
 | `FocusWave-standalone.html` | 自包含构建产物，双击即可打开 |
 | `index.html` | 原版入口页，需要 http 环境 |
 | `build-standalone.js` | 构建脚本：内联所有本地模块与引言库 JSON |
-| `start-server.bat` | 起本地服务器预览 |
-| `sync-to-repo.bat` | 把本地改动同步回 git 仓库目录 |
 | `*.js` / `*.css` | 各页面运行时（今日、洞察、画像、练习、设置） |
 | `assets/inkpond/` | 莲花池素材：背景、鱼、三张莲花 PNG |
 | `content/` | 引言与文案数据 |

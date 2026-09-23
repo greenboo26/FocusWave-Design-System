@@ -149,16 +149,20 @@ restByName.forEach(chunk => orderedBundle.push(chunk));
 
 const standalone = contentGlobals.join('\n') + '\n\n' + orderedBundle.join('\n\n');
 
-let out = html;
-for (const m of html.matchAll(/<script src="\.\/[^"]+"\s*><\/script>/g)) {
+// Replace the root <script src> tag in place instead of injecting into <head>.
+// The dynamic-import version of the site executes these modules only after the
+// document has been parsed (import() resolves once the parser reaches the end
+// of the body). Inlining them into <head> changed that timing: modules that
+// touch the DOM at top level (e.g. dusk-water-reflection.js binding
+// #beginLive/#themeGroup/#startFocus) saw a null document and silently lost
+// their bindings in the standalone build. Keeping the bundle at the original
+// end-of-body position preserves index.html's execution order exactly.
+const rootTag = html.match(/<script src="\.\/[^"]+"\s*><\/script>/);
+if (!rootTag) throw new Error('root <script src> tag not found');
+let out = html.replace(rootTag[0], '<!-- Self-contained build: all local modules inlined for file:// use. -->\n<script>\n' + standalone + '\n</script>');
+for (const m of out.matchAll(/<script src="\.\/[^"]+"\s*><\/script>/g)) {
   out = out.replace(m[0], '');
 }
-out = out.replace(
-  '</head>',
-  '<!-- Self-contained build: all local modules inlined for file:// use. -->\n<script>\n' +
-  standalone +
-  '\n</script>\n</head>'
-);
 
 fs.writeFileSync(OUT, out);
 console.log('\nWrote ' + path.basename(OUT) + ' (' + (out.length / 1024).toFixed(0) + ' KB)');

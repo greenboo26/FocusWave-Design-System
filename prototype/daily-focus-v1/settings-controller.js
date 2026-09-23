@@ -143,7 +143,7 @@ function renderSettingsPanel() {
     <div class="settings-row">
       <div>
         <b>默认文字模式</b>
-        <p>新建专注时自动采用这个模式；每次 session 都可以在开始前单独调整。</p>
+        <p>选择今日页轮换引言使用的内容库；专注进行中保持无文字的低干扰状态。</p>
       </div>
       <div class="setting-choices" id="defaultTextSetting">
         ${TEXT_MODES.map(mode => `<button class="mini-choice" data-value="${mode.value}">${mode.label}</button>`).join('')}
@@ -164,6 +164,7 @@ function renderSettingsPanel() {
       const next = validMode(button.dataset.value);
       localStorage.setItem(STORAGE_KEY, next);
       setSelected(group, next);
+      window.dispatchEvent(new CustomEvent('focuswave:text-mode-changed', { detail: { mode: next } }));
     });
   });
 }

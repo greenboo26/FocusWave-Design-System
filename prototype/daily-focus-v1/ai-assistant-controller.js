@@ -36,6 +36,9 @@
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
+    /* The homepage carousel consumes the text mode (D-024); tell it to swap
+     * libraries immediately. */
+    window.dispatchEvent(new CustomEvent('focuswave:text-mode-changed', { detail: { mode: value } }));
     syncSummaryAvailability();
   }
 
@@ -132,7 +135,7 @@
       <div class="settings-row">
         <div>
           <b>默认文字模式</b>
-          <p>实时专注优先使用低延迟、已审核的本地内容库；AI 回顾只在会话结束后出现。</p>
+          <p>选择今日页轮换引言使用的内容库；专注进行中保持无文字的低干扰状态。</p>
         </div>
         <div class="setting-choices" id="defaultTextSetting">
           <button class="mini-choice" type="button" data-value="minimal">极简</button>
@@ -161,6 +164,9 @@
           item.classList.toggle('selected', active);
           item.setAttribute('aria-pressed', String(active));
         });
+        /* The homepage carousel consumes the text mode (D-024); tell it to
+         * swap libraries immediately. */
+        window.dispatchEvent(new CustomEvent('focuswave:text-mode-changed', { detail: { mode: button.dataset.value } }));
       });
     });
     panel.querySelectorAll('[data-ai-mode]').forEach((button) => {

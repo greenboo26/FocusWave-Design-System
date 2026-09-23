@@ -15,6 +15,12 @@
   let motionPhase = 0;
   let lastMotionT = null;
   let duskRaf = 0;
+  /* Cached reduced-motion preference, refreshed on change. */
+  let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  try {
+    window.matchMedia('(prefers-reduced-motion: reduce)')
+      .addEventListener?.('change', (e) => { reducedMotion = e.matches; });
+  } catch (_) { /* keep initial value on older engines */ }
 
   function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
   function clamp01(x){ return Math.max(0,Math.min(1,x)); }
@@ -215,7 +221,10 @@
       }
 
       const sourceState=states[stateIndex]||{};
-      const resolvedKey=stateKey(sourceState);
+      let resolvedKey=stateKey(sourceState);
+      /* Respect the OS reduced-motion preference: still water (stable's
+       * shift=0 is this module's designed rest state). */
+      if(reducedMotion) resolvedKey='stable';
       const m=modeFor(resolvedKey);
       const dt=Math.min(.05,Math.max(0,(now-lastNow)/1000));
       lastNow=now;

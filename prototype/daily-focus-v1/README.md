@@ -1,5 +1,13 @@
 # FocusWave Daily Focus Prototype v1
 
+## 2026-09-28 在线大标题字体更新
+
+当前部署分支为 `li`。页面大标题改为 Noto Serif SC 300 细字重，字体文件随站点发布；正文、导航、数据与布局保持原样。样式入口为 `heading-typography.css`，字体及许可证位于 `assets/fonts/noto-serif-sc/`；同步更新了 `FocusWave-standalone.html`。
+
+本地浏览器核验：已确认渲染字体来自站点字体文件（不是本机字体）；今日、洞察、档案、画像、练习、设置六个页面的大标题均采用 300 字重，未发现标题水平溢出。字体资源约 1.48 MB，预加载后用于全站标题。`git diff --check` 通过。
+
+在线入口：https://greenboo26.github.io/FocusWave-Design-System/ 。修改只涉及展示层，不改变研究分析或模型状态。代码、字体、许可和生成页面纳入版本；浏览器截图保存在本地工作区，不入库。
+
 这是 FocusWave 日常学习/工作产品的第一版可交互网页原型，
 同时也是**不依赖 GitHub 的本地工作副本**。
 

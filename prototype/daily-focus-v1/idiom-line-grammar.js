@@ -56,10 +56,13 @@ import('./focus-session-rewards.js?v=1');
 import('./insights-ink-pond-v3.js?v=7');
 import('./insights-lotus-overlay.js?v=5');
 import('./setup-focus-target.js?v=1');
-import('./insights-archive-data.js?v=2');
-import('./insights-archive-timeline.js?v=2');
-import('./insights-archive-styles.js?v=2');
-import('./insights-archive.js?v=2');
+// The archive view reads these globals on mount. Wait for its dependencies
+// rather than relying on independent network requests finishing in order.
+Promise.all([
+  import('./insights-archive-data.js?v=2'),
+  import('./insights-archive-timeline.js?v=2'),
+  import('./insights-archive-styles.js?v=2')
+]).then(() => import('./insights-archive.js?v=2'));
 const settingsReady = import('./settings-controller.js?v=10');
 settingsReady
   .then(() => import('./ai-assistant-controller.js?v=5'))

@@ -86,10 +86,13 @@ Promise.resolve();
 Promise.resolve();
 Promise.resolve();
 Promise.resolve();
-Promise.resolve();
-Promise.resolve();
-Promise.resolve();
-Promise.resolve();
+// The archive view reads these globals on mount. Wait for its dependencies
+// rather than relying on independent network requests finishing in order.
+Promise.all([
+  Promise.resolve(),
+  Promise.resolve(),
+  Promise.resolve()
+]).then(() => Promise.resolve());
 const settingsReady = Promise.resolve();
 settingsReady
   .then(() => Promise.resolve())

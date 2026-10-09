@@ -1,5 +1,7 @@
 # FocusWave Long-term Insights Garden
 
+2026-10-09 状态说明：本文保留历史枯山水方案与当时的实现记录。当前发布线洞察使用 `insights-ink-pond-v3.js` 莲花池，专注档案由 `insights-archive*.js` 单独呈现。下文的“当前”指方案形成时的状态；活动入口及历史脚本清单见 [仓库说明](REPOSITORY_GUIDE.md)。
+
 ## Purpose
 
 长期洞察页承担 Reflection Mode 中的“时间沉积”体验。该页面使用独立的真实质感枯山水视觉场域，表达很多次专注经过时间累积后形成的个人庭院。

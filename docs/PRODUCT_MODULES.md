@@ -1,5 +1,7 @@
 # FocusWave Product Modules
 
+2026-10-09 状态说明：下文是目标产品模块规格。当前网页由模拟状态驱动，设备就绪和模型信息是演示内容；实时传感器、本地模型及外部 AI 服务尚不能依据此原型宣称已接入。当前六项导航、活动模块、内容入口和分支职责见 [仓库说明](REPOSITORY_GUIDE.md)。
+
 ## Product role
 
 FocusWave is a daily focus companion for study and work. The browser application uses a released attention model to transform live RS6240 sensing into state awareness, regulation, reflection and long-term insight.

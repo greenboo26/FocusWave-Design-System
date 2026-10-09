@@ -2,6 +2,8 @@
 
 ## Product premise
 
+Implementation status (2026-10-09): this document describes the target product architecture. The current Pages site is a simulated interactive prototype; sensor readiness and model outputs are demonstration states. Current branch and renderer evidence is recorded in [REPOSITORY_GUIDE.md](REPOSITORY_GUIDE.md).
+
 FocusWave serves ordinary study and work. The user begins a focus session, RS6240 senses physiological micro-motion in the background, a released `ModelBundle` produces continuous `AttentionState`, and the product turns that state into calm awareness, optional regulation, session reflection and longitudinal insight.
 
 The product has two interaction modes:
@@ -11,13 +13,14 @@ The product has two interaction modes:
 
 ## Primary navigation
 
-Desktop navigation uses five stable destinations:
+Current desktop and mobile navigation uses six stable destinations:
 
 1. **Today** — daily entry, device readiness, current focus rhythm, start/resume session.
-2. **Insights** — session history, longitudinal trends, personal baseline, comparable-session analysis.
-3. **Portraits** — 2D/3D Attention Portrait gallery and replay.
-4. **Practice** — regulation and focus-practice library driven by released model feedback.
-5. **Settings** — device, privacy, visual/cultural preferences, AI content, model information.
+2. **Insights** — longitudinal trends, pond imagery and personal reflection.
+3. **Archive** — daily/weekly/monthly focus records, state timeline and session details (`insights-archive*.js`).
+4. **Portraits** — 2D/3D Attention Portrait gallery and replay.
+5. **Practice** — preparation, breathing and attention-return exercises; currently selected manually.
+6. **Settings** — device, privacy, visual/cultural preferences, AI content, model information.
 
 During an active focus session, the product enters a distraction-reduced full-screen state and temporarily replaces normal navigation with compact session controls.
 

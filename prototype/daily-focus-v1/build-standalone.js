@@ -1,10 +1,10 @@
-/* Build a single self-contained HTML file from the local FocusWave site.
+/* Build an HTML bundle from the local FocusWave site.
  *
  * Why: the original site boots through ES module dynamic import() and uses
  * import.meta.url to resolve asset paths. Both are blocked under file://,
  * so double-clicking index.html shows a blank page. This script inlines
- * every local <script src> and every dynamic import() into one classic
- * script, and rewrites import.meta.url asset URLs to plain relative paths
+ * directly referenced scripts and their literal dynamic import() graph into
+ * one classic script, and rewrites import.meta.url asset URLs to relative paths
  * (relative asset URLs work fine under file://).
  *
  * Run:  node build-standalone.js
@@ -149,16 +149,14 @@ restByName.forEach(chunk => orderedBundle.push(chunk));
 
 const standalone = contentGlobals.join('\n') + '\n\n' + orderedBundle.join('\n\n');
 
-let out = html;
-for (const m of html.matchAll(/<script src="\.\/[^"]+"\s*><\/script>/g)) {
-  out = out.replace(m[0], '');
-}
-out = out.replace(
-  '</head>',
-  '<!-- Self-contained build: all local modules inlined for file:// use. -->\n<script>\n' +
-  standalone +
-  '\n</script>\n</head>'
-);
+// Keep execution at the original end-of-body entry. Modules bind existing DOM
+// nodes at top level; moving them into <head> runs them before those nodes exist.
+let inserted = false;
+const out = html.replace(/<script src="\.\/[^"]+"\s*><\/script>/g, () => {
+  if (inserted) return '';
+  inserted = true;
+  return '<!-- Bundled entry; adjacent styles, assets and lazy scripts remain required. -->\n<script>\n' + standalone + '\n</script>';
+});
 
 fs.writeFileSync(OUT, out);
 console.log('\nWrote ' + path.basename(OUT) + ' (' + (out.length / 1024).toFixed(0) + ' KB)');

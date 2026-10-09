@@ -7,6 +7,9 @@ Status: CANONICAL_PROJECT_POINTER
 - project system: FocusWave
 - canonical repository for this role: `greenboo26/FocusWave-Design-System`
 - canonical branch: `main`
+- preview release branch: `li` (GitHub Pages workflow publishes this branch only)
+- candidate branch: `arena/01a0cc25-focuswave-design-system` (unmerged changes; not the live preview)
+- branch roles and source inventory: `docs/REPOSITORY_GUIDE.md`
 - repository role: **design-system, interaction specification and prototype truth**
 
 This repository owns the current design-system/prototype evidence for FocusWave. It does not own experiment-program implementation behavior or scientific-analysis conclusions.

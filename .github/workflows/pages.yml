@@ -5,7 +5,7 @@ name: Deploy FocusWave Preview
 # so the preview cannot silently reuse stale JavaScript from an older run.
 on:
   push:
-    branches: [main, li]
+    branches: [li]
     paths:
       - 'prototype/daily-focus-v1/**'
       - '.github/workflows/pages.yml'
@@ -22,6 +22,8 @@ concurrency:
 
 jobs:
   deploy:
+    # main is the reviewed repository baseline; only li publishes this preview.
+    if: github.ref == 'refs/heads/li'
     environment:
       name: github-pages-li
       url: ${{ steps.deployment.outputs.page_url }}

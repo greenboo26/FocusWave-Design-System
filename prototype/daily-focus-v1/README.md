@@ -6,7 +6,7 @@
 
 本地浏览器已核对今日、洞察、档案、画像、练习、设置六页的标题及练习弹层，标题字体与字重一致，未发现标题水平溢出；浏览器的实际字体检查确认练习大标题和卡片名称来自同一站点字体，正文与按钮使用微软雅黑。构建与 `git diff --check` 通过。字体、布局和交互以外的规则未调整。截图作为本地核验产物，不纳入仓库。发布验收以对应提交的部署工作流成功、线上样式和入口版本一致为准。
 
-发布核对还发现档案视图与数据模块原先并行加载，视图可能先读取尚未初始化的数据而显示空白。`idiom-line-grammar.js` 现先等待档案数据、时间线和样式模块完成，再加载档案视图；只修正依赖顺序，不调整数据、变量或计算。入口脚本版本更新至 `v=9`，离线页面同步重新生成。
+发布核对还发现档案视图与数据模块原先并行加载，视图可能先读取尚未初始化的数据而显示空白。`idiom-line-grammar.js` 现先等待档案数据、时间线和样式模块完成，再加载档案视图；只修正依赖顺序，不调整数据、变量或计算。入口脚本版本更新至 `v=9`，生成页面同步重新生成。
 
 ## 2026-09-28 在线大标题字体更新
 
@@ -16,99 +16,45 @@
 
 在线入口：https://greenboo26.github.io/FocusWave-Design-System/ 。修改只涉及展示层，不改变研究分析或模型状态。代码、字体、许可和生成页面纳入版本；浏览器截图保存在本地工作区，不入库。
 
-这是 FocusWave 日常学习/工作产品的第一版可交互网页原型，
-同时也是**不依赖 GitHub 的本地工作副本**。
+## 当前原型与本地运行
 
----
+当前入口包含今日、洞察、档案、画像、练习、设置六项导航，以及会话准备、设备检查、专注与总结演示。注意状态、设备信息、档案与趋势采用示例或模拟数据；目标架构中的真实传感器、本地模型、外部 AI 服务需要另行实现和验证。
 
-## 本地怎么打开（重要）
+从仓库根目录执行：
 
-GitHub 服务器不稳定，本目录已把站点所需的全部文件拉到本地，可直接离线查看和修改。
-
-**方式一：双击 `FocusWave-standalone.html`（最省事）**
-
-自包含构建产物，所有 JS 模块、莲花池素材、引言库数据都已内联，
-用 `file://` 协议也能完整运行。直接双击就见效果。
-
-> 原版 `index.html` 用了 ES module 动态 `import()` 和 `import.meta.url`，
-> 这两者在 `file://` 下会被浏览器拦截，双击原版是白屏——所以才需要 standalone 版。
-
-**方式二：双击 `start-server.bat`（改代码时推荐）**
-
-自动起本地服务器并打开 http://localhost:8899/index.html 。
-编辑源文件后刷新浏览器即可看到效果，无需重新构建。
-
----
-
-## 改完之后
-
-| 想做什么 | 怎么做 |
-|---|---|
-| 同步回 git 仓库 | 双击 `sync-to-repo.bat`，改动会复制回<br>`..\FocusWave-Design-System\prototype\daily-focus-v1\`，之后照常 commit / push |
-| 重新生成双击版 | 命令行执行 `node build-standalone.js` |
-
-## 文件说明
-
-| 文件 | 作用 |
-|---|---|
-| `FocusWave-standalone.html` | 自包含构建产物，双击即可打开 |
-| `index.html` | 原版入口页，需要 http 环境 |
-| `build-standalone.js` | 构建脚本：内联所有本地模块与引言库 JSON |
-| `start-server.bat` | 起本地服务器预览 |
-| `sync-to-repo.bat` | 把本地改动同步回 git 仓库目录 |
-| `*.js` / `*.css` | 各页面运行时（今日、洞察、画像、练习、设置） |
-| `assets/inkpond/` | 莲花池素材：背景、鱼、三张莲花 PNG |
-| `content/` | 引言与文案数据 |
-
-> 说明：莲花奖励数据存在浏览器 `localStorage`，每天 24:00 自动清空，
-> 与线上版本行为完全一致。
-
----
-
-## 目标
-
-把已经确认的视觉母版扩展为一个可点击的完整产品流程，并提前固定未来成熟 `ModelBundle` 的前端消费接口。
-
-## 当前可体验流程
-
-```text
-Today
-  ↓
-Session Setup
-  ↓
-Device Ready
-  ↓
-Live Focus
-  ↓
-Session Summary
+```powershell
+python -m http.server 8899 --directory prototype/daily-focus-v1
 ```
 
-同时包含：
+打开 `http://localhost:8899/`，修改源文件后刷新。`index.html` 使用模块加载，应通过 HTTP 服务查看。
 
-- Insights
-- Attention Portraits
-- Practice
-- Settings / Trust
+生成另一个入口：
 
-## 当前数据源
+```powershell
+node prototype/daily-focus-v1/build-standalone.js
+```
 
-v1 使用前端 `AttentionState` 模拟器驱动 Live Focus。模拟器的数据结构与未来成熟模型输出保持同一方向：state vector / region / focus index / confidence / quality / model version。
+输出 `FocusWave-standalone.html`。它内联直接入口及其字面量动态导入图（当前 18 个模块）和精选引言数据，仍引用相邻样式、字体、素材及按页面加载的脚本。它不是完整单文件离线版，推荐同样通过 HTTP 服务打开。构建脚本将内联脚本保留在原页面末尾，确保执行时页面节点已存在。
 
-后续接入真实系统时，前端状态源将替换为本地 Runtime 的 WebSocket，而页面结构与视觉映射保持稳定。
+仓库没有 `start-server.bat` 和 `sync-to-repo.bat`；源文件直接在本仓库编辑、提交。莲花奖励等演示偏好保存在当前浏览器，本地和线上属于不同站点存储。
 
-## 视觉基线
+## 活动模块与历史内容
 
-- 大面积暖白留白
-- 数据流线承担核心视觉
-- 人文层采用书写气质字体栈
-- 数据层采用轻量现代字体
-- 意象通过流线行为与色域进入界面
-- Live Focus 维持左文右波母版
+| 路径 | 当前用途 |
+| --- | --- |
+| `index.html` | 线上源入口 |
+| `heading-typography.css`、`assets/fonts/` | 随站点发布的标题字体与许可 |
+| `settings-controller.js` | 页面设置与按需脚本加载 |
+| `practice-signatures.js`、`practice-signatures.css` | 五种练习列表与弹层图形 |
+| `insights-ink-pond-v3.js`、`assets/inkpond/` | 当前洞察莲花池 |
+| `insights-archive*.js` | 档案数据、时间线、样式与视图 |
+| `content/` | 发布内容资产，首页实际使用 `curated-quotes.json` |
+| `build-standalone.js` | 生成另一页面入口 |
 
-## 下一步
+其他庭院、旧版池塘脚本和素材作为历史保留，详细清单及三个分支职责见 [仓库说明](../../docs/REPOSITORY_GUIDE.md)。根目录内容种子与此目录的扩充库不同，不能互相覆盖。
 
-1. 拆分为 React + TypeScript 工程。
-2. 建立 FastAPI + WebSocket 本地 Runtime。
-3. 将当前模拟器迁移到 Runtime 端，固定真实消息协议。
-4. 接入 RS6240 Sensor Service。
-5. 接入研究阶段发布的成熟 ModelBundle。
+## 2026-10-09 动效与仓库整理
+
+呼吸锚定原参数约 35 秒一轮，半径幅度只有 3.5%；五种练习现共享约 8 秒的主要视觉周期，呼吸锚定幅度为 16%，其他线场扩大缓慢波动。保持原图形、颜色与练习文案；列表离页或后台停止推进，返回继续，减少动态偏好下显示静态图形。该周期是视觉反馈，不是呼吸训练处方。练习脚本加入版本查询参数，部署时替换为提交号。
+
+检查源页面与生成页面的练习列表、练习弹层和档案加载；所有三个分支的 JavaScript、内联脚本与 JSON 通过静态检查，当前源入口的字面量资源引用未发现缺失。浏览器检查与静态审计的范围不同，候选分支的功能尚未整体验收。只读审计脚本及发布规则见仓库说明。

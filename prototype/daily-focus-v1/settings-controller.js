@@ -89,7 +89,7 @@ function appendRuntime(src, datasetKey) {
 }
 
 function ensurePracticeSignatureRuntime() {
-  return appendRuntime('./practice-signatures.js', 'practice-signatures');
+  return appendRuntime('./practice-signatures.js?v=2', 'practice-signatures');
 }
 
 function ensurePortraitDetailsRuntime() {

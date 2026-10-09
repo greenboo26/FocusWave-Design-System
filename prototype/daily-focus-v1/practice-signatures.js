@@ -1,9 +1,12 @@
-/* FocusWave practice signature visuals v2.3
+/* FocusWave practice signature visuals v2.4
  * Practice page contains attention-training exercises only.
  * Real focus-session entry lives in Today / Session Setup.
  * Approved line fields stay intact; redundant center/solo marks are removed.
  */
 (() => {
+  // Visible, gentle eight-second motion shared by the list and practice overlay.
+  const MOTION_PERIOD_SECONDS = 8;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const signatures = {
     arrival: {label:'到场', color:[120,140,148]},
     return: {label:'回到呼吸', color:[105,145,163]},
@@ -37,7 +40,7 @@
         const u=i/90, ease=1-Math.pow(1-u,2.4);
         const x=fromLeft?u*w:(1-u)*w;
         const targetY=cy+spread*.35;
-        const y=y0*(1-ease)+targetY*ease+Math.sin(u*5+t*.12+j)*h*.012*(1-ease);
+        const y=y0*(1-ease)+targetY*ease+Math.sin(u*5+t+j)*h*.035*(1-ease);
         i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
       stroke(ctx,c,.12+j*.018,.65+(j%4===0?.8:0)+rnd(j)*.5);
@@ -51,7 +54,7 @@
       for(let i=0;i<=100;i++){
         const x=i/100*w, xn=x/w;
         const envelope=Math.exp(-Math.pow((xn-.5)/.3,2));
-        const py=y+Math.sin(xn*Math.PI*2+t*.22+j*.15)*h*.022*envelope;
+        const py=y+Math.sin(xn*Math.PI*2+t+j*.15)*h*.06*envelope;
         i?ctx.lineTo(x,py):ctx.moveTo(x,py);
       }
       stroke(ctx,c,.22+j*.023,.8+(j%3===0?.45:0));
@@ -62,11 +65,11 @@
     const cx=w*.5,cy=h*.5;
     for(let j=0;j<7;j++){
       const base=Math.min(w,h)*(.12+j*.055);
-      const breathe=1+Math.sin(t*.18+j*.18)*.035;
+      const breathe=1+Math.sin(t+j*.12)*.16;
       ctx.beginPath();
       for(let i=0;i<=120;i++){
         const a=i/120*Math.PI*2;
-        const r=base*breathe*(1+Math.sin(a*3+t*.08)*.012);
+        const r=base*breathe*(1+Math.sin(a*3+t*.5)*.012);
         const x=cx+Math.cos(a)*r*1.45,y=cy+Math.sin(a)*r*.72;
         i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
@@ -80,7 +83,7 @@
       ctx.beginPath();
       for(let i=0;i<=130;i++){
         const u=i/130,y=h*(.14+u*.70),ground=Math.pow(u,1.8);
-        const x=x0+Math.sin(u*4.2+t*.09+phase)*w*.010*(1-ground*.45);
+        const x=x0+Math.sin(u*4.2+t+phase)*w*.025*(1-ground*.45);
         i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
       stroke(ctx,c,.22,1);
@@ -95,7 +98,7 @@
         const u=i/120,x=u*w;
         const open=Math.sin(Math.PI*Math.min(1,u/.58))*Math.max(0,1-(u-.48)*1.9);
         const returnEase=Math.max(0,(u-.55)/.45);
-        const y=y0+splitSign*open*h*(.018+.006*j)*(1-returnEase)+Math.sin(u*4+t*.12+j)*h*.005;
+        const y=y0+splitSign*open*h*(.018+.006*j)*(1-returnEase)+Math.sin(u*4+t+j)*h*.025;
         i?ctx.lineTo(x,y):ctx.moveTo(x,y);
       }
       stroke(ctx,c,.16+j*.022,.7+rnd(30+j)*1.25);
@@ -106,11 +109,12 @@
     if(!canvas)return;
     const {w,h}=size(canvas),ctx=canvas.getContext('2d'),sig=signatures[key]||signatures.breath;
     ctx.clearRect(0,0,w,h);
-    if(key==='arrival')drawArrival(ctx,w,h,sig.color,t);
-    else if(key==='return')drawReturn(ctx,w,h,sig.color,t);
-    else if(key==='breath')drawBreath(ctx,w,h,sig.color,t);
-    else if(key==='body')drawBody(ctx,w,h,sig.color,t);
-    else drawAccept(ctx,w,h,sig.color,t);
+    const phase=t*Math.PI*2/MOTION_PERIOD_SECONDS;
+    if(key==='arrival')drawArrival(ctx,w,h,sig.color,phase);
+    else if(key==='return')drawReturn(ctx,w,h,sig.color,phase);
+    else if(key==='breath')drawBreath(ctx,w,h,sig.color,phase);
+    else if(key==='body')drawBody(ctx,w,h,sig.color,phase);
+    else drawAccept(ctx,w,h,sig.color,phase);
   }
 
   function normalizePracticeList(){
@@ -133,10 +137,15 @@
       previewCanvases.set(canvas,key);
       card.dataset.practiceTone=key;
     });
-    const start=performance.now();
+    const page=document.querySelector('#page-practice');
+    let elapsed=0,previous=performance.now();
     const loop=now=>{
-      const t=(now-start)/1000;
-      previewCanvases.forEach((key,canvas)=>drawSignature(canvas,key,t));
+      const dt=Math.min(.1,(now-previous)/1000);
+      previous=now;
+      if(page?.classList.contains('active')&&!document.hidden){
+        if(!reducedMotion.matches)elapsed+=dt;
+        previewCanvases.forEach((key,canvas)=>drawSignature(canvas,key,reducedMotion.matches?0:elapsed));
+      }
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
@@ -157,7 +166,7 @@
     const start=performance.now();
     const loop=now=>{
       if(!overlay?.classList.contains('open'))return;
-      drawSignature(canvas,activePractice,(now-start)/1000);
+      drawSignature(canvas,activePractice,reducedMotion.matches?0:(now-start)/1000);
       overlayRAF=requestAnimationFrame(loop);
     };
     overlayRAF=requestAnimationFrame(loop);

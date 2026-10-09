@@ -1,4 +1,4 @@
-/* Page titles use a bundled light serif, independent of installed system fonts. */
+/* Headings and human text share a bundled light serif on every device. */
 @font-face {
   font-family: "FocusWave Noto Serif SC";
   src: url("./assets/fonts/noto-serif-sc/noto-serif-sc-300.woff2") format("woff2");
@@ -9,11 +9,12 @@
 
 :root {
   --heading: "FocusWave Noto Serif SC", "Noto Serif SC", "Source Han Serif SC", "Songti SC", SimSun, serif;
+  --human: var(--heading);
 }
 
 /* Runtime modules inject page styles after navigation. Override only heading
    fonts and weights; preserve their layout, sizes and line heights. */
-body :is(h1, h2, .section-title, .fw-ink-title, .fw-arch-title,
+body :is(h1, h2, h3, h4, h5, h6, .section-title, .fw-ink-title, .fw-arch-title,
          .fw-i-title, .fw-deep-title, .fw-detail-title, .fw-sd-task) {
   font-family: var(--heading) !important;
   font-weight: 300 !important;

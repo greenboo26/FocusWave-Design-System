@@ -3,8 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="description" content="FocusWave · 毫米波专注伴侣日常原型：状态感知、专注会话、长期洞察与专注画像。" />
+<meta name="theme-color" content="#f7f4ed" />
+<meta property="og:title" content="FocusWave · Daily Focus Prototype" />
+<meta property="og:description" content="毫米波专注伴侣日常原型：状态感知、专注会话、长期洞察与专注画像。" />
+<meta property="og:type" content="website" />
 <title>FocusWave · Daily Focus Prototype</title>
-<link rel="icon" href="data:," />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13.2' fill='none' stroke='%2329332f' stroke-width='1.6'/%3E%3Cellipse cx='16' cy='16' rx='9.4' ry='9.8' fill='none' stroke='%2329332f' stroke-width='.9' opacity='.55' transform='rotate(28 16 16)'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23789387'/%3E%3C/svg%3E" />
 <style>
 :root{--paper:#f7f4ed;--ink:#29332f;--muted:#7e8580;--hair:#ddd8cf;--accent:#82998f;--ui:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;--human:"LXGW WenKai Screen","Kaiti SC",STKaiti,KaiTi,serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:var(--ui)}button,input{font:inherit;color:inherit}.app{min-height:100vh;display:grid;grid-template-columns:84px 1fr}.rail{position:fixed;inset:0 auto 0 0;width:84px;height:100vh;border-right:1px solid rgba(41,51,47,.08);display:flex;flex-direction:column;align-items:center;padding:28px 0 24px;background:rgba(247,244,237,.96);z-index:20}.mark{width:34px;height:34px;border:1.4px solid var(--ink);border-radius:50%;position:relative;margin-bottom:38px;opacity:.85}.mark:before,.mark:after{content:"";position:absolute;inset:3px;border:1px solid currentColor;border-radius:44% 56% 48% 52%;transform:rotate(28deg);opacity:.5}.mark:after{inset:6px;transform:rotate(-24deg)}.nav{display:flex;flex-direction:column;gap:14px;align-items:center}.nav button{width:46px;height:42px;border:0;background:transparent;border-radius:22px;cursor:pointer;font-size:11px;color:#7a817d}.nav button.active,.nav button:hover{background:rgba(41,51,47,.06);color:var(--ink)}.model-dot{margin-top:auto;width:8px;height:8px;border-radius:50%;background:#91a695;box-shadow:0 0 0 5px rgba(145,166,149,.13)}.main{grid-column:2}.page{display:none;min-height:100vh;padding:34px 54px 48px}.page.active{display:block}.topbar{display:flex;justify-content:space-between;align-items:center;height:46px}.brand{font-family:Georgia,serif;font-size:18px}.topmeta,.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--muted)}.eyebrow{text-transform:uppercase}.section-title{font-family:var(--human);font-size:42px;font-weight:400;letter-spacing:.05em;margin:66px 0 12px}.section-sub{font-size:13px;line-height:1.85;color:var(--muted)}
@@ -28,23 +33,33 @@
 <div class="app">
 <aside class="rail" id="rail" aria-label="一级导航"><div class="mark" aria-hidden="true"></div><nav class="nav"><button class="active" type="button" data-nav="today">今日</button><button type="button" data-nav="insights">洞察</button><button type="button" data-nav="archive">档案</button><button type="button" data-nav="portraits">画像</button><button type="button" data-nav="practice">练习</button><button type="button" data-nav="settings">设置</button></nav><div class="model-dot" title="ModelBundle ready"></div></aside>
 <main class="main">
-<section class="page active" id="page-today"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta" id="dateText"></div></div><div class="hero-today"><div class="today-copy"><div class="eyebrow">TODAY · FOCUS RHYTHM</div><h1>今晚，留一段时间<br>给一件事。</h1><p>设备已就绪。FocusWave 会在你学习或工作时安静地感知状态变化，把注意的流动留成一幅属于这段时间的画像。</p><button class="primary" id="startFocus">开始一段专注</button><div class="dayline"><div>今日专注<b>1h 42m</b></div><div>已完成<b>3</b></div><div>稳定片段<b>68%</b></div></div></div><div class="today-art"><canvas id="todayCanvas"></canvas><div class="tiny-stat">最近一段 · 阅读 · 42 min</div></div></div></section>
+<section class="page active" id="page-today"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta" id="dateText"></div></div><div class="hero-today"><div class="today-copy"><div class="eyebrow">TODAY · FOCUS RHYTHM</div><h1>今晚，留一段时间<br>给一件事。</h1><p>设备已就绪。FocusWave 会在你学习或工作时安静地感知状态变化，把注意的流动留成一幅属于这段时间的画像。</p><button class="primary" id="startFocus">开始一段专注</button><div class="dayline"><div>今日专注<b>1h 42m</b></div><div>已完成<b>3</b></div><div>稳定片段<b>68%</b></div></div></div><div class="today-art"><canvas id="todayCanvas" aria-hidden="true"></canvas><div class="tiny-stat">最近一段 · 阅读 · 42 min</div></div></div></section>
 <section class="page" id="page-setup"><div class="topbar"><button class="link-btn" data-go="today">← 返回</button><div class="topmeta">NEW FOCUS SESSION</div></div><div class="setup-wrap"><div class="eyebrow">SESSION SETUP</div><h1 class="section-title">这一段，你想做什么？</h1><div class="section-sub">给任务一个名字，其余设置保持轻量。FocusWave 将在后台感知，页面只保留必要反馈。</div><div class="setup-task"><label>任务</label><input id="taskInput" value="阅读论文" /></div><div class="setup-columns"><div class="setup-col"><div class="setup-block"><span class="choice-label">计划时长</span><div class="choices" id="durationGroup"><button class="choice" data-value="25">25 分钟</button><button class="choice selected" data-value="45">45 分钟</button><button class="choice" data-value="60">60 分钟</button><button class="choice" data-value="0">自由专注</button></div></div><div class="setup-block"><span class="choice-label">调节方式</span><div class="semantic-grid" id="regulationGroup"><button class="semantic-card" data-value="quiet"><b>安静</b><span>只记录状态，主动打开时才出现调节。</span></button><button class="semantic-card selected" data-value="gentle"><b>温和</b><span>持续游移且置信度足够时给轻提示。</span></button><button class="semantic-card" data-value="active"><b>主动</b><span>更早提供恢复入口，由你决定是否开始。</span></button></div></div></div><div class="setup-col"><div class="setup-block"><span class="choice-label">文字模式</span><div class="choices" id="textGroup"><button class="choice" data-value="minimal">极简</button><button class="choice selected" data-value="original">原创短句</button><button class="choice" data-value="global">世界文学</button><button class="choice" data-value="classical">中文古典</button></div></div><div class="setup-block"><span class="choice-label">意象主题</span><div class="theme-grid" id="themeGroup"><button class="theme-card selected" data-value="ocean"><span class="theme-mini ocean-mini"><i></i><i></i><i></i></span><span><b>海 · 雾蓝</b><small>平缓流动</small></span></button><button class="theme-card" data-value="mountain"><span class="theme-mini mountain-mini"><i></i><i></i></span><span><b>山 · 苔绿</b><small>稳定内收</small></span></button><button class="theme-card" data-value="incense"><span class="theme-mini incense-mini"><i></i><i></i></span><span><b>线香 · 浅赭</b><small>温暖收束</small></span></button><button class="theme-card" data-value="dusk"><span class="theme-mini dusk-mini"><i></i><i></i></span><span><b>夕照 · 淡杏</b><small>柔和回落</small></span></button></div></div></div></div><div class="actions"><button class="primary" id="toDevice">检查设备并继续</button><button class="link-btn" data-go="today">稍后再说</button></div></div></section>
-<section class="page" id="page-device"><div class="topbar"><button class="link-btn" data-go="setup">← 返回</button><div class="topmeta">DEVICE READY</div></div><div class="device-wrap"><div class="eyebrow">RS6240 · LOCAL RUNTIME</div><h1 class="section-title">保持平常的坐姿。</h1><div class="section-sub">FocusWave 正在确认设备、目标和信号质量。满足当前 ModelBundle 的输入条件后进入专注。</div><div class="device-stage"><div class="sensor-orbit"><canvas id="sensorCanvas"></canvas><div class="sensor-core"></div></div><div><div class="checks"><div class="check"><span>RS6240</span><strong class="ready">已连接</strong></div><div class="check"><span>目标</span><strong class="ready">胸前目标稳定</strong></div><div class="check"><span>距离支持</span><strong>0.82 m</strong></div><div class="check"><span>信号质量</span><strong id="qualityReady" class="waiting">正在确认</strong></div><div class="check"><span>模型</span><strong>FocusWave v1.0</strong></div></div><button class="primary" id="beginLive" disabled style="margin-top:30px">开始专注</button></div></div></div></section>
-<section class="page live-page" id="page-live"><div class="live-shell"><header class="live-head"><div class="live-brand">FocusWave</div><div class="live-session"><span id="liveTask">阅读论文</span> &nbsp;&nbsp; <span id="liveTimer">00:00</span> / <span id="plannedTime">45:00</span> &nbsp;&nbsp; LIVE</div><div class="live-controls"><button class="ghost" id="detailBtn">依据</button><button class="ghost" id="regBtn">调节</button><button class="ghost" id="finishBtn">结束</button></div></header><div class="live-main"><div class="state-copy"><h1 id="stateTitle">专注维持</h1><div class="state-sub" id="stateSub">状态较稳定</div><div class="short-rule"></div><div class="quote" id="stateQuote">潮线平直，远处的声响也退下去了。</div><div class="imagery" id="stateImagery">海 · 雾 · 远潮</div></div><div class="wave-wrap"><canvas id="liveCanvas"></canvas></div></div><footer class="live-foot"><div class="metric"><span>Focus Index</span><strong id="focusIndex">78</strong><small>/ 100</small></div><div class="metric"><span>Confidence</span><strong id="confidence">0.82</strong></div><div class="metric"><span>Data Quality</span><strong id="quality">良好</strong></div></footer></div></section>
-<section class="page" id="page-summary"><div class="topbar"><div class="brand">FocusWave</div><button class="link-btn" data-go="today">回到今日</button></div><div class="summary-layout"><div class="portrait"><canvas id="summaryCanvas"></canvas></div><div class="summary-copy"><div class="eyebrow">SESSION SUMMARY</div><h1>这一段，完成了。</h1><div class="lead">有几次注意离开了手边的事，也有几次，你自己找到了回来的路。</div><div class="summary-stats"><div class="stat"><span>专注时长</span><b id="summaryDuration">45 min</b></div><div class="stat"><span>稳定片段</span><b>71%</b></div><div class="stat"><span>恢复次数</span><b>3</b></div><div class="stat"><span>有效信号覆盖</span><b>94%</b></div></div><p class="section-sub">与最近 5 次同类任务相比，这一段的中后段更稳定。当前比较使用个人历史基线。</p><div class="portrait-decision" id="portraitDecision"><b>要把这段专注留成画像吗？</b><p>生成后会把这次的时序摘要转成一张可回看的专注画像；不生成不会影响历史记录。</p><div class="actions"><button class="primary" id="generatePortrait">生成画像</button><button class="link-btn" id="skipPortrait">暂不生成</button></div><p class="decision-note" id="portraitDecisionNote" aria-live="polite"></p></div><div class="actions"><button class="link-btn" data-go="insights">查看长期趋势</button><button class="link-btn" data-go="portraits">查看已有画像</button></div></div></div></section>
+<section class="page" id="page-device"><div class="topbar"><button class="link-btn" data-go="setup">← 返回</button><div class="topmeta">DEVICE READY</div></div><div class="device-wrap"><div class="eyebrow">RS6240 · LOCAL RUNTIME</div><h1 class="section-title">保持平常的坐姿。</h1><div class="section-sub">FocusWave 正在确认设备、目标和信号质量。满足当前 ModelBundle 的输入条件后进入专注。</div><div class="device-stage"><div class="sensor-orbit"><canvas id="sensorCanvas" aria-hidden="true"></canvas><div class="sensor-core"></div></div><div><div class="checks"><div class="check"><span>RS6240</span><strong class="ready">已连接</strong></div><div class="check"><span>目标</span><strong class="ready">胸前目标稳定</strong></div><div class="check"><span>距离支持</span><strong>0.82 m</strong></div><div class="check"><span>信号质量</span><strong id="qualityReady" class="waiting">正在确认</strong></div><div class="check"><span>模型</span><strong>FocusWave v1.0</strong></div></div><button class="primary" id="beginLive" disabled style="margin-top:30px">开始专注</button></div></div></div></section>
+<section class="page live-page" id="page-live"><div class="live-shell"><header class="live-head"><div class="live-brand">FocusWave</div><div class="live-session"><span id="liveTask">阅读论文</span> &nbsp;&nbsp; <span id="liveTimer">00:00</span> / <span id="plannedTime">45:00</span> &nbsp;&nbsp; LIVE</div><div class="live-controls"><button class="ghost" id="detailBtn">依据</button><button class="ghost" id="regBtn">调节</button><button class="ghost" id="finishBtn">结束</button></div></header><div class="live-main"><div class="state-copy"><h1 id="stateTitle">专注维持</h1><div class="state-sub" id="stateSub">状态较稳定</div><div class="short-rule"></div><div class="quote" id="stateQuote">潮线平直，远处的声响也退下去了。</div><div class="imagery" id="stateImagery">海 · 雾 · 远潮</div></div><div class="wave-wrap"><canvas id="liveCanvas" aria-hidden="true"></canvas></div></div><footer class="live-foot"><div class="metric"><span>Focus Index</span><strong id="focusIndex">78</strong><small>/ 100</small></div><div class="metric"><span>Confidence</span><strong id="confidence">0.82</strong></div><div class="metric"><span>Data Quality</span><strong id="quality">良好</strong></div></footer></div></section>
+<section class="page" id="page-summary"><div class="topbar"><div class="brand">FocusWave</div><button class="link-btn" data-go="today">回到今日</button></div><div class="summary-layout"><div class="portrait"><canvas id="summaryCanvas" aria-hidden="true"></canvas></div><div class="summary-copy"><div class="eyebrow">SESSION SUMMARY</div><h1>这一段，完成了。</h1><div class="lead">有几次注意离开了手边的事，也有几次，你自己找到了回来的路。</div><div class="summary-stats"><div class="stat"><span>专注时长</span><b id="summaryDuration">45 min</b></div><div class="stat"><span>稳定片段</span><b>71%</b></div><div class="stat"><span>恢复次数</span><b>3</b></div><div class="stat"><span>有效信号覆盖</span><b>94%</b></div></div><p class="section-sub">本页专注比例与信号覆盖为示例统计；专注时长和练习次数按本次操作记录。</p><div class="portrait-decision" id="portraitDecision"><b>要把这段专注留成画像吗？</b><p>生成后会把这次的时序摘要转成一张可回看的专注画像；不生成不会影响历史记录。</p><div class="actions"><button class="primary" id="generatePortrait">生成画像</button><button class="link-btn" id="skipPortrait">暂不生成</button></div><p class="decision-note" id="portraitDecisionNote" aria-live="polite"></p></div><div class="actions"><button class="link-btn" data-go="insights">查看长期趋势</button><button class="link-btn" data-go="portraits">查看已有画像</button></div></div></div></section>
 <section class="page" id="page-insights"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">PERSONAL BASELINE</div></div><h1 class="section-title">你的专注，有自己的时刻。</h1><div class="section-sub">这里先以可比的个人历史作为主要参照。</div><div class="insight-grid"><div class="trend"><div class="eyebrow">LAST 14 SESSIONS</div><svg viewBox="0 0 760 280"><path d="M10 208 C80 180,105 198,150 164 S230 128,270 158 S355 206,410 144 S500 110,548 122 S640 72,750 92" fill="none" stroke="#8ea79e" stroke-width="2"/><path d="M10 235 H750" stroke="#d7d3ca"/><path d="M10 185 H750 M10 135 H750 M10 85 H750" stroke="#e5e1d9"/></svg></div><div class="notes"><div class="eyebrow">RECENT PATTERNS</div><div class="note"><b>傍晚更容易进入稳定段</b><p>过去两周，18:00–21:00 的可比阅读/写作 session 稳定段比例较高。</p></div><div class="note"><b>45–60 分钟更适合你</b><p>当前个人历史中，这个时长区间的后半程恢复表现更稳定。</p></div></div></div></section>
 <section class="page" id="page-archive"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">FOCUS ARCHIVE</div></div></section>
-<section class="page" id="page-portraits"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">ATTENTION PORTRAITS</div></div><h1 class="section-title">每一段时间，都留下不同的纹理。</h1><div class="portrait-grid"><div class="portrait-card"><canvas class="portraitMini" data-seed="1" data-theme="ocean"></canvas><div class="meta"><span>阅读 · 42 min</span><span>海</span></div></div><div class="portrait-card"><canvas class="portraitMini" data-seed="2" data-theme="mountain"></canvas><div class="meta"><span>写作 · 58 min</span><span>山</span></div></div><div class="portrait-card"><canvas class="portraitMini" data-seed="3" data-theme="incense"></canvas><div class="meta"><span>编程 · 51 min</span><span>线香</span></div></div></div></section>
+<section class="page" id="page-portraits"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">ATTENTION PORTRAITS</div></div><h1 class="section-title">每一段时间，都留下不同的纹理。</h1><div class="portrait-grid"><div class="portrait-card"><canvas aria-hidden="true" class="portraitMini" data-seed="1" data-theme="ocean"></canvas><div class="meta"><span>阅读 · 42 min</span><span>海</span></div></div><div class="portrait-card"><canvas aria-hidden="true" class="portraitMini" data-seed="2" data-theme="mountain"></canvas><div class="meta"><span>写作 · 58 min</span><span>山</span></div></div><div class="portrait-card"><canvas aria-hidden="true" class="portraitMini" data-seed="3" data-theme="incense"></canvas><div class="meta"><span>编程 · 51 min</span><span>线香</span></div></div></div></section>
 <section class="page" id="page-practice"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">FOCUS PRACTICE · EVIDENCE-INFORMED</div></div><div class="practice-head"><div><h1 class="section-title">练习回到手边这件事。</h1><div class="section-sub">短练习用于准备、回收与注意锚定；真正的工作仍发生在你的书、论文、代码和任务里。</div></div><div class="practice-note">练习框架参考 focused-attention meditation 研究，以及成熟专注产品的低干扰交互方式。练习本身保持简单、留白和可退出。</div></div><div class="practice-list"><div class="practice-card"><div class="type">PREPARE</div><div><h3>到场</h3><p>从上一件事切换到当前任务。确认坐姿、自然呼吸和这一段要完成的事。</p><div class="evidence">任务前过渡 · 低交互</div></div><div class="row"><span class="duration">1 min</span><button class="ghost practice-start" data-practice="arrival">开始</button></div></div><div class="practice-card"><div class="type">QUICK RESET</div><div><h3>回到呼吸</h3><p>注意此刻在哪里，用自然呼吸作为短暂锚点；发现分心后，轻轻回到呼吸。</p><div class="evidence">brief focused attention · 证据启发</div></div><div class="row"><span class="duration">3 min</span><button class="ghost practice-start" data-practice="return">开始</button></div></div><div class="practice-card"><div class="type">FOCUSED ATTENTION</div><div><h3>呼吸锚定</h3><p>持续注意自然呼吸的感觉。每次发现分心，都把“发现并返回”视为练习的一部分。</p><div class="evidence">Focused Attention Meditation</div></div><div class="row"><span class="duration">5 min</span><button class="ghost practice-start" data-practice="breath">开始</button></div></div><div class="practice-card"><div class="type">FOUNDATION</div><div><h3>呼吸 + 身体</h3><p>先稳定在呼吸，再把注意扩大到身体接触点和姿势感觉。</p><div class="evidence">呼吸与身体觉察</div></div><div class="row"><span class="duration">8 min</span><button class="ghost practice-start" data-practice="body">开始</button></div></div><div class="practice-card"><div class="type">REFOCUS SKILL</div><div><h3>接纳式回收</h3><p>发现漂移时先允许它存在，再回到锚点，减少额外的自我反应。</p><div class="evidence">attention monitoring + acceptance</div></div><div class="row"><span class="duration">10 min</span><button class="ghost practice-start" data-practice="accept">开始</button></div></div><div class="practice-card"><div class="type">REAL WORK</div><div><h3>专注工作块</h3><p>进入真实学习或工作。FocusWave 在后台运行成熟模型，只按你的反馈偏好提供必要提示。</p><div class="evidence">真实工作 · 自适应反馈</div></div><div class="row"><span class="duration">25 · 45 · 60</span><button class="primary" id="practiceToSetup">开始工作</button></div></div></div></section>
-<section class="page" id="page-settings"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">SETTINGS & TRUST</div></div><h1 class="section-title">让设备、数据与解释都可见。</h1><div class="settings-shell"><nav class="settings-nav"><button class="active" data-setting="visual">视觉与反馈</button><button data-setting="ai">AI 与文字</button><button data-setting="model">模型信息</button><button data-setting="privacy">隐私与存储</button></nav><div><div class="settings-panel active" id="setting-visual"><div class="settings-row"><div><b>基础运动节律</b><p>状态会在这个基础上自动调节：稳定更慢，游移更快。</p></div><div class="setting-choices" id="motionSetting"><button class="mini-choice" data-value="still">极静</button><button class="mini-choice selected" data-value="slow">缓慢</button><button class="mini-choice" data-value="normal">自然</button></div></div><div class="settings-row"><div><b>反馈灵敏度</b><p>影响何时出现调节入口。</p></div><div class="setting-choices" id="feedbackSetting"><button class="mini-choice" data-value="quiet">安静</button><button class="mini-choice selected" data-value="gentle">温和</button><button class="mini-choice" data-value="active">主动</button></div></div></div><div class="settings-panel" id="setting-ai"><div class="settings-row"><div><b>AI 生成文本</b><p>控制是否把本地扩展语料用于专注中的语言表达。</p></div><button class="switch on" data-toggle="ai"></button></div><div class="settings-row"><div><b>默认文字</b><p>只影响专注时显示的文字，不改变任何分析结果。</p></div><div class="setting-choices" id="textSetting"><button class="mini-choice" data-value="minimal">极简</button><button class="mini-choice selected" data-value="original">原创</button><button class="mini-choice" data-value="literature">文学</button></div></div></div><div class="settings-panel" id="setting-model"><div class="settings-row"><div><b>当前 ModelBundle</b><p>冻结的预处理、特征、权重、置信度校准和质量策略。</p></div><span class="pill">FocusWave v1.0</span></div><div class="settings-row"><div><b>适用范围</b><p>普通坐姿学习 / 工作。</p></div><span class="pill">seated-study · seated-work</span></div><div class="settings-row"><div><b>推理来源</b><p>产品侧运行发布后的成熟模型。</p></div><span class="pill">Local inference</span></div></div><div class="settings-panel" id="setting-privacy"><div class="settings-row"><div><b>保存原始毫米波</b><p>原型默认只保存在本机。</p></div><button class="switch on" data-toggle="raw"></button></div><div class="settings-row"><div><b>保存专注历史</b><p>用于个人基线、画像与长期趋势。</p></div><button class="switch on" data-toggle="history"></button></div></div></div></div></section>
+<section class="page" id="page-settings"><div class="topbar"><div class="brand">FocusWave</div><div class="topmeta">SETTINGS & TRUST</div></div><h1 class="section-title">让设备、数据与解释都可见。</h1><div class="settings-shell"><nav class="settings-nav"><button class="active" data-setting="visual">视觉与反馈</button><button data-setting="ai">AI 与文字</button><button data-setting="model">模型信息</button><button data-setting="privacy">隐私与存储</button></nav><div><div class="settings-panel active" id="setting-visual"><div class="settings-row"><div><b>基础运动节律</b><p>状态会在这个基础上自动调节：稳定更慢，游移更快。</p></div><div class="setting-choices" id="motionSetting"><button class="mini-choice" data-value="still">极静</button><button class="mini-choice selected" data-value="slow">缓慢</button><button class="mini-choice" data-value="normal">自然</button></div></div><div class="settings-row"><div><b>反馈灵敏度</b><p>影响何时出现调节入口。</p></div><div class="setting-choices" id="feedbackSetting"><button class="mini-choice" data-value="quiet">安静</button><button class="mini-choice selected" data-value="gentle">温和</button><button class="mini-choice" data-value="active">主动</button></div></div></div><div class="settings-panel" id="setting-ai"><div class="settings-row"><div><b>AI 生成文本</b><p>控制是否把本地扩展语料用于专注中的语言表达。</p></div><button class="switch on" data-toggle="ai"></button></div><div class="settings-row"><div><b>默认文字</b><p>只影响专注时显示的文字，不改变任何分析结果。</p></div><div class="setting-choices" id="textSetting"><button class="mini-choice" data-value="minimal">极简</button><button class="mini-choice selected" data-value="original">原创</button><button class="mini-choice" data-value="literature">文学</button></div></div></div><div class="settings-panel" id="setting-model"><div class="settings-row"><div><b>当前 ModelBundle</b><p>冻结的预处理、特征、权重、置信度校准和质量策略。</p></div><span class="pill">FocusWave v1.0</span></div><div class="settings-row"><div><b>适用范围</b><p>普通坐姿学习 / 工作。</p></div><span class="pill">seated-study · seated-work</span></div><div class="settings-row"><div><b>推理来源</b><p>产品侧运行发布后的成熟模型。</p></div><span class="pill">Local inference</span></div></div><div class="settings-panel" id="setting-privacy"><div class="settings-row"><div><b>保存原始毫米波</b><p>原型默认只保存在本机。</p></div><button class="switch on" data-toggle="raw"></button></div><div class="settings-row"><div><b>保存专注历史</b><p>用于个人基线、画像与长期趋势。</p></div><button class="switch on" data-toggle="history"></button></div><div class="settings-row"><div><b>导出当前设置</b><p>把视觉、反馈与默认文字模式的当前选择导出为本机 JSON 文件。</p></div><button class="ghost" id="exportSettings" type="button">导出 JSON</button></div></div></div></div></section>
 </main></div>
-<aside class="drawer" id="detailDrawer"><button class="close" id="closeDrawer">×</button><div class="eyebrow">SCIENTIFIC DETAIL</div><h3>这一刻的依据</h3><div class="drawer-row"><span>ModelBundle</span><b>v1.0</b></div><div class="drawer-row"><span>状态窗口</span><b>20 s</b></div><div class="drawer-row"><span>模型更新</span><b>2 s</b></div><div class="drawer-row"><span>视觉过渡</span><b>状态自适应</b></div><div class="drawer-row"><span>信号覆盖</span><b>94%</b></div><div class="drawer-row"><span>来源</span><b>RS6240</b></div><p class="section-sub" style="margin-top:28px">模型更新频率与视觉运动节律分离。状态稳定时画面趋缓，注意外散时运动加快并增加局部扰动。</p></aside>
-<div class="overlay" id="regOverlay"><div class="modal"><div class="eyebrow">OPTIONAL REGULATION</div><h2>需要一小段回收吗？</h2><p>可以先用 3 分钟“回到呼吸”，也可以继续当前任务。</p><div class="modal-actions"><button class="primary" id="regPractice">开始 3 分钟回收</button><button class="ghost" id="skipReset">继续专注</button></div></div></div>
-<div class="overlay" id="practiceOverlay"><div class="modal"><div class="eyebrow" id="practiceType">FOCUSED ATTENTION</div><h2 id="practiceTitle">呼吸锚定</h2><p id="practiceDesc"></p><div class="practice-live"><canvas id="practiceCanvas"></canvas><div><div class="practice-clock" id="practiceClock">05:00</div><div class="instruction" id="practiceInstruction">感受一次自然的吸气与呼气。</div></div></div><div class="modal-actions"><button class="primary" id="practicePause">暂停</button><button class="ghost" id="practiceEnd">结束</button></div></div></div>
+<aside class="drawer" id="detailDrawer" aria-hidden="true" inert role="dialog" aria-modal="true" aria-label="这一刻的依据"><button class="close" id="closeDrawer" aria-label="关闭依据面板">×</button><div class="eyebrow">SCIENTIFIC DETAIL</div><h3>这一刻的依据</h3><div class="drawer-row"><span>ModelBundle</span><b>v1.0</b></div><div class="drawer-row"><span>状态窗口</span><b>20 s</b></div><div class="drawer-row"><span>模型更新</span><b>2 s</b></div><div class="drawer-row"><span>视觉过渡</span><b>状态自适应</b></div><div class="drawer-row"><span>信号覆盖</span><b>94%</b></div><div class="drawer-row"><span>来源</span><b>RS6240</b></div><p class="section-sub" style="margin-top:28px">模型更新频率与视觉运动节律分离。状态稳定时画面趋缓，注意外散时运动加快并增加局部扰动。</p></aside>
+<div class="overlay" id="regOverlay" role="dialog" aria-modal="true" aria-label="可选调节"><div class="modal"><div class="eyebrow">OPTIONAL REGULATION</div><h2>需要一小段回收吗？</h2><p>可以先用 3 分钟“回到呼吸”，也可以继续当前任务。</p><div class="modal-actions"><button class="primary" id="regPractice">开始 3 分钟回收</button><button class="ghost" id="skipReset">继续专注</button></div></div></div>
+<div class="overlay" id="practiceOverlay" role="dialog" aria-modal="true" aria-label="专注练习"><div class="modal"><div class="eyebrow" id="practiceType">FOCUSED ATTENTION</div><h2 id="practiceTitle">呼吸锚定</h2><p id="practiceDesc"></p><div class="practice-live"><canvas id="practiceCanvas" aria-hidden="true"></canvas><div><div class="practice-clock" id="practiceClock">05:00</div><div class="instruction" id="practiceInstruction">感受一次自然的吸气与呼气。</div></div></div><div class="modal-actions"><button class="primary" id="practicePause">暂停</button><button class="ghost" id="practiceEnd">结束</button></div></div></div>
 <!-- Bundled entry; adjacent styles, assets and lazy scripts remain required. -->
 <script>
+window.__FW_INLINE_CONTENT = Object.create(null);
 window.__FW_CONTENT_CONTENT_CURATED_QUOTES_JSON = {"version":"1.0","items":[{"text":"非淡泊无以明志，非宁静无以致远。","source":"诸葛亮《诫子书》（三国·蜀汉）"},{"text":"夫君子之行，静以修身，俭以养德。","source":"诸葛亮《诫子书》（三国·蜀汉）"},{"text":"淫慢则不能励精，险躁则不能治性。","source":"诸葛亮《诫子书》（三国·蜀汉）"},{"text":"竹影扫阶尘不动，月轮穿沼水无痕。","source":"洪应明《菜根谭》（明）"},{"text":"本来无一物，何处惹尘埃。","source":"惠能《菩提偈》（唐，录于《六祖坛经》）"},{"text":"结庐在人境，而无车马喧。问君何能尔？心远地自偏。","source":"陶渊明《饮酒·其五》（东晋）"},{"text":"读书不觉已春深，一寸光阴一寸金。","source":"王贞白《白鹿洞二首·其一》（唐末五代）"},{"text":"不是道人来引笑，周情孔思正追寻。","source":"王贞白《白鹿洞二首·其二》（唐末五代）"},{"text":"重为轻根，静为躁君。","source":"老子《道德经》第二十六章（春秋）"},{"text":"致虚极，守静笃。万物并作，吾以观复。","source":"老子《道德经》第十六章（春秋）"},{"text":"夫物芸芸，各复归其根。归根曰静，静曰复命。","source":"老子《道德经》第十六章（春秋）"},{"text":"水静则明烛须眉，平中准，大匠取法焉。","source":"《庄子·天道》（战国）"},{"text":"圣人之静也，非曰静也善，故静也。","source":"《庄子·天道》（战国）"},{"text":"正则静，静则明，明则虚，虚则无为而无不为也。","source":"《庄子·庚桑楚》（战国）"},{"text":"山静似太古，日长如小年。","source":"唐庚《醉眠》（北宋）"},{"text":"目不能两视而明，耳不能两听而聪。","source":"《荀子·劝学》（战国）"},{"text":"用志不分，乃凝于神。","source":"《庄子·达生》（战国）"},{"text":"虽天地之大，万物之多，而唯蜩翼之知。","source":"《庄子·达生》（战国）"},{"text":"惟精惟一，允执厥中。","source":"《尚书·大禹谟》（上古）"},{"text":"躁胜寒，静胜热，清静为天下正。","source":"老子《道德经》第四十五章（春秋）"}]};
+window.__FW_INLINE_CONTENT["./content/curated-quotes.json"] = window.__FW_CONTENT_CONTENT_CURATED_QUOTES_JSON;
+window.__FW_CONTENT_CONTENT_ORIGINAL_STATE_LINES_JSON = {"version":"0.1.0","schema":"focuswave-content-v1","states":["stable","drift","dispersed","refocus"],"themes":{"ocean":{"stable":["潮线平直，远处的声响也退下去了。","水面留着微光，注意停在眼前这一页。","潮声很远，手边的事很近。","一层浪接着一层浪，当前这一页没有离开。"],"drift":["一念随潮走远，岸还在视野里。","水纹偏了一寸，注意也跟着远了一点。","远潮带走一小段目光。","海风拂过侧面，思路轻轻离开原来的航线。"],"dispersed":["风把水面拆成许多方向。","潮线彼此错开，思绪也分成了几股。","水面起了碎浪，注意失去了一处落点。","许多浪同时涌起，目光找不到唯一的岸。"],"refocus":["潮水回身，岸线重新清楚。","浪声退后，眼前这一处重新显出来。","水纹重新并拢，注意也回到手边。","先看清最近的水纹，再接回刚才的一行。"]},"mountain":{"stable":["山脊沉静，目光停在一处。","云影很慢，峰线很清楚。","远山不动，手边的事也稳了下来。","山路只有一个方向，脚下这一步足够清楚。"],"drift":["一片云越过山腰，视线跟着走了半程。","云脚掠过峰线，注意短暂离开了原处。","山还在，目光先随云去了。","远峰亮了一瞬，手边的轮廓随之淡下去。"],"dispersed":["岚气漫开，峰与峰之间失了边界。","山色被雾分成几层，注意也散开了。","峰线变得模糊，思绪在层层山岚间游走。","几条山径同时出现，下一步失去了先后。"],"refocus":["云从峰前移开，轮廓重新显出来。","雾气渐薄，山脊又连成一线。","峰线重新清楚，注意回到这一处。","从最近的山脊开始，原来的路径重新接续。"]},"incense":{"stable":["烟线向上，细而不乱。","一缕烟缓缓上升，心神也收在一处。","烟直而轻，注意停留得很安静。","烟身保持连贯，当前的思路也没有中断。"],"drift":["一缕烟偏向窗边，心也跟过去一点。","微风让烟线偏开，注意也离开了一瞬。","烟身轻轻一折，目光随之偏了半步。","烟尾转了一个小弯，思路也慢了半拍。"],"dispersed":["烟迹散开，几条念头同时升起。","一缕烟分成许多细线，注意失去了中心。","烟在半空散成薄雾，思绪也变得松散。","空气里到处是细线，眼前没有最清楚的一条。"],"refocus":["风停之后，烟又收成一线。","散开的烟慢慢并回一缕。","烟线重新向上，注意也重新有了方向。","从最清楚的烟线开始，手边的任务重新显现。"]},"dusk":{"stable":["余光落在桌面，世界慢慢收窄。","天色渐暗，眼前这一处反而更清楚。","暮光铺平，注意安静地落了下来。","长影缓慢移动，手边的节奏仍旧完整。"],"drift":["暮色向外铺开，注意也松了一寸。","晚风带走一点余光，目光跟着远了。","天边亮了一瞬，注意也短暂离开手边。","窗外的颜色变深，思路轻轻移向远处。"],"dispersed":["云层把光切成许多片，思绪随之散开。","余晖碎在云间，注意也失去了同一方向。","暮光分成几层，思绪在层次之间来回。","亮面与暗面彼此交错，注意不断更换落点。"],"refocus":["最后一束光重新落回眼前。","散开的余光慢慢收回桌面。","暮色沉下去，眼前的轮廓重新清楚。","让桌面的微光成为起点，重新接回当前任务。"]}}};
+window.__FW_INLINE_CONTENT["./content/original-state-lines.json"] = window.__FW_CONTENT_CONTENT_ORIGINAL_STATE_LINES_JSON;
+window.__FW_CONTENT_CONTENT_GENERATED_STATE_LINES_JSON = {"version":"0.2.0","schema":"focuswave-content-v1","display_label":"新创短句","provenance":{"method":"ai-assisted-batch","template":"focuswave-state-lines-v1","review_status":"prototype-curated"},"themes":{"ocean":{"stable":["潮水缓缓铺开，眼前的次序没有被打断。","海面只留一层微光，注意稳稳停在这一页。","远浪有自己的节拍，你只需要守住手边这一拍。","水纹向前延伸，思绪也沿着同一方向走下去。","近岸的波纹一层层展开，正在做的事仍在中央。","海风保持均匀，笔尖也维持自己的速度。","水光从左到右缓慢移动，没有带走此刻的注意。","远处潮起潮落，眼前这一行始终清楚。"],"drift":["一圈水纹偏离了岸线，目光也短暂走远。","风从侧面掠过，注意轻轻换了一个方向。","远处的浪高了一点，你发现自己正在听它。","潮声靠近了一瞬，手边的句子暂时淡了。","一只海鸟掠过水面，目光跟着走了片刻。","岸边多出一道新波纹，注意也轻轻偏了过去。","远海忽然亮起，你暂时忘了刚才读到哪里。","潮线向外弯去，思路也出现一个小小的岔口。"],"dispersed":["几股水流同时转向，眼前失去了唯一的航线。","碎浪彼此覆盖，思绪也在不同方向间交错。","风把平静拆开，注意暂时找不到停泊处。","水面亮起许多细碎反光，每一处都在拉走目光。","浪头接连涌来，几个念头同时要求被看见。","潮汐失去同一节奏，注意在来回切换中变薄。","风浪遮住岸线，下一步暂时难以判断。","海面被切成许多小块，思绪也没有共同的方向。"],"refocus":["退潮留下清楚的岸线，下一步重新变得可见。","水纹逐渐同向，注意也回到最靠近的一件事。","远浪慢慢退后，手边这一处重新有了重量。","潮水完成一次回转，你也重新接上刚才的思路。","先看清最近的一道浪，再回到眼前这一行。","岸线从雾里显出，你重新找到刚才停下的位置。","水声渐渐退远，手边的任务再次成为中心。","潮汐重新排成层次，注意也从最小的一步开始归位。"]},"mountain":{"stable":["峰线安静地相接，注意沿着清楚的轮廓向前。","山色没有催促，手边的工作也保持自己的速度。","云停在远处，眼前这一处显得格外清晰。","层叠的山脊各在其位，思绪也不再相互拥挤。","山路缓缓向前，当前这一步足够明确。","近峰与远峰各有边界，注意也保持清楚的层次。","林间没有急促的声音，工作沿着原来的方向继续。","山影稳定地落下，目光仍停在同一个落点。"],"drift":["一片薄云越过山口，目光跟着移动了一小段。","远峰忽然更亮，注意暂时离开了近处。","山风换了方向，你也察觉到思路正在偏移。","云影落在另一座峰上，眼前的轮廓短暂变淡。","远处传来一阵风，注意随它越过了山谷。","薄雾改变了峰线，思路也短暂换了方向。","一条小径忽然显眼，你的目光离开了当前路径。","山腰的光移动了一寸，手边的节奏随之松开。"],"dispersed":["山岚同时漫向几处，峰线变得难以分辨。","远近的山色叠在一起，思绪也失去了层次。","雾把路径分成许多岔口，注意在其中来回转向。","峰与谷的边界暂时消失，眼前只剩散开的轮廓。","几层云同时压低，注意在远近之间反复跳转。","山路分成许多支线，下一步没有明显的入口。","风声从不同山口传来，思绪也被拉向多处。","雾气覆盖整片山谷，原来的方向暂时失去参照。"],"refocus":["雾从山腰移开，原来的路径再次连贯。","最近的一道峰线先清楚起来，注意也从这里回来。","云影离开之后，手边的方向重新稳定。","山脊一层层显现，你重新找到下一步的位置。","从最近的峰线开始，思路重新排出先后。","风停在山口，注意也回到当前这一处。","云层退到远处，眼前的任务重新拥有边界。","山路再次汇成一条，你从刚才的落点继续。"]},"incense":{"stable":["烟线缓慢上升，每一次转折都保持连贯。","暖意停在桌边，注意也安静地留在这里。","一缕细烟向上延伸，思绪沿着同一条线继续。","空气几乎不动，眼前的工作保持清楚。","烟线保持均匀的弧度，手边的步骤也一一衔接。","香气停在近处，注意没有向外追逐。","细烟缓缓升高，当前的思路仍然连贯。","微光照着烟身，眼前这一页安静地向前。"],"drift":["烟线向窗边偏了一点，你也看见注意正在移动。","一阵轻风改变了烟的方向，思路短暂跟了过去。","烟尾出现一个小小的折角，眼前的节奏随之松动。","暖气流掠过桌面，注意离开原处一瞬。","烟线忽然打了一个小旋，目光也停顿了一拍。","窗缝的风改变了方向，思路跟着偏开一点。","一缕香气向外扩散，注意暂时离开了中心。","烟尾摇摆了几次，你才发现手边的节奏变慢。"],"dispersed":["烟在半空分成几缕，思绪也同时向外伸展。","细线互相缠绕，眼前暂时没有最清楚的一条。","空气里的方向变多了，注意也被分到不同地方。","散开的烟雾遮住了起点，思路一时难以续接。","几股气流彼此推挤，注意也难以停在一处。","烟迹断成许多短线，当前任务失去了连续感。","空气里到处是细小转折，思绪不断被带离。","烟雾同时向四周展开，眼前没有最清楚的方向。"],"refocus":["风势减弱，散开的烟重新汇成细线。","最清楚的一缕先回到眼前，你从这里重新开始。","烟线慢慢收束，手边的任务再次成为中心。","空气恢复安静，刚才中断的思路重新接续。","先找到最靠近的一缕烟，再回到最小的一步。","弯曲的烟线重新向上，注意也有了落点。","风从桌边离开，眼前的任务重新清楚。","烟雾慢慢散去，你重新看见刚才停下的位置。"]},"dusk":{"stable":["暮色缓慢落下，桌面的范围变得安静而清楚。","余光沿着同一条边缘停留，注意也没有离开。","天色逐渐收窄，眼前这一件事保持明亮。","晚风很轻，手边的节奏仍旧连贯。","窗边的光保持柔和，注意稳稳停在桌面。","暮色没有催促，当前这一段自然地继续。","长影缓慢移动，眼前的步骤仍然清晰。","天光逐渐变暖，思绪也保持同一个方向。"],"drift":["窗外亮起一层余光，目光短暂越过了桌面。","暮色向远处展开，注意也跟着松开一点。","一片云改变了光的形状，思路随之偏移。","晚风带动窗边的影子，你发现自己正在看它。","天边的颜色忽然更深，目光暂时越过了当前页。","一束余光移动到墙面，注意也跟着偏离片刻。","窗外传来轻微声响，手边的思路短暂变淡。","暮色铺开新的层次，你的目光停在了远处。"],"dispersed":["余晖碎成许多亮面，注意在它们之间不断切换。","暮色同时落向几处，眼前失去了单一的中心。","云层把光线分开，思绪也变成彼此竞争的方向。","远近的影子交叠在一起，手边的轮廓暂时模糊。","亮面与暗面不断交换，注意也频繁改变落点。","窗外的颜色层层叠加，几个念头同时升起。","长影分成许多方向，原来的步骤被暂时遮住。","晚风让光线不断闪动，思路难以保持连续。"],"refocus":["最后的光重新落在桌面，下一步再次清楚。","窗外慢慢暗下去，注意回到最靠近的一处。","散开的余光逐渐收拢，思路重新连成一线。","暮色完成一次沉降，你也重新接回当前的任务。","让最近的一束光成为落点，从这里继续。","窗外安静下来，眼前这一行重新变得明亮。","影子重新连成完整轮廓，思路也接回原处。","余光退到背景，当前任务再次回到中央。"]}}};
+window.__FW_INLINE_CONTENT["./content/generated-state-lines.json"] = window.__FW_CONTENT_CONTENT_GENERATED_STATE_LINES_JSON;
+window.__FW_CONTENT_CONTENT_CLASSICAL_ZH_JSON = {"version":"0.1.0","items":[{"id":"zh-tao-001","text":"采菊东篱下，悠然见南山。","author":"陶渊明","work":"饮酒·其五","theme":["mountain"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},{"id":"zh-tao-002","text":"山气日夕佳，飞鸟相与还。","author":"陶渊明","work":"饮酒·其五","theme":["mountain","dusk"],"state":["stable","refocus"],"function":"return","rights":"public-domain","verified":true},{"id":"zh-su-001","text":"何妨吟啸且徐行。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["drift","refocus"],"function":"accept-and-return","rights":"public-domain","verified":true},{"id":"zh-su-002","text":"山头斜照却相迎。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["mountain","dusk"],"state":["refocus"],"function":"recovery","rights":"public-domain","verified":true},{"id":"zh-su-003","text":"也无风雨也无晴。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["stable","refocus"],"function":"equanimity","rights":"public-domain","verified":true},{"id":"zh-wang-001","text":"行到水穷处，坐看云起时。","author":"王维","work":"终南别业","theme":["mountain","ocean"],"state":["drift","refocus"],"function":"allow-and-return","rights":"public-domain","verified":true},{"id":"zh-wang-002","text":"人闲桂花落，夜静春山空。","author":"王维","work":"鸟鸣涧","theme":["mountain","incense"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},{"id":"zh-wang-003","text":"明月松间照，清泉石上流。","author":"王维","work":"山居秋暝","theme":["mountain","ocean"],"state":["stable"],"function":"clear-attention","rights":"public-domain","verified":true},{"id":"zh-tao-003","text":"心远地自偏。","author":"陶渊明","work":"饮酒·其五","theme":["mountain","dusk"],"state":["stable","refocus"],"function":"return-inward","rights":"public-domain","verified":true},{"id":"zh-tao-004","text":"久在樊笼里，复得返自然。","author":"陶渊明","work":"归园田居·其一","theme":["mountain","dusk"],"state":["refocus"],"function":"return","rights":"public-domain","verified":true},{"id":"zh-zhuge-001","text":"静以修身，俭以养德。","author":"诸葛亮","work":"诫子书","theme":["incense","mountain"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},{"id":"zh-liu-001","text":"无丝竹之乱耳，无案牍之劳形。","author":"刘禹锡","work":"陋室铭","theme":["incense","mountain"],"state":["dispersed","refocus"],"function":"reduce-distraction","rights":"public-domain","verified":true},{"id":"zh-li-001","text":"相看两不厌，只有敬亭山。","author":"李白","work":"独坐敬亭山","theme":["mountain"],"state":["stable"],"function":"sustain-attention","rights":"public-domain","verified":true},{"id":"zh-du-001","text":"清江一曲抱村流，长夏江村事事幽。","author":"杜甫","work":"江村","theme":["ocean","mountain"],"state":["stable"],"function":"settle","rights":"public-domain","verified":true},{"id":"zh-xin-001","text":"明月别枝惊鹊，清风半夜鸣蝉。","author":"辛弃疾","work":"西江月·夜行黄沙道中","theme":["dusk","mountain"],"state":["drift"],"function":"notice","rights":"public-domain","verified":true},{"id":"zh-su-004","text":"回首向来萧瑟处，归去。","author":"苏轼","work":"定风波·莫听穿林打叶声","theme":["ocean","mountain"],"state":["refocus"],"function":"return","rights":"public-domain","verified":true}]};
+window.__FW_INLINE_CONTENT["./content/classical-zh.json"] = window.__FW_CONTENT_CONTENT_CLASSICAL_ZH_JSON;
+window.__FW_CONTENT_CONTENT_WORLD_PUBLIC_DOMAIN_JSON = {"version":"0.1.0","items":[{"id":"en-thoreau-001","original":"I went to the woods because I wished to live deliberately.","translation_zh":"我走进树林，因为我想有意识地生活。","author":"Henry David Thoreau","work":"Walden","language":"en","theme":["mountain","ocean"],"state":["stable"],"function":"intentional-focus","rights":"public-domain-us","verified":true},{"id":"en-marcus-001","original":"Look within.","translation_zh":"向内看。","author":"Marcus Aurelius","work":"Meditations, Book VI","language":"en","theme":["incense","mountain"],"state":["stable","refocus"],"function":"return-inward","rights":"public-domain-us","verified":true},{"id":"en-marcus-002","original":"Flux and change are constantly renewing the world.","translation_zh":"流动与变化不断更新着世界。","author":"Marcus Aurelius","work":"Meditations, Book VI","language":"en","theme":["ocean","dusk"],"state":["drift","refocus"],"function":"normalize-change","rights":"public-domain-us","verified":true},{"id":"en-thoreau-002","original":"Simplify, simplify.","translation_zh":"简化，再简化。","author":"Henry David Thoreau","work":"Walden","language":"en","theme":["mountain","ocean"],"state":["stable","refocus"],"function":"reduce-distraction","rights":"public-domain-us","verified_source":"https://www.gutenberg.org/files/205/205-h/205-h.htm","verified":true},{"id":"en-thoreau-003","original":"The sun is but a morning star.","translation_zh":"太阳也不过是一颗晨星。","author":"Henry David Thoreau","work":"Walden","language":"en","theme":["dusk","mountain"],"state":["refocus"],"function":"renewal","rights":"public-domain-us","verified_source":"https://www.gutenberg.org/files/205/205-h/205-h.htm","verified":true},{"id":"en-emerson-001","original":"Nothing can bring you peace but yourself.","translation_zh":"除了你自己，没有什么能带来内在的平静。","author":"Ralph Waldo Emerson","work":"Self-Reliance","language":"en","theme":["mountain","incense"],"state":["stable","refocus"],"function":"return-inward","rights":"public-domain-us","verified_source":"https://www.gutenberg.org/files/2944/2944-h/2944-h.htm","verified":true},{"id":"en-blake-001","original":"To see a World in a Grain of Sand.","translation_zh":"在一粒沙中看见一个世界。","author":"William Blake","work":"Auguries of Innocence","language":"en","theme":["mountain","dusk"],"state":["stable"],"function":"attend-to-small","rights":"public-domain-us","verified":true},{"id":"en-tennyson-001","original":"'Tis not too late to seek a newer world.","translation_zh":"寻找一个新的世界，现在还不算太晚。","author":"Alfred Tennyson","work":"Ulysses","language":"en","theme":["ocean","dusk"],"state":["refocus"],"function":"begin-again","rights":"public-domain-us","verified":true},{"id":"en-dickinson-001","original":"Forever – is composed of Nows –","translation_zh":"永恒，由一个个此刻组成。","author":"Emily Dickinson","work":"Forever – is composed of Nows –","language":"en","theme":["incense","dusk"],"state":["stable"],"function":"present-moment","rights":"public-domain-us","verified":true},{"id":"en-whitman-001","original":"I exist as I am, that is enough.","translation_zh":"我如我所是，这已经足够。","author":"Walt Whitman","work":"Song of Myself","language":"en","theme":["ocean","mountain"],"state":["stable","refocus"],"function":"acceptance","rights":"public-domain-us","verified":true},{"id":"en-shakespeare-001","original":"Our doubts are traitors.","translation_zh":"我们的疑虑常会背叛我们。","author":"William Shakespeare","work":"Measure for Measure","language":"en","theme":["mountain","incense"],"state":["drift","refocus"],"function":"resume-action","rights":"public-domain","verified":true},{"id":"en-austen-001","original":"There is no charm equal to tenderness of heart.","translation_zh":"没有什么魅力能与温柔的心相比。","author":"Jane Austen","work":"Emma","language":"en","theme":["incense","dusk"],"state":["stable"],"function":"gentleness","rights":"public-domain","verified":true},{"id":"en-thoreau-004","original":"Only that day dawns to which we are awake.","translation_zh":"只有我们真正醒着的那一天，才会迎来黎明。","author":"Henry David Thoreau","work":"Walden","language":"en","theme":["dusk","mountain"],"state":["stable","refocus"],"function":"wake-and-return","rights":"public-domain-us","verified_source":"https://www.gutenberg.org/files/205/205-h/205-h.htm","verified":true},{"id":"en-dickinson-002","original":"The brain is wider than the sky.","translation_zh":"心智比天空更辽阔。","author":"Emily Dickinson","work":"The Brain","language":"en","theme":["mountain","dusk"],"state":["drift","refocus"],"function":"perspective","rights":"public-domain-us","verified_source":"https://www.gutenberg.org/cache/epub/12241/pg12241.html","verified":true},{"id":"en-marcus-003","original":"It is sufficient then in this act also to do well what we have in hand.","translation_zh":"在此刻，把手边之事做好就已经足够。","author":"Marcus Aurelius","work":"Meditations, Book VI","language":"en","theme":["incense","mountain"],"state":["stable","refocus"],"function":"do-what-is-at-hand","rights":"public-domain-us","verified_source":"https://gutenberg.org/cache/epub/15877/pg15877-images.html","verified":true},{"id":"en-marcus-004","original":"Take pleasure in one thing and rest in it.","translation_zh":"在一件事中安住，并从中获得宁静。","author":"Marcus Aurelius","work":"Meditations, Book VI","language":"en","theme":["ocean","incense"],"state":["stable"],"function":"single-task","rights":"public-domain-us","verified_source":"https://gutenberg.org/cache/epub/15877/pg15877-images.html","verified":true}]};
+window.__FW_INLINE_CONTENT["./content/world-public-domain.json"] = window.__FW_CONTENT_CONTENT_WORLD_PUBLIC_DOMAIN_JSON;
 
 /* ===== idiom-line-grammar.js ===== */
 /* FocusWave idiom line grammar v1
@@ -155,7 +170,9 @@ Promise.resolve();
     if(title)title.textContent='呼吸锚定';
     overlay.querySelector('.practice-reminder')?.remove();
     if(guide)guide.textContent='跟随圆环，吸气 4 秒，呼气 6 秒，循环6次';
-    overlay.querySelector('#practiceNoiseToggle')?.remove();
+    // Keep #practiceNoiseToggle: it is the only entry to the optional white-noise
+    // masker implemented in content-engine (startWhiteNoise/stopWhiteNoise).
+    // Removing it here made that whole feature unreachable.
   }
 
   function patchPracticeSoon(){
@@ -202,6 +219,12 @@ Promise.resolve();
   let motionPhase = 0;
   let lastMotionT = null;
   let duskRaf = 0;
+  /* Cached reduced-motion preference, refreshed on change. */
+  let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  try {
+    window.matchMedia('(prefers-reduced-motion: reduce)')
+      .addEventListener?.('change', (e) => { reducedMotion = e.matches; });
+  } catch (_) { /* keep initial value on older engines */ }
 
   function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
   function clamp01(x){ return Math.max(0,Math.min(1,x)); }
@@ -406,7 +429,8 @@ Promise.resolve();
       const m=modeFor(resolvedKey);
       const dt=Math.min(.05,Math.max(0,(now-lastNow)/1000));
       lastNow=now;
-      if(m.speed>0) motionPhase+=dt*m.speed;
+      // Freeze time while retaining the actual state's visual parameters.
+      if(!reducedMotion&&m.speed>0) motionPhase+=dt*m.speed;
 
       drawDusk(document.querySelector('#liveCanvas'),{
         state:{...sourceState,key:resolvedKey},
@@ -939,7 +963,7 @@ Promise.resolve();
   function drawFood(){for(const g of food){ctx.fillStyle=g.landed?'rgba(117,86,53,.72)':'rgba(132,94,55,.62)';ctx.beginPath();ctx.arc(g.x,g.y,g.r,0,Math.PI*2);ctx.fill()}}
   function draw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);drawBackground();drawRipples();lotus.forEach(drawLotus);drawLinkedRing();fish.forEach(drawFish);drawFood()}
 
-  function frameLoop(now){if(!canvas?.isConnected)return;const dt=Math.min(.035,(now-lastTime)/1000||.016);lastTime=now;if(!document.hidden){update(dt,now);draw()}raf=requestAnimationFrame(frameLoop)}
+  function frameLoop(now){if(!canvas?.isConnected)return;const dt=Math.min(.035,(now-lastTime)/1000||.016);lastTime=now;/* 只在洞察页可见时模拟与绘制，离开页面即暂停，回来下一帧恢复。 */if(!document.hidden&&page?.classList.contains('active')){update(dt,now);draw()}raf=requestAnimationFrame(frameLoop)}
   function stopScene(){cancelAnimationFrame(raf);raf=0;resizeObserver?.disconnect();resizeObserver=null}
 
   function scheduleMidnight(){clearTimeout(midnightTimer);const now=new Date(),next=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,0,0,80);midnightTimer=setTimeout(()=>{localStorage.setItem(LOTUS_KEY,JSON.stringify({date:localDayKey(),lotus:[]}));lotus=[];syncLotus();food=[];ripples=[];scheduleMidnight()},Math.max(1000,next.getTime()-Date.now()))}
@@ -3587,7 +3611,7 @@ function renderSettingsPanel() {
     <div class="settings-row">
       <div>
         <b>默认文字模式</b>
-        <p>新建专注时自动采用这个模式；每次 session 都可以在开始前单独调整。</p>
+        <p>选择今日页轮换引言使用的内容库；专注进行中保持无文字的低干扰状态。</p>
       </div>
       <div class="setting-choices" id="defaultTextSetting">
         ${TEXT_MODES.map(mode => `<button class="mini-choice" data-value="${mode.value}">${mode.label}</button>`).join('')}
@@ -3608,6 +3632,7 @@ function renderSettingsPanel() {
       const next = validMode(button.dataset.value);
       localStorage.setItem(STORAGE_KEY, next);
       setSelected(group, next);
+      window.dispatchEvent(new CustomEvent('focuswave:text-mode-changed', { detail: { mode: next } }));
     });
   });
 }
@@ -3646,8 +3671,11 @@ function bindExport() {
     const anchor = document.createElement('a');
     anchor.href = URL.createObjectURL(blob);
     anchor.download = 'focuswave-settings.json';
+    document.body.appendChild(anchor);
     anchor.click();
-    setTimeout(() => URL.revokeObjectURL(anchor.href), 500);
+    const url = anchor.href;
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 }
 
@@ -3834,6 +3862,8 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
  */
 (() => {
   const MODE_KEY = 'focuswave.aiMode';
+  let sessionNumber = 0;
+  let generationNumber = 0;
   const MODES = [
     { value: 'off', label: '关闭' },
     { value: 'reflection', label: '会话回顾' },
@@ -3866,18 +3896,26 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
-    syncSummaryAvailability();
+    resetReflection();
   }
 
   function summaryPayload() {
+    function displayedNumber(label) {
+      const stat = [...document.querySelectorAll('#page-summary .stat')]
+        .find(item => item.querySelector('span')?.textContent?.trim() === label);
+      const text = stat?.querySelector('b')?.textContent?.trim();
+      const value = Number.parseFloat(text);
+      return Number.isFinite(value) ? value : null;
+    }
+    const duration = Number.parseFloat(document.querySelector('#summaryDuration')?.textContent);
     return {
-      task: document.querySelector('#liveTask')?.textContent?.trim() || '阅读论文',
-      duration_minutes: Number.parseInt(document.querySelector('#summaryDuration')?.textContent, 10) || 45,
-      stable_segments_percent: 71,
-      recovery_count: 3,
-      valid_signal_coverage_percent: 94,
-      comparison: '最近 5 次同类任务',
-      personal_pattern: '中后段更稳定',
+      session_id: sessionNumber,
+      task: document.querySelector('#liveTask')?.textContent?.trim() || '本次任务',
+      duration_minutes: Number.isFinite(duration) ? duration : null,
+      effective_focus_percent: displayedNumber('有效专注比例'),
+      practice_count: displayedNumber('练习次数'),
+      valid_signal_coverage_percent: displayedNumber('有效信号覆盖'),
+      source: 'prototype-summary',
     };
   }
 
@@ -3886,17 +3924,20 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     connected: false,
     async explainSession(payload, selectedMode) {
       await new Promise((resolve) => setTimeout(resolve, 720));
+      const number = value => Number.isFinite(value) ? value : '未记录';
+      const details = `页面示例统计：有效专注比例 ${number(payload.effective_focus_percent)}%，有效信号覆盖 ${number(payload.valid_signal_coverage_percent)}%。`;
       const suggestion = selectedMode === 'guidance'
-        ? '下一次可以继续采用 45–60 分钟工作块，并保留温和反馈；若持续游移，再主动打开短回收。'
-        : '这段回顾只整理已存在的会话结果，不改变任何测量数值。';
+        ? '下一段可以继续当前任务，或按需主动打开短练习。'
+        : '这段回顾只整理本页显示的示例数据。';
       return {
-        headline: `${payload.task}的中后段更稳，几次游移之后都回到了手边的任务。`,
-        body: suggestion,
+        headline: `${payload.task}：${number(payload.duration_minutes)} 分钟，主动练习 ${number(payload.practice_count)} 次。`,
+        body: `${details} ${suggestion}`,
         provenance: {
           input: 'SessionSummary',
           excluded: '原始毫米波',
-          provider: '本地模板预览',
-          template: 'session-reflection-v1',
+          provider: '本地模板 · 示例数据',
+          template: 'session-reflection-v2',
+          session_id: payload.session_id,
           generated_at: new Date().toISOString(),
         },
       };
@@ -3962,7 +4003,7 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
       <div class="settings-row">
         <div>
           <b>默认文字模式</b>
-          <p>实时专注优先使用低延迟、已审核的本地内容库；AI 回顾只在会话结束后出现。</p>
+          <p>选择今日页轮换引言使用的内容库；专注进行中保持无文字的低干扰状态。</p>
         </div>
         <div class="setting-choices" id="defaultTextSetting">
           <button class="mini-choice" type="button" data-value="minimal">极简</button>
@@ -3991,6 +4032,9 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
           item.classList.toggle('selected', active);
           item.setAttribute('aria-pressed', String(active));
         });
+    /* The homepage carousel consumes the text mode (D-028); tell it to
+         * swap libraries immediately. */
+        window.dispatchEvent(new CustomEvent('focuswave:text-mode-changed', { detail: { mode: button.dataset.value } }));
       });
     });
     panel.querySelectorAll('[data-ai-mode]').forEach((button) => {
@@ -4033,7 +4077,7 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
         </div>
         <div class="ai-reflection-status" aria-live="polite">等待生成</div>
       </div>
-      <p class="ai-reflection-intro">仅使用页面中的结构化会话总结。本地预览不会发送网络请求，也不会读取原始毫米波。</p>
+      <p class="ai-reflection-intro">整理本页的会话与示例统计。当前使用本地模板，不会发送网络请求。</p>
       <button class="ghost" id="generateAIReflection" type="button">生成回顾</button>
       <div class="ai-reflection-result" aria-live="polite" hidden>
         <blockquote></blockquote>
@@ -4057,10 +4101,25 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     if (disabled) card.dataset.status = 'idle';
   }
 
+  function resetReflection() {
+    generationNumber += 1;
+    const card = document.querySelector('.ai-reflection-card');
+    if (!card) return;
+    card.dataset.status = 'idle';
+    const result = card.querySelector('.ai-reflection-result');
+    result.hidden = true;
+    result.querySelector('blockquote').textContent = '';
+    result.querySelector('p').textContent = '';
+    result.querySelector('.ai-provenance').textContent = '';
+    syncSummaryAvailability();
+  }
+
   async function generateReflection(event) {
     const button = event.currentTarget;
     const card = button.closest('.ai-reflection-card');
     const result = card.querySelector('.ai-reflection-result');
+    const request = ++generationNumber;
+    const session = sessionNumber;
     card.dataset.status = 'loading';
     card.querySelector('.ai-reflection-status').textContent = '整理中';
     button.disabled = true;
@@ -4068,6 +4127,7 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     result.hidden = true;
     try {
       const output = await adapter.explainSession(summaryPayload(), mode());
+      if (request !== generationNumber || session !== sessionNumber) return;
       result.querySelector('blockquote').textContent = output.headline;
       result.querySelector('p').textContent = output.body;
       result.querySelector('.ai-provenance').innerHTML = `
@@ -4080,17 +4140,22 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
       card.querySelector('.ai-reflection-status').textContent = '已生成 · 有来源记录';
       button.textContent = '重新生成';
     } catch (error) {
+      if (request !== generationNumber || session !== sessionNumber) return;
       card.dataset.status = 'error';
       card.querySelector('.ai-reflection-status').textContent = '生成失败';
       button.textContent = '重试';
     } finally {
-      button.disabled = false;
+      if (request === generationNumber && session === sessionNumber) button.disabled = mode() === 'off';
     }
   }
 
   function init() {
     renderSettingsPanel();
     ensureSummaryCard();
+    document.querySelector('#beginLive')?.addEventListener('click', () => {
+      sessionNumber += 1;
+      resetReflection();
+    });
   }
 
   window.FocusWaveAIAdapter = adapter;
@@ -4149,9 +4214,6 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
 
     const decisionTitle = summary.querySelector('#portraitDecision > b');
     if (decisionTitle) decisionTitle.textContent = '是否保留本次专注记录';
-
-    // The optional AI reflection block is intentionally removed from Session Summary.
-    summary.querySelector('.ai-reflection-card')?.remove();
   }
 
   function updatePracticeCount(){
@@ -4174,8 +4236,10 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     document.querySelector('#beginLive')?.addEventListener('click', markSessionStart);
     document.querySelector('#finishBtn')?.addEventListener('click', updatePracticeCount);
 
-    // ai-assistant-controller may have just inserted the optional card before this
-    // module runs; remove it once more after the current task without observing DOM.
+    // ai-assistant-controller owns the optional AI reflection card on this page
+    // (docs/DESIGN_DECISIONS.md D-020: user-triggered, provenance visible).
+    // It is injected on that module's init; run one more static patch after the
+    // current task so titles/labels stay consistent regardless of load order.
     queueMicrotask(patchSummaryStatic);
   }
 
@@ -4214,7 +4278,7 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
   let installed = false;
 
   function closeTransientUI(from, to) {
-    document.querySelector('#detailDrawer')?.classList.remove('open');
+    document.querySelector('#closeDrawer')?.click();
     document.querySelector('#regOverlay')?.classList.remove('open');
 
     const practiceOverlay = document.querySelector('#practiceOverlay');
@@ -4309,7 +4373,7 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
 
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
-    document.querySelector('#detailDrawer')?.classList.remove('open');
+    document.querySelector('#closeDrawer')?.click();
     document.querySelector('#regOverlay')?.classList.remove('open');
     document.querySelector('#practiceOverlay')?.classList.remove('open');
     document.querySelector('#contentLibraryOverlay')?.classList.remove('open');
@@ -4320,8 +4384,10 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
 
 /* ===== home-concept-carousel.js ===== */
 /* FocusWave homepage concept carousel.
- * Keeps the approved homepage motion renderer while drawing all homepage copy
- * from the canonical 20-item curated quote library.
+ * Keeps the approved homepage motion renderer. The rotating quote comes from
+ * the library selected by the default text mode (D-028): original state
+ * lines, world public-domain translations, Chinese classics, or none
+ * (minimal). Quotes are matched to the current concept's theme and state.
  */
 (() => {
   const slides = [
@@ -4374,16 +4440,98 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     let conceptRenderer=window.drawField.bind(window);
     let quotes=[];
     let quoteBag=[];
+    let libraryRequest=0;
 
-    async function loadQuotes(){
+    /* D-028: the default text mode selects the homepage quote library.
+     * minimal   -> no rotating quote, hero copy stays
+     * original  -> original + generated state lines, matched by theme × state
+     * global    -> world public-domain translations (original via hover title)
+     * classical -> classical-zh library + curated quotes
+     * Matching prefers an exact theme+state hit, then theme, then anything. */
+    const MODE_KEY='focuswave.defaultTextMode';
+    const TEXT_MODES=['minimal','original','global','classical'];
+    const heroHTML={title:title.innerHTML,body:body.innerHTML};
+
+    function readMode(){
+      const value=localStorage.getItem(MODE_KEY);
+      return TEXT_MODES.includes(value)?value:'original';
+    }
+    let mode=readMode();
+
+    function restoreHero(){
+      title.innerHTML=heroHTML.title;
+      title.removeAttribute('title');
+      body.innerHTML=heroHTML.body;
+    }
+
+    async function fetchJson(url){
+      // The generated entry embeds these libraries; the source uses HTTP.
+      if(Object.prototype.hasOwnProperty.call(window.__FW_INLINE_CONTENT||{},url))return window.__FW_INLINE_CONTENT[url];
       try{
-        const data=await Promise.resolve({ok:true,json:()=>Promise.resolve(window.__FW_CONTENT_CONTENT_CURATED_QUOTES_JSON)}).then(response=>response.ok?response.json():null);
-        quotes=(data?.items||[]).filter(item=>item?.text&&item?.source);
-        refillQuoteBag();
-      }catch(_){
-        quotes=[];
-        quoteBag=[];
+        const response=await fetch(url);
+        return response.ok?await response.json():null;
+      }catch(_){return null}
+    }
+
+    async function loadLibrary(){
+      const requestedMode=readMode(),request=++libraryRequest;
+      mode=requestedMode;
+      quotes=[];
+      quoteBag=[];
+      restoreHero();
+      if(requestedMode==='minimal')return;
+      let loaded=[];
+      if(requestedMode==='original'){
+        const [manual,batched]=await Promise.all([
+          fetchJson('./content/original-state-lines.json'),
+          fetchJson('./content/generated-state-lines.json')
+        ]);
+        [manual,batched].forEach((lib,libraryIndex)=>{
+          if(!lib?.themes)return;
+          if(libraryIndex===1&&!['prototype-curated','approved'].includes(lib.provenance?.review_status))return;
+          for(const [theme,states] of Object.entries(lib.themes)){
+            for(const [state,lines] of Object.entries(states||{})){
+              (lines||[]).forEach((text,line)=>loaded.push({text,
+                source:libraryIndex===0?'FocusWave 原创短句':'FocusWave 新创短句',
+                id:`${libraryIndex}-${theme}-${state}-${line}`,
+                provenance:lib.provenance||{method:'manual'},theme:[theme],state:[state]}));
+            }
+          }
+        });
+      }else if(requestedMode==='global'){
+        const lib=await fetchJson('./content/world-public-domain.json');
+        loaded=(lib?.items||[]).filter(item=>item?.verified===true&&item?.translation_zh).map(item=>({
+          id:item.id,rights:item.rights,verified:item.verified,source_url:item.verified_source,
+          text:item.translation_zh,
+          source:`${item.author||''} · ${item.work||''}`.replace(/^ · +| + · $/g,''),
+          orig:item.original||'',
+          theme:item.theme||[],
+          state:item.state||[]
+        }));
+      }else{
+        const [zh,curated]=await Promise.all([
+          fetchJson('./content/classical-zh.json'),
+          fetchJson('./content/curated-quotes.json')
+        ]);
+        loaded=[
+          ...(zh?.items||[]).filter(item=>item?.verified===true&&item?.text).map(item=>({
+            id:item.id,rights:item.rights,verified:item.verified,source_url:item.verified_source,
+            text:item.text,
+            source:item.author&&item.work?`${item.author}《${item.work}》`:(item.author||item.work||'中文古典'),
+            theme:item.theme||[],
+            state:item.state||[]
+          })),
+          ...(curated?.items||[]).filter(item=>item?.text&&item?.source).map(item=>({
+            text:item.text,
+            source:item.source,
+            theme:[],
+            state:[]
+          }))
+        ];
       }
+      if(request!==libraryRequest)return;
+      quotes=loaded.filter(entry=>entry?.text);
+      refillQuoteBag();
     }
     function refillQuoteBag(){
       quoteBag=quotes.map((_,i)=>i);
@@ -4392,10 +4540,19 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
         [quoteBag[i],quoteBag[j]]=[quoteBag[j],quoteBag[i]];
       }
     }
-    function takeQuote(){
+    function takeQuote(slide){
       if(!quotes.length)return null;
       if(!quoteBag.length)refillQuoteBag();
-      return quotes[quoteBag.shift()]||quotes[0];
+      const theme=slide?.theme,state=slide?.state?.key;
+      let pick=0,rank=4;
+      for(let i=0;i<quoteBag.length;i++){
+        const entry=quotes[quoteBag[i]];
+        const themeHit=!entry.theme.length||entry.theme.includes(theme);
+        const stateHit=!entry.state.length||entry.state.includes(state);
+        const score=themeHit&&stateHit?0:(themeHit?1:(stateHit?2:3));
+        if(score<rank){rank=score;pick=i;if(!score)break}
+      }
+      return quotes[quoteBag.splice(pick,1)[0]]||quotes[0];
     }
 
     const style=document.createElement('style');
@@ -4440,11 +4597,14 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
       conceptRenderer(canvas,{theme:slide.theme,state:slide.state,lines:slide.lines,alpha:slide.alpha,t});
     }
     function paint(slide){
-      const quote=takeQuote();
+      const quote=mode==='minimal'?null:takeQuote(slide);
       drawSlide(slide);
       if(quote){
         title.textContent=quote.text;
+        if(quote.orig)title.title=quote.orig;else title.removeAttribute('title');
         body.textContent=quote.source;
+      }else{
+        restoreHero();
       }
       if(tiny)tiny.hidden=true;
       [...dots.children].forEach((d,i)=>d.classList.toggle('active',i===index));
@@ -4492,7 +4652,9 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     }).observe(page,{attributes:true,attributeFilter:['class']});
     document.addEventListener('visibilitychange',()=>document.hidden?stop():(repaint(),start()));
     refillBag(-1);
-    loadQuotes().finally(()=>{show(nextRandom(),false);start();});
+    loadLibrary().finally(()=>{show(nextRandom(),false);start();});
+    window.addEventListener('focuswave:text-mode-changed',()=>{loadLibrary().finally(repaint);});
+    window.addEventListener('storage',event=>{if(event.key===MODE_KEY)loadLibrary().finally(repaint);});
     Promise.resolve().then(()=>{
       if(typeof window.FocusWaveVisualEngine?.drawField!=='function')return;
       conceptRenderer=window.FocusWaveVisualEngine.drawField.bind(window.FocusWaveVisualEngine);
@@ -4786,8 +4948,9 @@ let currentPage="today",activeTheme="ocean",liveStarted=0,timerId,stateTimer,sta
 function showPage(name){pages.forEach(p=>$("#page-"+p)?.classList.toggle("active",p===name));currentPage=name;$("#rail").style.display=name==="live"?"none":"flex";$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));requestAnimationFrame(renderStatic);if(name==="device")animateSensor();else cancelAnimationFrame(sensorRaf)}
 $$('[data-go]').forEach(b=>b.onclick=()=>showPage(b.dataset.go));$$('[data-nav]').forEach(b=>b.onclick=()=>showPage(b.dataset.nav));function bindGroup(id){const g=$("#"+id);if(!g)return;g.querySelectorAll('[data-value]').forEach(b=>b.onclick=()=>{g.querySelectorAll('[data-value]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');if(id==="motionSetting")motionMode=b.dataset.value})}["durationGroup","textGroup","regulationGroup","themeGroup","motionSetting","feedbackSetting","textSetting"].forEach(bindGroup);function val(id){return $("#"+id)?.querySelector('.selected')?.dataset.value||""}
 $("#startFocus").onclick=()=>showPage("setup");$("#practiceToSetup").onclick=()=>showPage("setup");$("#toDevice").onclick=()=>{activeTheme=val("themeGroup")||"ocean";$("#liveTask").textContent=$("#taskInput").value||"专注";const d=Number(val("durationGroup"));$("#plannedTime").textContent=d?String(d).padStart(2,"0")+":00":"∞";showPage("device");$("#qualityReady").textContent="正在确认";$("#beginLive").disabled=true;setTimeout(()=>{$("#qualityReady").textContent="良好 · 94%";$("#qualityReady").className="ready";$("#beginLive").disabled=false},1300)};
-$("#beginLive").onclick=startLive;function startLive(){showPage("live");liveStarted=Date.now();stateIndex=0;applyState();clearInterval(timerId);timerId=setInterval(updateTimer,1000);clearInterval(stateTimer);stateTimer=setInterval(()=>{stateIndex=(stateIndex+1)%states.length;applyState()},30000);updateTimer();animateLive()}function updateTimer(){const s=Math.floor((Date.now()-liveStarted)/1000),m=Math.floor(s/60),r=s%60;$("#liveTimer").textContent=String(m).padStart(2,"0")+":"+String(r).padStart(2,"0")}function applyState(){const st=states[stateIndex],p=themeProfiles[activeTheme],c=p.copy[stateIndex];$("#stateTitle").textContent=st.title;$("#stateSub").textContent=st.sub;$("#stateQuote").textContent=c.q;$("#stateImagery").textContent=c.i;$("#focusIndex").textContent=st.index;$("#confidence").textContent=st.conf.toFixed(2)}
-$("#finishBtn").onclick=()=>{clearInterval(timerId);clearInterval(stateTimer);$("#summaryDuration").textContent=Math.max(1,Math.round((Date.now()-liveStarted)/60000))+" min";showPage("summary")};$("#detailBtn").onclick=()=>$("#detailDrawer").classList.add("open");$("#closeDrawer").onclick=()=>$("#detailDrawer").classList.remove("open");$("#regBtn").onclick=()=>$("#regOverlay").classList.add("open");$("#skipReset").onclick=()=>$("#regOverlay").classList.remove("open");$("#regPractice").onclick=()=>{$("#regOverlay").classList.remove("open");openPractice("return")};
+$("#beginLive").onclick=startLive;function startLive(){showPage("live");liveStarted=Date.now();stateIndex=0;applyState();clearInterval(timerId);timerId=setInterval(updateTimer,1000);clearInterval(stateTimer);stateTimer=setInterval(()=>{stateIndex=(stateIndex+1)%states.length;applyState()},30000);updateTimer();animateLive()}function updateTimer(){const s=Math.floor((Date.now()-liveStarted)/1000),m=Math.floor(s/60),r=s%60;$("#liveTimer").textContent=String(m).padStart(2,"0")+":"+String(r).padStart(2,"0");reachedPlannedEnd(s)}
+function reachedPlannedEnd(s){/* 计划时长走完后安静地结束这一段，与手动结束走同一条总结流程。未设置有限计划时长时不自动结束；练习、走神提醒等弹窗打开时延后到下一秒再判断。 */if(currentPage!=="live"||liveStarted<=0)return;if(["focusCountPracticeOverlay","regOverlay","practiceOverlay"].some(id=>document.getElementById(id)?.classList.contains("open")))return;const planned=/^(\d+):00$/.exec($("#plannedTime")?.textContent||"");if(!planned)return;const plannedSeconds=Number(planned[1])*60;if(plannedSeconds>0&&s>=plannedSeconds&&!$("#finishBtn").disabled)$("#finishBtn").click()}function applyState(){const st=states[stateIndex],p=themeProfiles[activeTheme],c=p.copy[stateIndex];$("#stateTitle").textContent=st.title;$("#stateSub").textContent=st.sub;$("#stateQuote").textContent=c.q;$("#stateImagery").textContent=c.i;$("#focusIndex").textContent=st.index;$("#confidence").textContent=st.conf.toFixed(2)}
+$("#finishBtn").onclick=()=>{clearInterval(timerId);clearInterval(stateTimer);if(liveStarted<=0)liveStarted=Date.now()-60000;$("#summaryDuration").textContent=Math.max(1,Math.round((Date.now()-liveStarted)/60000))+" min";showPage("summary")};$("#detailBtn").onclick=()=>{const d=$("#detailDrawer");d.inert=false;d.setAttribute("aria-hidden","false");d.classList.add("open");$("#closeDrawer").focus()};$("#closeDrawer").onclick=()=>{const d=$("#detailDrawer");if(d.classList.contains("open"))$("#detailBtn").focus();d.classList.remove("open");d.setAttribute("aria-hidden","true");d.inert=true};$("#regBtn").onclick=()=>$("#regOverlay").classList.add("open");$("#skipReset").onclick=()=>$("#regOverlay").classList.remove("open");$("#regPractice").onclick=()=>{$("#regOverlay").classList.remove("open");openPractice("return")};
 function size(c){const d=Math.min(devicePixelRatio||1,2),r=c.getBoundingClientRect(),w=Math.max(10,Math.floor(r.width*d)),h=Math.max(10,Math.floor(r.height*d));if(c.width!==w||c.height!==h){c.width=w;c.height=h}return{w,h,d}}
 function stroke(ctx,col,a,w){ctx.strokeStyle=`rgba(${col[0]},${col[1]},${col[2]},${a})`;ctx.lineWidth=w;ctx.stroke()}
 function grammarOffset(st,x,y,w,h,t,lineIndex,seed){return window.FocusWaveIdiomGrammar?.offset(st.key||"stable",x,y,w,h,t,lineIndex,seed)||{dx:0,dy:0}}
@@ -4796,12 +4959,14 @@ function drawMountain(ctx,w,h,p,st,t,lines,alpha){for(let j=0;j<lines;j++){const
 function drawIncense(ctx,w,h,p,st,t,lines,alpha){const count=Math.max(30,Math.floor(lines*.68));for(let j=0;j<count;j++){const x0=(j+.5)*w/count;ctx.beginPath();for(let i=0;i<=170;i++){const yn=i/170,y=h-yn*h;const upper=Math.pow(yn,1.7);let x=x0+Math.sin(yn*5.3+t*.16+j*.08)*w*.008*st.amp+Math.sin(yn*11+j*.13+t*.42)*w*.015*upper*st.disorder;const curl=Math.exp(-Math.pow((yn-.72)/.19,2))*Math.sin(t*.55+j*.17)*w*.025*st.disorder;x+=curl;const g=grammarOffset(st,x,y,w,h,t,j,p.seed),px=x+g.dx*.58,py=y+g.dy*.45;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}stroke(ctx,p.color,alpha+(j%7===0?.06:0),1.0)}}
 function drawDusk(ctx,w,h,p,st,t,lines,alpha){const horizon=h*.58;for(let j=0;j<lines;j++){const y0=(j+.5)*h/lines;ctx.beginPath();for(let i=0;i<=190;i++){const x=i/190*w,xn=x/w;const arc=Math.exp(-Math.pow((xn-.68)/.27,2))*h*.035*(y0<horizon?-1:1);let y=y0+arc*.55*st.amp+Math.sin(xn*4.2+t*.11+j*.018)*h*.008*st.amp;y+=Math.sin(xn*12+j*.08+t*.34)*h*.010*st.disorder;const g=grammarOffset(st,x,y,w,h,t,j,p.seed),px=x+g.dx*.62,py=y+g.dy*.60;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}stroke(ctx,p.color,alpha+(Math.abs(y0-horizon)<h*.04?.08:0),1.0)}}
 function drawField(c,opt={}){if(!c)return;const{w,h}=size(c),ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);const theme=opt.theme||activeTheme,p=themeProfiles[theme],st=opt.state||states[0],lines=opt.lines||66,t=opt.t||0,alpha=opt.alpha??.34;if(theme==="ocean")drawOcean(ctx,w,h,p,st,t,lines,alpha);else if(theme==="mountain")drawMountain(ctx,w,h,p,st,t,lines,alpha);else if(theme==="incense")drawIncense(ctx,w,h,p,st,t,lines,alpha);else drawDusk(ctx,w,h,p,st,t,lines,alpha)}
-function motionBase(){return motionMode==="still"?.35:motionMode==="normal"?1.35:1}function animateLive(){cancelAnimationFrame(raf);const start=performance.now();const loop=now=>{if(currentPage!=="live")return;const st=states[stateIndex];drawField($("#liveCanvas"),{theme:activeTheme,state:st,t:(now-start)/1000*st.speed*motionBase(),alpha:.36});raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}
+const reducedMotionQuery=matchMedia("(prefers-reduced-motion: reduce)");let reducedMotion=reducedMotionQuery.matches;try{reducedMotionQuery.addEventListener("change",e=>reducedMotion=e.matches)}catch(_){/* 旧浏览器忽略监听，保留初始值 */}
+function motionBase(){const base=motionMode==="still"?.35:motionMode==="normal"?1.35:1;/* 尊重系统减弱动态偏好：把节律压到产品自己的「极静」档。 */return reducedMotion?Math.min(base,.35):base}function animateLive(){cancelAnimationFrame(raf);const start=performance.now();const loop=now=>{if(currentPage!=="live")return;const st=states[stateIndex];drawField($("#liveCanvas"),{theme:activeTheme,state:st,t:(now-start)/1000*st.speed*motionBase(),alpha:.36});raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}
 function drawIrregularRing(ctx,cx,cy,r,phase,alpha){ctx.beginPath();const steps=160;for(let i=0;i<=steps;i++){const a=i/steps*Math.PI*2;const wobble=1+Math.sin(a*3+phase)*.018+Math.sin(a*7-phase*.7)*.008;const rx=r*wobble,ry=r*(.88+Math.sin(a*2+phase)*.012);const x=cx+Math.cos(a)*rx,y=cy+Math.sin(a)*ry;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.strokeStyle=`rgba(110,144,128,${alpha})`;ctx.lineWidth=1.25;ctx.stroke()}
-function animateSensor(){cancelAnimationFrame(sensorRaf);const c=$("#sensorCanvas");if(!c)return;const start=performance.now();const loop=now=>{if(currentPage!=="device")return;const{w,h}=size(c),ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);const cx=w*.5,cy=h*.5,maxR=Math.min(w,h)*.42,time=(now-start)/1000;for(let k=0;k<5;k++){const prog=((time*.13+k/5)%1),r=22+prog*(maxR-22),fade=Math.sin(Math.PI*prog)*.48;drawIrregularRing(ctx,cx,cy,r,time*.18+k*.9,fade)}drawIrregularRing(ctx,cx,cy,maxR*.34,time*.08,.18);drawIrregularRing(ctx,cx,cy,maxR*.62,time*.06+1,.13);sensorRaf=requestAnimationFrame(loop)};sensorRaf=requestAnimationFrame(loop)}
+function animateSensor(){cancelAnimationFrame(sensorRaf);const c=$("#sensorCanvas");if(!c)return;const start=performance.now();const loop=now=>{if(currentPage!=="device")return;const{w,h}=size(c),ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);const cx=w*.5,cy=h*.5,maxR=Math.min(w,h)*.42,time=(now-start)/1000*(reducedMotion?.35:1);for(let k=0;k<5;k++){const prog=((time*.13+k/5)%1),r=22+prog*(maxR-22),fade=Math.sin(Math.PI*prog)*.48;drawIrregularRing(ctx,cx,cy,r,time*.18+k*.9,fade)}drawIrregularRing(ctx,cx,cy,maxR*.34,time*.08,.18);drawIrregularRing(ctx,cx,cy,maxR*.62,time*.06+1,.13);sensorRaf=requestAnimationFrame(loop)};sensorRaf=requestAnimationFrame(loop)}
 function renderStatic(){drawField($("#todayCanvas"),{theme:"mountain",state:{key:"stable",amp:.55,disorder:.14},lines:54,alpha:.28,t:.2});drawField($("#summaryCanvas"),{theme:activeTheme,state:{key:"refocus",amp:.76,disorder:.28},lines:62,alpha:.31,t:.5});$$('.portraitMini').forEach(c=>drawField(c,{theme:c.dataset.theme,state:{key:"stable",amp:.68,disorder:.22},lines:42,alpha:.31,t:Number(c.dataset.seed)*.8}))}
 $$('[data-setting]').forEach(b=>b.onclick=()=>{$$('[data-setting]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.settings-panel').forEach(p=>p.classList.remove('active'));$("#setting-"+b.dataset.setting).classList.add('active')});$$('.switch').forEach(b=>b.onclick=()=>b.classList.toggle('on'));
-let practiceTimer=null,practiceRemaining=0,practicePaused=false,practiceKey="";$$('.practice-start').forEach(b=>b.onclick=()=>openPractice(b.dataset.practice));function openPractice(key){const p=practiceDefs[key];practiceKey=key;practiceRemaining=p.seconds;practicePaused=false;$("#practiceType").textContent=p.type;$("#practiceTitle").textContent=p.title;$("#practiceDesc").textContent=p.desc;$("#practiceInstruction").textContent=p.steps[0];$("#practicePause").textContent="暂停";$("#practiceOverlay").classList.add('open');updatePracticeClock();let step=0;clearInterval(practiceTimer);practiceTimer=setInterval(()=>{if(practicePaused)return;practiceRemaining--;if(practiceRemaining<=0){closePractice(true);return}const elapsed=p.seconds-practiceRemaining,newStep=Math.min(p.steps.length-1,Math.floor(elapsed/(p.seconds/p.steps.length)));if(newStep!==step){step=newStep;$("#practiceInstruction").textContent=p.steps[step]}updatePracticeClock()},1000);animatePractice()}function updatePracticeClock(){const m=Math.floor(practiceRemaining/60),s=practiceRemaining%60;$("#practiceClock").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}$("#practicePause").onclick=()=>{practicePaused=!practicePaused;$("#practicePause").textContent=practicePaused?"继续":"暂停"};$("#practiceEnd").onclick=()=>closePractice(false);function closePractice(done){clearInterval(practiceTimer);$("#practiceOverlay").classList.remove('open');if(done&&practiceKey==="return"&&currentPage==="live"){stateIndex=3;applyState()}}function animatePractice(){const start=performance.now();const loop=now=>{if(!$("#practiceOverlay").classList.contains('open'))return;drawField($("#practiceCanvas"),{theme:activeTheme,state:{key:"stable",amp:.32,disorder:.08},t:(now-start)/1000*.08,lines:34,alpha:.30});requestAnimationFrame(loop)};requestAnimationFrame(loop)}
+let practiceTimer=null,practiceRemaining=0,practicePaused=false,practiceKey="";$$('.practice-start').forEach(b=>b.onclick=()=>openPractice(b.dataset.practice));function openPractice(key){const p=practiceDefs[key];practiceKey=key;practiceRemaining=p.seconds;practicePaused=false;$("#practiceType").textContent=p.type;$("#practiceTitle").textContent=p.title;$("#practiceDesc").textContent=p.desc;$("#practiceInstruction").textContent=p.steps[0];$("#practicePause").textContent="暂停";$("#practiceOverlay").classList.add('open');updatePracticeClock();let step=0;clearInterval(practiceTimer);practiceTimer=setInterval(()=>{if(practicePaused)return;practiceRemaining--;if(practiceRemaining<=0){closePractice(true);return}const elapsed=p.seconds-practiceRemaining,newStep=Math.min(p.steps.length-1,Math.floor(elapsed/(p.seconds/p.steps.length)));if(newStep!==step){step=newStep;$("#practiceInstruction").textContent=p.steps[step]}updatePracticeClock()},1000);animatePractice()}function updatePracticeClock(){const m=Math.floor(practiceRemaining/60),s=practiceRemaining%60;$("#practiceClock").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}$("#practicePause").onclick=()=>{practicePaused=!practicePaused;$("#practicePause").textContent=practicePaused?"继续":"暂停"};$("#practiceEnd").onclick=()=>closePractice(false);function closePractice(done){clearInterval(practiceTimer);$("#practiceOverlay").classList.remove('open');if(done&&practiceKey==="return"&&currentPage==="live"){stateIndex=3;applyState()}}function animatePractice(){const start=performance.now();const loop=now=>{if(!$("#practiceOverlay").classList.contains('open'))return;drawField($("#practiceCanvas"),{theme:activeTheme,state:{key:"stable",amp:.32,disorder:.08},t:(now-start)/1000*.08*(reducedMotion?.4:1),lines:34,alpha:.30});requestAnimationFrame(loop)};requestAnimationFrame(loop)}
 const now=new Date();$("#dateText").textContent=now.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});addEventListener('resize',()=>{renderStatic();if(currentPage==="device")animateSensor()});renderStatic();
+addEventListener('keydown',e=>{if(e.key!=="Escape")return;if($("#detailDrawer")?.classList.contains("open")){e.preventDefault();$("#closeDrawer").click();return}if($("#practiceOverlay")?.classList.contains("open")){e.preventDefault();closePractice(false);return}if($("#contentLibraryOverlay")?.classList.contains("open")){e.preventDefault();$("#closeLibrary")?.click()}});
 </script>
 </body></html>

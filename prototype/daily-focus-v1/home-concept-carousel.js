@@ -1,6 +1,8 @@
 /* FocusWave homepage concept carousel.
- * Keeps the approved homepage motion renderer while drawing all homepage copy
- * from the canonical 20-item curated quote library.
+ * Keeps the approved homepage motion renderer. The rotating quote comes from
+ * the library selected by the default text mode (D-028): original state
+ * lines, world public-domain translations, Chinese classics, or none
+ * (minimal). Quotes are matched to the current concept's theme and state.
  */
 (() => {
   const slides = [
@@ -53,16 +55,98 @@
     let conceptRenderer=window.drawField.bind(window);
     let quotes=[];
     let quoteBag=[];
+    let libraryRequest=0;
 
-    async function loadQuotes(){
+    /* D-028: the default text mode selects the homepage quote library.
+     * minimal   -> no rotating quote, hero copy stays
+     * original  -> original + generated state lines, matched by theme × state
+     * global    -> world public-domain translations (original via hover title)
+     * classical -> classical-zh library + curated quotes
+     * Matching prefers an exact theme+state hit, then theme, then anything. */
+    const MODE_KEY='focuswave.defaultTextMode';
+    const TEXT_MODES=['minimal','original','global','classical'];
+    const heroHTML={title:title.innerHTML,body:body.innerHTML};
+
+    function readMode(){
+      const value=localStorage.getItem(MODE_KEY);
+      return TEXT_MODES.includes(value)?value:'original';
+    }
+    let mode=readMode();
+
+    function restoreHero(){
+      title.innerHTML=heroHTML.title;
+      title.removeAttribute('title');
+      body.innerHTML=heroHTML.body;
+    }
+
+    async function fetchJson(url){
+      // The generated entry embeds these libraries; the source uses HTTP.
+      if(Object.prototype.hasOwnProperty.call(window.__FW_INLINE_CONTENT||{},url))return window.__FW_INLINE_CONTENT[url];
       try{
-        const data=await fetch('./content/curated-quotes.json').then(response=>response.ok?response.json():null);
-        quotes=(data?.items||[]).filter(item=>item?.text&&item?.source);
-        refillQuoteBag();
-      }catch(_){
-        quotes=[];
-        quoteBag=[];
+        const response=await fetch(url);
+        return response.ok?await response.json():null;
+      }catch(_){return null}
+    }
+
+    async function loadLibrary(){
+      const requestedMode=readMode(),request=++libraryRequest;
+      mode=requestedMode;
+      quotes=[];
+      quoteBag=[];
+      restoreHero();
+      if(requestedMode==='minimal')return;
+      let loaded=[];
+      if(requestedMode==='original'){
+        const [manual,batched]=await Promise.all([
+          fetchJson('./content/original-state-lines.json'),
+          fetchJson('./content/generated-state-lines.json')
+        ]);
+        [manual,batched].forEach((lib,libraryIndex)=>{
+          if(!lib?.themes)return;
+          if(libraryIndex===1&&!['prototype-curated','approved'].includes(lib.provenance?.review_status))return;
+          for(const [theme,states] of Object.entries(lib.themes)){
+            for(const [state,lines] of Object.entries(states||{})){
+              (lines||[]).forEach((text,line)=>loaded.push({text,
+                source:libraryIndex===0?'FocusWave 原创短句':'FocusWave 新创短句',
+                id:`${libraryIndex}-${theme}-${state}-${line}`,
+                provenance:lib.provenance||{method:'manual'},theme:[theme],state:[state]}));
+            }
+          }
+        });
+      }else if(requestedMode==='global'){
+        const lib=await fetchJson('./content/world-public-domain.json');
+        loaded=(lib?.items||[]).filter(item=>item?.verified===true&&item?.translation_zh).map(item=>({
+          id:item.id,rights:item.rights,verified:item.verified,source_url:item.verified_source,
+          text:item.translation_zh,
+          source:`${item.author||''} · ${item.work||''}`.replace(/^ · +| + · $/g,''),
+          orig:item.original||'',
+          theme:item.theme||[],
+          state:item.state||[]
+        }));
+      }else{
+        const [zh,curated]=await Promise.all([
+          fetchJson('./content/classical-zh.json'),
+          fetchJson('./content/curated-quotes.json')
+        ]);
+        loaded=[
+          ...(zh?.items||[]).filter(item=>item?.verified===true&&item?.text).map(item=>({
+            id:item.id,rights:item.rights,verified:item.verified,source_url:item.verified_source,
+            text:item.text,
+            source:item.author&&item.work?`${item.author}《${item.work}》`:(item.author||item.work||'中文古典'),
+            theme:item.theme||[],
+            state:item.state||[]
+          })),
+          ...(curated?.items||[]).filter(item=>item?.text&&item?.source).map(item=>({
+            text:item.text,
+            source:item.source,
+            theme:[],
+            state:[]
+          }))
+        ];
       }
+      if(request!==libraryRequest)return;
+      quotes=loaded.filter(entry=>entry?.text);
+      refillQuoteBag();
     }
     function refillQuoteBag(){
       quoteBag=quotes.map((_,i)=>i);
@@ -71,10 +155,19 @@
         [quoteBag[i],quoteBag[j]]=[quoteBag[j],quoteBag[i]];
       }
     }
-    function takeQuote(){
+    function takeQuote(slide){
       if(!quotes.length)return null;
       if(!quoteBag.length)refillQuoteBag();
-      return quotes[quoteBag.shift()]||quotes[0];
+      const theme=slide?.theme,state=slide?.state?.key;
+      let pick=0,rank=4;
+      for(let i=0;i<quoteBag.length;i++){
+        const entry=quotes[quoteBag[i]];
+        const themeHit=!entry.theme.length||entry.theme.includes(theme);
+        const stateHit=!entry.state.length||entry.state.includes(state);
+        const score=themeHit&&stateHit?0:(themeHit?1:(stateHit?2:3));
+        if(score<rank){rank=score;pick=i;if(!score)break}
+      }
+      return quotes[quoteBag.splice(pick,1)[0]]||quotes[0];
     }
 
     const style=document.createElement('style');
@@ -119,11 +212,14 @@
       conceptRenderer(canvas,{theme:slide.theme,state:slide.state,lines:slide.lines,alpha:slide.alpha,t});
     }
     function paint(slide){
-      const quote=takeQuote();
+      const quote=mode==='minimal'?null:takeQuote(slide);
       drawSlide(slide);
       if(quote){
         title.textContent=quote.text;
+        if(quote.orig)title.title=quote.orig;else title.removeAttribute('title');
         body.textContent=quote.source;
+      }else{
+        restoreHero();
       }
       if(tiny)tiny.hidden=true;
       [...dots.children].forEach((d,i)=>d.classList.toggle('active',i===index));
@@ -171,7 +267,9 @@
     }).observe(page,{attributes:true,attributeFilter:['class']});
     document.addEventListener('visibilitychange',()=>document.hidden?stop():(repaint(),start()));
     refillBag(-1);
-    loadQuotes().finally(()=>{show(nextRandom(),false);start();});
+    loadLibrary().finally(()=>{show(nextRandom(),false);start();});
+    window.addEventListener('focuswave:text-mode-changed',()=>{loadLibrary().finally(repaint);});
+    window.addEventListener('storage',event=>{if(event.key===MODE_KEY)loadLibrary().finally(repaint);});
     import('./generative-visual-engine.js?v=12').then(()=>{
       if(typeof window.FocusWaveVisualEngine?.drawField!=='function')return;
       conceptRenderer=window.FocusWaveVisualEngine.drawField.bind(window.FocusWaveVisualEngine);

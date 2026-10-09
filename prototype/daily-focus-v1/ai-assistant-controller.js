@@ -4,6 +4,8 @@
  */
 (() => {
   const MODE_KEY = 'focuswave.aiMode';
+  let sessionNumber = 0;
+  let generationNumber = 0;
   const MODES = [
     { value: 'off', label: '关闭' },
     { value: 'reflection', label: '会话回顾' },
@@ -36,18 +38,26 @@
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
-    syncSummaryAvailability();
+    resetReflection();
   }
 
   function summaryPayload() {
+    function displayedNumber(label) {
+      const stat = [...document.querySelectorAll('#page-summary .stat')]
+        .find(item => item.querySelector('span')?.textContent?.trim() === label);
+      const text = stat?.querySelector('b')?.textContent?.trim();
+      const value = Number.parseFloat(text);
+      return Number.isFinite(value) ? value : null;
+    }
+    const duration = Number.parseFloat(document.querySelector('#summaryDuration')?.textContent);
     return {
-      task: document.querySelector('#liveTask')?.textContent?.trim() || '阅读论文',
-      duration_minutes: Number.parseInt(document.querySelector('#summaryDuration')?.textContent, 10) || 45,
-      stable_segments_percent: 71,
-      recovery_count: 3,
-      valid_signal_coverage_percent: 94,
-      comparison: '最近 5 次同类任务',
-      personal_pattern: '中后段更稳定',
+      session_id: sessionNumber,
+      task: document.querySelector('#liveTask')?.textContent?.trim() || '本次任务',
+      duration_minutes: Number.isFinite(duration) ? duration : null,
+      effective_focus_percent: displayedNumber('有效专注比例'),
+      practice_count: displayedNumber('练习次数'),
+      valid_signal_coverage_percent: displayedNumber('有效信号覆盖'),
+      source: 'prototype-summary',
     };
   }
 
@@ -56,17 +66,20 @@
     connected: false,
     async explainSession(payload, selectedMode) {
       await new Promise((resolve) => setTimeout(resolve, 720));
+      const number = value => Number.isFinite(value) ? value : '未记录';
+      const details = `页面示例统计：有效专注比例 ${number(payload.effective_focus_percent)}%，有效信号覆盖 ${number(payload.valid_signal_coverage_percent)}%。`;
       const suggestion = selectedMode === 'guidance'
-        ? '下一次可以继续采用 45–60 分钟工作块，并保留温和反馈；若持续游移，再主动打开短回收。'
-        : '这段回顾只整理已存在的会话结果，不改变任何测量数值。';
+        ? '下一段可以继续当前任务，或按需主动打开短练习。'
+        : '这段回顾只整理本页显示的示例数据。';
       return {
-        headline: `${payload.task}的中后段更稳，几次游移之后都回到了手边的任务。`,
-        body: suggestion,
+        headline: `${payload.task}：${number(payload.duration_minutes)} 分钟，主动练习 ${number(payload.practice_count)} 次。`,
+        body: `${details} ${suggestion}`,
         provenance: {
           input: 'SessionSummary',
           excluded: '原始毫米波',
-          provider: '本地模板预览',
-          template: 'session-reflection-v1',
+          provider: '本地模板 · 示例数据',
+          template: 'session-reflection-v2',
+          session_id: payload.session_id,
           generated_at: new Date().toISOString(),
         },
       };
@@ -132,7 +145,7 @@
       <div class="settings-row">
         <div>
           <b>默认文字模式</b>
-          <p>实时专注优先使用低延迟、已审核的本地内容库；AI 回顾只在会话结束后出现。</p>
+          <p>选择今日页轮换引言使用的内容库；专注进行中保持无文字的低干扰状态。</p>
         </div>
         <div class="setting-choices" id="defaultTextSetting">
           <button class="mini-choice" type="button" data-value="minimal">极简</button>
@@ -161,6 +174,9 @@
           item.classList.toggle('selected', active);
           item.setAttribute('aria-pressed', String(active));
         });
+    /* The homepage carousel consumes the text mode (D-028); tell it to
+         * swap libraries immediately. */
+        window.dispatchEvent(new CustomEvent('focuswave:text-mode-changed', { detail: { mode: button.dataset.value } }));
       });
     });
     panel.querySelectorAll('[data-ai-mode]').forEach((button) => {
@@ -203,7 +219,7 @@
         </div>
         <div class="ai-reflection-status" aria-live="polite">等待生成</div>
       </div>
-      <p class="ai-reflection-intro">仅使用页面中的结构化会话总结。本地预览不会发送网络请求，也不会读取原始毫米波。</p>
+      <p class="ai-reflection-intro">整理本页的会话与示例统计。当前使用本地模板，不会发送网络请求。</p>
       <button class="ghost" id="generateAIReflection" type="button">生成回顾</button>
       <div class="ai-reflection-result" aria-live="polite" hidden>
         <blockquote></blockquote>
@@ -227,10 +243,25 @@
     if (disabled) card.dataset.status = 'idle';
   }
 
+  function resetReflection() {
+    generationNumber += 1;
+    const card = document.querySelector('.ai-reflection-card');
+    if (!card) return;
+    card.dataset.status = 'idle';
+    const result = card.querySelector('.ai-reflection-result');
+    result.hidden = true;
+    result.querySelector('blockquote').textContent = '';
+    result.querySelector('p').textContent = '';
+    result.querySelector('.ai-provenance').textContent = '';
+    syncSummaryAvailability();
+  }
+
   async function generateReflection(event) {
     const button = event.currentTarget;
     const card = button.closest('.ai-reflection-card');
     const result = card.querySelector('.ai-reflection-result');
+    const request = ++generationNumber;
+    const session = sessionNumber;
     card.dataset.status = 'loading';
     card.querySelector('.ai-reflection-status').textContent = '整理中';
     button.disabled = true;
@@ -238,6 +269,7 @@
     result.hidden = true;
     try {
       const output = await adapter.explainSession(summaryPayload(), mode());
+      if (request !== generationNumber || session !== sessionNumber) return;
       result.querySelector('blockquote').textContent = output.headline;
       result.querySelector('p').textContent = output.body;
       result.querySelector('.ai-provenance').innerHTML = `
@@ -250,17 +282,22 @@
       card.querySelector('.ai-reflection-status').textContent = '已生成 · 有来源记录';
       button.textContent = '重新生成';
     } catch (error) {
+      if (request !== generationNumber || session !== sessionNumber) return;
       card.dataset.status = 'error';
       card.querySelector('.ai-reflection-status').textContent = '生成失败';
       button.textContent = '重试';
     } finally {
-      button.disabled = false;
+      if (request === generationNumber && session === sessionNumber) button.disabled = mode() === 'off';
     }
   }
 
   function init() {
     renderSettingsPanel();
     ensureSummaryCard();
+    document.querySelector('#beginLive')?.addEventListener('click', () => {
+      sessionNumber += 1;
+      resetReflection();
+    });
   }
 
   window.FocusWaveAIAdapter = adapter;

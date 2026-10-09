@@ -341,7 +341,7 @@
   function drawFood(){for(const g of food){ctx.fillStyle=g.landed?'rgba(117,86,53,.72)':'rgba(132,94,55,.62)';ctx.beginPath();ctx.arc(g.x,g.y,g.r,0,Math.PI*2);ctx.fill()}}
   function draw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);drawBackground();drawRipples();lotus.forEach(drawLotus);drawLinkedRing();fish.forEach(drawFish);drawFood()}
 
-  function frameLoop(now){if(!canvas?.isConnected)return;const dt=Math.min(.035,(now-lastTime)/1000||.016);lastTime=now;if(!document.hidden){update(dt,now);draw()}raf=requestAnimationFrame(frameLoop)}
+  function frameLoop(now){if(!canvas?.isConnected)return;const dt=Math.min(.035,(now-lastTime)/1000||.016);lastTime=now;/* 只在洞察页可见时模拟与绘制，离开页面即暂停，回来下一帧恢复。 */if(!document.hidden&&page?.classList.contains('active')){update(dt,now);draw()}raf=requestAnimationFrame(frameLoop)}
   function stopScene(){cancelAnimationFrame(raf);raf=0;resizeObserver?.disconnect();resizeObserver=null}
 
   function scheduleMidnight(){clearTimeout(midnightTimer);const now=new Date(),next=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,0,0,80);midnightTimer=setTimeout(()=>{localStorage.setItem(LOTUS_KEY,JSON.stringify({date:localDayKey(),lotus:[]}));lotus=[];syncLotus();food=[];ripples=[];scheduleMidnight()},Math.max(1000,next.getTime()-Date.now()))}

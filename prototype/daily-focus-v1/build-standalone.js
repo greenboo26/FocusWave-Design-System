@@ -61,14 +61,16 @@ const problems = [];
 
 // Content JSON is normally fetched at runtime, which file:// blocks. Inline it
 // as a global and rewrite the fetch() calls to read from that global instead.
-const contentGlobals = [];
+const contentGlobals = ['window.__FW_INLINE_CONTENT = Object.create(null);'];
 const contentRewrites = [];
-const CONTENT_FILES = ['content/curated-quotes.json'];
+const CONTENT_FILES = ['content/curated-quotes.json', 'content/original-state-lines.json',
+  'content/generated-state-lines.json', 'content/classical-zh.json', 'content/world-public-domain.json'];
 CONTENT_FILES.forEach(rel => {
   const abs = path.join(ROOT, rel);
   if (!fs.existsSync(abs)) { problems.push('missing content file ' + rel); return; }
   const varName = '__FW_CONTENT_' + rel.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
   contentGlobals.push('window.' + varName + ' = ' + JSON.stringify(JSON.parse(fs.readFileSync(abs, 'utf8'))) + ';');
+  contentGlobals.push('window.__FW_INLINE_CONTENT[' + JSON.stringify('./' + rel) + '] = window.' + varName + ';');
   // Match literally: fetch('./content/x.json')  (slashes need no escaping here)
   contentRewrites.push({
     varName,

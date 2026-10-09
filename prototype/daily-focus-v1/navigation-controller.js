@@ -18,7 +18,7 @@
   let installed = false;
 
   function closeTransientUI(from, to) {
-    document.querySelector('#detailDrawer')?.classList.remove('open');
+    document.querySelector('#closeDrawer')?.click();
     document.querySelector('#regOverlay')?.classList.remove('open');
 
     const practiceOverlay = document.querySelector('#practiceOverlay');
@@ -113,7 +113,7 @@
 
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
-    document.querySelector('#detailDrawer')?.classList.remove('open');
+    document.querySelector('#closeDrawer')?.click();
     document.querySelector('#regOverlay')?.classList.remove('open');
     document.querySelector('#practiceOverlay')?.classList.remove('open');
     document.querySelector('#contentLibraryOverlay')?.classList.remove('open');

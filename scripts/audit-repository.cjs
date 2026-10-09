@@ -8,7 +8,10 @@ const vm = require('node:vm');
 const {execFileSync, spawnSync} = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 const git = (...args) => execFileSync('git', args, {cwd:root, encoding:'utf8', maxBuffer:16*1024*1024}).trim();
-const branches = ['main','li','arena/01a0cc25-focuswave-design-system'];
+const candidate = 'arena/01a0cc25-focuswave-design-system';
+const candidateSha = 'e6b98ff31dce179bd21fe7be87dc112f6b5b21a8';
+const branches = git('for-each-ref','--format=%(refname:strip=3)','refs/remotes/origin')
+  .split('\n').filter(name=>name&&name!=='HEAD');
 const entry = 'prototype/daily-focus-v1/index.html';
 
 function inspect(ref, workingTree=false) {
@@ -71,11 +74,15 @@ function inspect(ref, workingTree=false) {
   };
 }
 const snapshots=branches.map(name=>inspect(`origin/${name}`));
-const comparisons=[['main','li'],['li','arena/01a0cc25-focuswave-design-system']].map(([left,right])=>{
+const pairs=[['main','li']];
+if(branches.includes(candidate))pairs.push(['li',candidate]);
+const comparisons=pairs.map(([left,right])=>{
   const [leftOnly,rightOnly]=git('rev-list','--left-right','--count',`origin/${left}...origin/${right}`).split(/\s+/).map(Number);
   return {left,right,leftOnly,rightOnly,commonAncestor:git('merge-base',`origin/${left}`,`origin/${right}`)};
 });
-const report={generatedAt:new Date().toISOString(),remote:git('remote','get-url','origin'),localBranch:git('branch','--show-current'),workingTreeStatus:git('status','--short'),comparisons,snapshots,workingTree:inspect('HEAD',true),limitations:['Static literal references only; computed and external URLs require separate inspection.','Syntax checks are not interaction or scientific validation.','Branch snapshots are read from fetched origin references; run git fetch origin first.']};
+let candidateMerged=false;
+try{git('merge-base','--is-ancestor',candidateSha,'origin/li');candidateMerged=true;}catch(_){/* not merged, or source unavailable */}
+const report={generatedAt:new Date().toISOString(),remote:git('remote','get-url','origin'),localBranch:git('branch','--show-current'),workingTreeStatus:git('status','--short'),comparisons,snapshots,retiredCandidate:{branch:candidate,sourceSha:candidateSha,remoteBranchPresent:branches.includes(candidate),mergedIntoRelease:candidateMerged},workingTree:inspect('HEAD',true),limitations:['Static literal references only; computed and external URLs require separate inspection.','Syntax checks are not interaction or scientific validation.','Branch snapshots are read from fetched origin references; run git fetch --prune origin first.']};
 const at=process.argv.indexOf('--output');
 if(at>=0) {
   if(!process.argv[at+1]) throw new Error('--output requires a path');
@@ -84,4 +91,4 @@ if(at>=0) {
   fs.writeFileSync(target,JSON.stringify(report,null,2)+'\n');
 }
 console.log(JSON.stringify({comparisons,branches:snapshots.map(s=>({ref:s.ref,sha:s.sha,files:s.trackedFiles,checks:s.checks,sourceErrors:s.sourceErrors.length,activeMissingReferences:s.activeMissingReferences})),workingTree:{checks:report.workingTree.checks,sourceErrors:report.workingTree.sourceErrors,activeMissingReferences:report.workingTree.activeMissingReferences}},null,2));
-if(report.workingTree.sourceErrors.length||report.workingTree.activeMissingReferences.length) process.exitCode=1;
+if([...snapshots,report.workingTree].some(s=>s.sourceErrors.length||s.activeMissingReferences.length)) process.exitCode=1;

@@ -15,6 +15,12 @@
   let motionPhase = 0;
   let lastMotionT = null;
   let duskRaf = 0;
+  /* Cached reduced-motion preference, refreshed on change. */
+  let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  try {
+    window.matchMedia('(prefers-reduced-motion: reduce)')
+      .addEventListener?.('change', (e) => { reducedMotion = e.matches; });
+  } catch (_) { /* keep initial value on older engines */ }
 
   function rgba(c,a){ return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
   function clamp01(x){ return Math.max(0,Math.min(1,x)); }
@@ -219,7 +225,8 @@
       const m=modeFor(resolvedKey);
       const dt=Math.min(.05,Math.max(0,(now-lastNow)/1000));
       lastNow=now;
-      if(m.speed>0) motionPhase+=dt*m.speed;
+      // Freeze time while retaining the actual state's visual parameters.
+      if(!reducedMotion&&m.speed>0) motionPhase+=dt*m.speed;
 
       drawDusk(document.querySelector('#liveCanvas'),{
         state:{...sourceState,key:resolvedKey},

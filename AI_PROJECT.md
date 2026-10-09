@@ -8,7 +8,7 @@ Status: CANONICAL_PROJECT_POINTER
 - canonical repository for this role: `greenboo26/FocusWave-Design-System`
 - canonical branch: `main`
 - preview release branch: `li` (GitHub Pages workflow publishes this branch only)
-- candidate branch: `arena/01a0cc25-focuswave-design-system` (unmerged changes; not the live preview)
+- integrated candidate source: `e6b98ff31dce179bd21fe7be87dc112f6b5b21a8`; its four commits are retained through merge ancestry. Retire `arena/01a0cc25-focuswave-design-system` after release acceptance; maintain `main` and `li` only.
 - branch roles and source inventory: `docs/REPOSITORY_GUIDE.md`
 - repository role: **design-system, interaction specification and prototype truth**
 

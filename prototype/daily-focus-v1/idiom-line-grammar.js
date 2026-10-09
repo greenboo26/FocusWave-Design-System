@@ -49,11 +49,11 @@ window.FocusWaveIdiomGrammar = (() => {
 
 // Keep homepage boot deliberately small. Heavy page runtimes are loaded on demand
 // by settings-controller.js only after the user enters the corresponding flow.
-import('./theme-rain-controller.js?v=4');
-import('./dusk-water-reflection.js?v=15');
+import('./theme-rain-controller.js?v=5');
+import('./dusk-water-reflection.js?v=16');
 import('./live-ui-refinements.js?v=1');
 import('./focus-session-rewards.js?v=1');
-import('./insights-ink-pond-v3.js?v=7');
+import('./insights-ink-pond-v3.js?v=8');
 import('./insights-lotus-overlay.js?v=5');
 import('./setup-focus-target.js?v=1');
 // The archive view reads these globals on mount. Wait for its dependencies
@@ -63,9 +63,9 @@ Promise.all([
   import('./insights-archive-timeline.js?v=2'),
   import('./insights-archive-styles.js?v=2')
 ]).then(() => import('./insights-archive.js?v=2'));
-const settingsReady = import('./settings-controller.js?v=10');
+const settingsReady = import('./settings-controller.js?v=11');
 settingsReady
-  .then(() => import('./ai-assistant-controller.js?v=5'))
-  .then(() => import('./summary-ui-refinements.js?v=2'));
-import('./navigation-controller.js?v=3');
-import('./home-concept-carousel.js?v=7');
+  .then(() => import('./ai-assistant-controller.js?v=6'))
+  .then(() => import('./summary-ui-refinements.js?v=3'));
+import('./navigation-controller.js?v=4');
+import('./home-concept-carousel.js?v=8');

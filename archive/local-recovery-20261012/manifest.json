@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-13",
+  "repository": "greenboo26/FocusWave-Design-System",
+  "base_branch": "main",
+  "base_commit": "d17d45698af5e0624b301799b6fa7e0eec890ca6",
+  "branch": "codex/local-process-recovery-20261012",
+  "purpose": "Unpublished historical portable source/provenance for project backup; no active pipeline change.",
+  "exclusions": [
+    "raw/row-level data",
+    "identity/finance",
+    "credentials/runtime",
+    "model binaries",
+    "superseded navigation",
+    "test caches"
+  ],
+  "entries": [
+    {
+      "snapshot": "payloads/19d57d9f5a08/package-lock.json",
+      "original_path": "work/package-lock.json",
+      "git_blob": "19d57d9f5a08d94b68f860a735523d4cc60c960c",
+      "sha256": "40ac4bbf1c9eedf71d907bc47fcdcf880febf86a2f72560b8e94729ac3b4e14d",
+      "bytes": 1600,
+      "classification": "historical_source_or_provenance_not_current_pipeline",
+      "sources": [
+        {
+          "kind": "working_tree",
+          "original_path": "work/package-lock.json",
+          "commit": null
+        }
+      ],
+      "usage": "Historical immutable source. Reconstruct original version/input contracts before use; not active pipeline."
+    },
+    {
+      "snapshot": "payloads/4520dde68ec5/package.json",
+      "original_path": "work/package.json",
+      "git_blob": "4520dde68ec5962c8a0cbce4fe6b66cb70375acb",
+      "sha256": "1336ce6076a8366b9938100cd07890ef4941c6bf049ffbaf08c522bb41f1c3d4",
+      "bytes": 56,
+      "classification": "historical_source_or_provenance_not_current_pipeline",
+      "sources": [
+        {
+          "kind": "working_tree",
+          "original_path": "work/package.json",
+          "commit": null
+        }
+      ],
+      "usage": "Historical immutable source. Reconstruct original version/input contracts before use; not active pipeline."
+    },
+    {
+      "snapshot": "payloads/2ef4815f2a25/ui-visible-audit.js",
+      "original_path": "work/ui-visible-audit.js",
+      "git_blob": "2ef4815f2a2574ed96fdb0c781916a56fee5cd65",
+      "sha256": "e9ef3c2e3c5dd20004a98bdd1cf3b9b9583409666b3ebc8a4cd530b6f68b05f5",
+      "bytes": 3970,
+      "classification": "historical_source_or_provenance_not_current_pipeline",
+      "sources": [
+        {
+          "kind": "working_tree",
+          "original_path": "work/ui-visible-audit.js",
+          "commit": null
+        }
+      ],
+      "usage": "Historical immutable source. Reconstruct original version/input contracts before use; not active pipeline."
+    },
+    {
+      "snapshot": "payloads/440eaf45eee6/visual-depth-audit.js",
+      "original_path": "work/visual-depth-audit.js",
+      "git_blob": "440eaf45eee65472ac008887f4ca06474d7f027c",
+      "sha256": "a198f7918d3466ffeee2e2268d3284a306aac303d6cd359cbf26fae7912a09c1",
+      "bytes": 5009,
+      "classification": "historical_source_or_provenance_not_current_pipeline",
+      "sources": [
+        {
+          "kind": "working_tree",
+          "original_path": "work/visual-depth-audit.js",
+          "commit": null
+        }
+      ],
+      "usage": "Historical immutable source. Reconstruct original version/input contracts before use; not active pipeline."
+    }
+  ],
+  "completed_at_date": "2026-10-13",
+  "current_entry_branch": "main",
+  "recovery_source_commit": "266ba3ef8a8302450684b8fc660a75f352b8c7ea",
+  "integration_date": "2026-10-13"
+}

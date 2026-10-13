@@ -1,0 +1,30 @@
+{
+  "files": 4,
+  "all_byte_identical": true,
+  "checks": [
+    {
+      "file": "payloads/19d57d9f5a08/package-lock.json",
+      "byte_identical": true,
+      "syntax": "json_parse_pass"
+    },
+    {
+      "file": "payloads/4520dde68ec5/package.json",
+      "byte_identical": true,
+      "syntax": "json_parse_pass"
+    },
+    {
+      "file": "payloads/2ef4815f2a25/ui-visible-audit.js",
+      "byte_identical": true,
+      "syntax": "node_syntax_pass"
+    },
+    {
+      "file": "payloads/440eaf45eee6/visual-depth-audit.js",
+      "byte_identical": true,
+      "syntax": "node_syntax_pass"
+    }
+  ],
+  "not_claimed": [
+    "scientific revalidation",
+    "current pipeline adoption"
+  ]
+}
